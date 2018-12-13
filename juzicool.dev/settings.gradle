@@ -1,0 +1,3 @@
+rootProject.name = 'juzicool.dev'
+include 'jfinal-club'
+
