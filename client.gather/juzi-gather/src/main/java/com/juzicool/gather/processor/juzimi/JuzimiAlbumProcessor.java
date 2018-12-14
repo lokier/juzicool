@@ -137,7 +137,6 @@ public class JuzimiAlbumProcessor extends JuzimiProcessor {
 		p.addAlbum(JuziAlbum.build().setUrl("https://www.juzimi.com/album/50584").setPageSize(4).setCategoy("").setRemark("").setTags("").setApplyTags(""));
 
 */
-		p.addAlbum(JuziAlbum.build().setUrl("https://www.juzimi.com/album/50584").setPageSize(1).setCategoy("").setRemark("").setTags("").setApplyTags(""));
 
 		//
 		for(JuziAlbum album : p.mMap.values()) {
@@ -146,7 +145,7 @@ public class JuzimiAlbumProcessor extends JuzimiProcessor {
 			}
 		}
 		
-		//spider.addUrl("https://www.juzimi.com/album/2364?page=1");  //优美的句子,美好,难过，或暂，长久,难忘
+		spider.addUrl("http://www.juzimi.com/album/2364?page=1");  //优美的句子,美好,难过，或暂，长久,难忘
 
 		spider.thread(1).run();
 	}

@@ -22,7 +22,7 @@ public class HtmlNode extends AbstractSelectable {
         elements = null;
     }
 
-    protected List<Element> getElements() {
+    public List<Element> getElements() {
         return elements;
     }
 

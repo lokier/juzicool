@@ -2,4 +2,6 @@ rootProject.name = 'client.gather'
 include 'dev-demo'
 include 'juzi-gather'
 include 'webmagic-core'
+include 'webmagic-extension'
+include 'webmagic-samples'
 
