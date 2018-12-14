@@ -1,7 +1,7 @@
 #主要配置
 jdbcUrl=jdbc:mysql://localhost/jfinal_club?characterEncoding=utf8&useSSL=false&zeroDateTimeBehavior=convertToNull
 user=root
-password=123456
+password=1234
 devMode=true
 engineDevMode=true
 
