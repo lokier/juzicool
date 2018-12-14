@@ -20,10 +20,10 @@ repositories {
     maven { url "http://repo.maven.apache.org/maven2" }
 }
 dependencies {
-    providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
+    //providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
 
 
-    implementation project(':jfinal-club')
+    implementation project(':jfinal-3.5')
     //implementation group: 'com.jfinal', name: 'jfinal', version:'3.5'
 
     implementation group: 'org.slf4j', name: 'slf4j-nop', version:'1.7.25'

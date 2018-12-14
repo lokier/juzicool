@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'war'
 }
 
 group 'com.juzicool'
@@ -7,25 +8,48 @@ version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
 repositories {
     maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
     maven { url "http://repo.maven.apache.org/maven2" }
 }
 
 dependencies {
+
    // providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
     //compile group: 'com.jfinal', name: 'jfinal', version:'3.5'
-    compile group: 'org.slf4j', name: 'slf4j-nop', version:'1.7.25'
-    compile group: 'com.alibaba', name: 'druid', version:'1.0.29'
-    compile group: 'com.alibaba', name: 'fastjson', version:'1.2.31'
-    compile group: 'log4j', name: 'log4j', version:'1.2.16'
-    compile group: 'mysql', name: 'mysql-connector-java', version:'5.1.44'
-    compile group: 'com.jfinal', name: 'cos', version:'2017.5'
-    compile group: 'net.sf.ehcache', name: 'ehcache-core', version:'2.6.11'
-    compile group: 'commons-codec', name: 'commons-codec', version:'1.9'
-    compile group: 'org.apache.commons', name: 'commons-email', version:'1.2'
-    compile group: 'org.jsoup', name: 'jsoup', version:'1.9.2'
-    compile group: 'joda-time', name: 'joda-time', version:'2.9.3'
-    compile group: 'it.sauronsoftware.cron4j', name: 'cron4j', version:'2.2.5'
-    compile group: 'com.google.zxing', name: 'javase', version:'3.2.1'
+    implementation group: 'org.slf4j', name: 'slf4j-nop', version:'1.7.25'
+    implementation group: 'com.alibaba', name: 'druid', version:'1.0.29'
+    implementation group: 'com.alibaba', name: 'fastjson', version:'1.2.31'
+    implementation group: 'log4j', name: 'log4j', version:'1.2.16'
+    implementation group: 'mysql', name: 'mysql-connector-java', version:'5.1.44'
+    implementation group: 'com.jfinal', name: 'cos', version:'2017.5'
+    implementation group: 'net.sf.ehcache', name: 'ehcache-core', version:'2.6.11'
+    implementation group: 'commons-codec', name: 'commons-codec', version:'1.9'
+    implementation group: 'org.apache.commons', name: 'commons-email', version:'1.2'
+    implementation group: 'org.jsoup', name: 'jsoup', version:'1.9.2'
+    implementation group: 'joda-time', name: 'joda-time', version:'2.9.3'
+    implementation group: 'it.sauronsoftware.cron4j', name: 'cron4j', version:'2.2.5'
+    implementation group: 'com.google.zxing', name: 'javase', version:'3.2.1'
+
+    implementation "cglib:cglib-nodep:3.2.5"
+    implementation "redis.clients:jedis:2.7.2"
+    implementation "org.apache.velocity:velocity:1.7"
+    implementation "org.xerial:sqlite-jdbc:3.8.6"
+    implementation "com.fasterxml.jackson.core:jackson-core:2.5.3"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:2.4.0"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.4.0"
+
+
+    implementation "com.alibaba:fastjson:1.2.31"
+    implementation "org.freemarker:freemarker:2.3.20"
+
+
+
+    providedCompile   'javax.servlet:javax.servlet-api:3.1.0'
+    providedCompile   'javax.servlet:jstl:1.2'
+
 }
