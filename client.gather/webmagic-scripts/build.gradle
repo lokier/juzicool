@@ -1,0 +1,32 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'us.codecraft'
+version = '0.7.3'
+
+description = """"""
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+configurations.all {
+}
+
+repositories {
+        
+     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+dependencies {
+    compile group: 'org.jruby', name: 'jruby', version:'1.7.6'
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version:'1.1.2-2'
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version:'2.1.6'
+    compile group: 'org.python', name: 'jython', version:'2.5.3'
+    compile group: 'commons-cli', name: 'commons-cli', version:'1.2'
+    compile group: 'us.codecraft', name: 'webmagic-core', version:'0.7.3'
+    compile group: 'us.codecraft', name: 'webmagic-extension', version:'0.7.3'
+    testCompile group: 'junit', name: 'junit', version:'4.11'
+}

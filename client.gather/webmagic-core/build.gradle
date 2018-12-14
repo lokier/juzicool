@@ -1,0 +1,40 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'us.codecraft'
+version = '0.7.3'
+
+description = """"""
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+configurations.all {
+}
+
+repositories {
+        
+     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+dependencies {
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.5.2'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.1'
+    compile group: 'us.codecraft', name: 'xsoup', version:'0.3.1'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.6'
+    compile group: 'org.slf4j', name: 'slf4j-log4j12', version:'1.7.6'
+    compile group: 'commons-collections', name: 'commons-collections', version:'3.2.2'
+    compile group: 'org.jsoup', name: 'jsoup', version:'1.10.3'
+    compile group: 'org.apache.commons', name: 'commons-io', version:'1.3.2'
+    compile group: 'com.jayway.jsonpath', name: 'json-path', version:'2.4.0'
+    compile group: 'com.alibaba', name: 'fastjson', version:'1.2.28'
+    testCompile group: 'junit', name: 'junit', version:'4.11'
+    testCompile(group: 'com.github.dreamhead', name: 'moco-core', version:'0.11.0') {
+exclude(module: 'slf4j-simple')
+    }
+    testCompile group: 'org.mockito', name: 'mockito-all', version:'1.10.19'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'1.5.0'
+}

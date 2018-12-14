@@ -1,0 +1,28 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'us.codecraft'
+version = '0.7.3'
+
+description = """"""
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+configurations.all {
+}
+
+repositories {
+        
+     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+dependencies {
+    compile group: 'org.seleniumhq.selenium', name: 'selenium-java', version:'2.41.0'
+    compile group: 'us.codecraft', name: 'webmagic-core', version:'0.7.3'
+    compile group: 'com.github.detro', name: 'phantomjsdriver', version:'1.2.0'
+    testCompile group: 'junit', name: 'junit', version:'4.11'
+}
