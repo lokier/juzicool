@@ -85,6 +85,7 @@ public class JuzimiProcessor extends BasePageProcessor {
 	public void process(Page page) {
 		String html = page.getHtml().toString();
 
+		System.err.println("is succuess : " + page.isDownloadSuccess());
 		System.out.println(html);
 
 		ArrayList<Juzi> rest = new ArrayList<>();
@@ -101,13 +102,15 @@ public class JuzimiProcessor extends BasePageProcessor {
 
 		JuzimiProcessor p = new JuzimiProcessor();
 
-		String urlPrfix = "https://www.juzimi.com/tags/%E5%8F%8B%E6%83%85";
+		//String urlPrfix = "https://www.juzimi.com/tags/%E5%8F%8B%E6%83%85";
 		Spider spider =  Spider.create(p);
 
-		spider.addUrl("https://www.juzimi.com/album/2364?page=0");
+
+
+		//spider.addUrl("https://www.juzimi.com/album/2364?page=0");
 		spider.addUrl("https://www.juzimi.com/album/2364?page=1");  //优美的句子,美好,难过，或暂，长久,难忘
 
-		spider.thread(5).run();
+		spider.thread(1).run();
 	}
 
 
