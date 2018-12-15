@@ -313,6 +313,7 @@ public class Spider implements Runnable, Task {
                 // wait until new url added
                 waitNewUrl();
             } else {
+                onStartProcess(request);
                 threadPool.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -336,6 +337,10 @@ public class Spider implements Runnable, Task {
             close();
         }
         logger.info("Spider {} closed! {} pages downloaded.", getUUID(), pageCount.get());
+    }
+
+    protected void onStartProcess(Request request){
+
     }
 
     protected void onError(Request request) {

@@ -1,9 +1,6 @@
 package com.juzicool.gather.spider;
 
-import com.juzicool.gather.BasePageProcessor;
-import com.juzicool.gather.DB;
-import com.juzicool.gather.Gloabal;
-import com.juzicool.gather.Juzi;
+import com.juzicool.gather.*;
 import com.juzicool.gather.processor.JuzimiProcessor;
 import com.juzicool.gather.utils.RegexUtil;
 import com.juzicool.gather.utils.SelectableUtls;
@@ -53,86 +50,19 @@ public class JuzimiSpider {
         httpClientDownloader.setProxyProvider(SimpleProxyProvider.from(new Proxy("web-proxy.oa.com",8080)));
 
 
-       JuzimiProcessor p = new JuzimiProcessor();
+        JuzimiProcessor p = new JuzimiProcessor();
+        SimpleDB db = new SimpleDB();
+        db.openFile(file);
+        SimpleDBSpider spider =  new SimpleDBSpider(db,p);
 
-        Spider spider =  Spider.create(p);
-        //spider.setDownloader(httpClientDownloader);
-
-       // spider.addUrl("https://www.juzimi.com/album/48576");
         spider.addUrl("https://www.juzimi.com/album/48574");
-
-
-
-        //spider.addUrl("https://www.juzimi.com/album/2364?page=1");  //优美的句子,美好,难过，或暂，长久,难忘
+        spider.stopWhileExceutedSize(7);
 
         spider.thread(1).run();
     }
 
 
-    public static class JuzimiScheduler implements Scheduler {
-
-        private DB db;
-
-        public JuzimiScheduler(DB db){
-            this.db = db;
-        }
-        @Override
-        public Request poll(Task task) {
-
-
-            DB.QueueData data =  db.getQueue().poll();
-            if(data!= null){
-
-                return (Request)data.data;
-            }
-
-            return null;
-        }
-
-        @Override
-        public void push(Request request, Task task) {
-
-            String key = getKey(request.getUrl());
-
-            if (!db.getQueue().has(key) || shouldReserved(request) || noNeedToRemoveDuplicate(request)) {
-                db.getQueue().push(key,(int)request.getPriority(),request);
-            }
-        }
-
-        private boolean isDuplicate(String url) {
-
-            return db.getQueue().has(url);
-        }
-
-        private String getKey(String url) {
-            //过滤哪些无用的数据。
-            String path = UrlUtils.getPath(url);
-            int index = path.indexOf("#");
-
-            if(index > 0){
-                path = path.substring(0,index);
-            }
-
-            return url;
-        }
-
-
-
-        protected boolean shouldReserved(Request request) {
-            return request.getExtra(Request.CYCLE_TRIED_TIMES) != null;
-        }
-
-        protected boolean noNeedToRemoveDuplicate(Request request) {
-            return HttpConstant.Method.POST.equalsIgnoreCase(request.getMethod());
-        }
-
-
-    }
-
-
     public static class JuzimiProcessor extends BasePageProcessor {
-
-        private int count = 0;
 
 
         @Override
@@ -154,15 +84,13 @@ public class JuzimiSpider {
                     String juziUrl = selct.links().toString();
                     System.out.println("add juzi:" + juziUrl +" , title  : " + albumTitle+",desc:"+albumDesc);
 
-                    if(count < 1){
-                        count++;
-                        Request request = new Request();
-                        request.setUrl(juziUrl);
-                        request.putExtra("albumTitle",albumTitle);
-                        request.putExtra("albumDesc",albumDesc);
-                        page.addTargetRequest(request);
 
-                    }
+                    Request request = new Request();
+                    request.setUrl(juziUrl);
+                    request.putExtra("albumTitle",albumTitle);
+                    request.putExtra("albumDesc",albumDesc);
+                    request.setPriority(10);
+                    page.addTargetRequest(request);
 
                 }
 
@@ -173,23 +101,16 @@ public class JuzimiSpider {
                     Selectable selct = (Selectable)obj;
                     String subUrl = selct.toString();
                     if(isAlbum(subUrl)){
-                        System.out.println("add juzi albumn:" + subUrl);
+                        Request request = new Request();
+                        request.setPriority(5);
+                        request.setUrl(subUrl);
+                        page.addTargetRequest(request);
                     }
-                    //System.out.println("add juzi:" + juziUrl);
-
                 }
 
-
-
-            }
-            if(isJuzi(url)){
+            }else if(isJuzi(url)){
                 processJuzi(page);
             }
-
-
-        }
-
-        private void addAlbumUrl(String url){
 
         }
 
