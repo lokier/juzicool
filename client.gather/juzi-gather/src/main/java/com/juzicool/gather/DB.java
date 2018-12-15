@@ -54,6 +54,10 @@ public class DB {
     }
 
 
+
+
+
+
     public void putKv(String key, Serializable value){
         String sql = "INSERT or replace INTO "+TABLE_NAME+"("+KEY+", "+VALUE+") VALUES(?,?)";
         PreparedStatement pstmt = null;
@@ -243,6 +247,7 @@ public class DB {
                 rs = stmt.executeQuery(sql);
                 // loop through the result set
                 if (rs.next()) {
+
                    return true;
                 }
 
@@ -269,7 +274,7 @@ public class DB {
         }
 
         public  QueueData poll(){
-            String sql = "SELECT *  FROM " + QUEUE_TABLE +"ORDER BY "+PRIORITY+" desc limit 1";
+            String sql = "SELECT *  FROM " + QUEUE_TABLE +" ORDER BY "+PRIORITY+" desc limit 1";
             Statement stmt = null;
             ResultSet rs = null;
             try {
@@ -286,6 +291,11 @@ public class DB {
                     data.data = obj;
                     data.priority = p;
                     data.key = key;
+
+                    rs.close();
+
+                    stmt.execute("delete  from " + QUEUE_TABLE +" where " + QUEUE_KEY +" ='"+ data.key +"'");
+
                     return data;
                 }
 
@@ -310,6 +320,17 @@ public class DB {
             }
             return  null;
         }
+
+        private void close(){
+            try {
+                if (mConnection != null) {
+                    mConnection.close();
+                }
+                mConnection = null;
+            } catch (SQLException ex) {
+
+            }
+        }
     }
 
     public static class QueueData {
@@ -332,6 +353,26 @@ public class DB {
 
         System.out.println(String.format("name:%s,name2:%d",name,integr));
         System.out.println("null: " + db.getKv("www","shout null"));
+
+        db.getQueue().push("dww",5,"xcfdsfd");
+        db.getQueue().push("3442",9,"11111");
+        db.getQueue().push("3444",6,"333333");
+
+        QueueData data = db.getQueue().poll();
+        System.out.println("data: " + data.data.toString());
+
+
+        data = db.getQueue().poll();
+        System.out.println("data: " + data.data.toString());
+
+        data = db.getQueue().poll();
+        System.out.println("data: " + data.data.toString());
+
+
+        data = db.getQueue().poll();
+        System.out.println("data is null: " + (data == null));
+
+
 
         DB.release(db);
     }

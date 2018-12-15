@@ -56,10 +56,11 @@ public class JuzimiSpider {
        JuzimiProcessor p = new JuzimiProcessor();
 
         Spider spider =  Spider.create(p);
-        spider.setDownloader(httpClientDownloader);
+        //spider.setDownloader(httpClientDownloader);
 
-        spider.addUrl("https://www.juzimi.com/album/48576");
+       // spider.addUrl("https://www.juzimi.com/album/48576");
         spider.addUrl("https://www.juzimi.com/album/48574");
+
 
 
         //spider.addUrl("https://www.juzimi.com/album/2364?page=1");  //优美的句子,美好,难过，或暂，长久,难忘

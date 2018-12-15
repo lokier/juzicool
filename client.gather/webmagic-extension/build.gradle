@@ -16,8 +16,9 @@ configurations.all {
 }
 
 repositories {
-        
-     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
+
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
      maven { url "http://repo.maven.apache.org/maven2" }
 }
 dependencies {
