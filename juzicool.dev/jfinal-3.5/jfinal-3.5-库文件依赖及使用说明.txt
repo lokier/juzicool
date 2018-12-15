@@ -30,8 +30,12 @@ JFinal 自身对第三方无强制性依赖，但当需要第三方功能支持�
 
 11：cron4j-2.2.5.jar 支持 cron4j 任务调度
 
-12：jedis-2.7.2.jar、commons-pool2-2.3.jar、fst-2.29.jar、jackson-core-2.5.3.jar，
-   javassist-3.19.0-GA.jar、objenesis-2.1.jar 支持 redis
+12：jedis-2.7.2.jar、
+commons-pool2-2.3.jar、
+fst-2.29.jar、
+jackson-core-2.5.3.jar，
+   javassist-3.19.0-GA.jar
+   objenesis-2.1.jar 支持 redis
 
 13：log4j-1.2.16.jar 支持 log4j 日志，当此文件不存在时，自动切换至 JDK Logger，
    注意，log4j需要相应的配置文件 log4j.properties，否则当log4j-1.2.16.jar 存在

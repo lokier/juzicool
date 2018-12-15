@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.juzicool'
-version '1.0-SNAPSHOT'
+version '1.0-for-juzicool'
 
 sourceCompatibility = 1.8
 
@@ -21,35 +21,78 @@ dependencies {
 
    // providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
     //compile group: 'com.jfinal', name: 'jfinal', version:'3.5'
-    implementation group: 'org.slf4j', name: 'slf4j-nop', version:'1.7.25'
-    implementation group: 'com.alibaba', name: 'druid', version:'1.0.29'
-    implementation group: 'com.alibaba', name: 'fastjson', version:'1.2.31'
-    implementation group: 'log4j', name: 'log4j', version:'1.2.16'
-    implementation group: 'mysql', name: 'mysql-connector-java', version:'5.1.44'
-    implementation group: 'com.jfinal', name: 'cos', version:'2017.5'
-    implementation group: 'net.sf.ehcache', name: 'ehcache-core', version:'2.6.11'
-    implementation group: 'commons-codec', name: 'commons-codec', version:'1.9'
-    implementation group: 'org.apache.commons', name: 'commons-email', version:'1.2'
-    implementation group: 'org.jsoup', name: 'jsoup', version:'1.9.2'
-    implementation group: 'joda-time', name: 'joda-time', version:'2.9.3'
-    implementation group: 'it.sauronsoftware.cron4j', name: 'cron4j', version:'2.2.5'
-    implementation group: 'com.google.zxing', name: 'javase', version:'3.2.1'
+    compile group: 'org.slf4j', name: 'slf4j-nop', version:'1.7.25'
+    compile group: 'com.alibaba', name: 'druid', version:'1.0.29'
+    compile group: 'com.alibaba', name: 'fastjson', version:'1.2.31'
+    compile group: 'log4j', name: 'log4j', version:'1.2.16'
+    compile group: 'mysql', name: 'mysql-connector-java', version:'5.1.44'
+    compile group: 'com.jfinal', name: 'cos', version:'2017.5'
+    compile group: 'net.sf.ehcache', name: 'ehcache-core', version:'2.6.11'
+    compile group: 'commons-codec', name: 'commons-codec', version:'1.9'
+    compile group: 'org.apache.commons', name: 'commons-email', version:'1.2'
+    compile group: 'org.jsoup', name: 'jsoup', version:'1.9.2'
+    compile group: 'joda-time', name: 'joda-time', version:'2.9.3'
+    compile group: 'it.sauronsoftware.cron4j', name: 'cron4j', version:'2.2.5'
+    compile group: 'com.google.zxing', name: 'javase', version:'3.2.1'
 
-    implementation "cglib:cglib-nodep:3.2.5"
-    implementation "redis.clients:jedis:2.7.2"
-    implementation "org.apache.velocity:velocity:1.7"
-    implementation "org.xerial:sqlite-jdbc:3.8.6"
-    implementation "com.fasterxml.jackson.core:jackson-core:2.5.3"
-    implementation "com.fasterxml.jackson.core:jackson-annotations:2.4.0"
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.4.0"
-
-
-    implementation "com.alibaba:fastjson:1.2.31"
-    implementation "org.freemarker:freemarker:2.3.20"
+    compile "cglib:cglib-nodep:3.2.5"
+    compile "redis.clients:jedis:2.7.2"
+    compile "org.apache.velocity:velocity:1.7"
+    compile "org.xerial:sqlite-jdbc:3.8.6"
+    compile "com.fasterxml.jackson.core:jackson-core:2.5.3"
+    compile "com.fasterxml.jackson.core:jackson-annotations:2.4.0"
+    compile "com.fasterxml.jackson.core:jackson-databind:2.4.0"
 
 
+    compile "com.alibaba:fastjson:1.2.31"
+    compile "org.freemarker:freemarker:2.3.20"
+    compile "com.google.zxing:zxing-parent:3.2.1"
+    compile "com.beust:jcommander:1.4.8"
+    compile "de.ruedigermoeller:fst:2.29"
+    compile "org.apache.commons:commons-pool2:2.3"
+    compile "org.javassist:javassist:3.19.0-GA"
+    compile "org.objenesis:objenesis:2.1"
 
+    compile "com.mchange:c3p0:0.9.5.1"
+    compile "com.mchange:mchange-commons-java:0.2.10"
+    compile 'com.zaxxer:HikariCP:2.4.6'
+
+
+  /*  compile "cglib:cglib-nodep:3.2.5"
+    compile "com.alibaba:druid:1.0.29"
+    compile "com.alibaba:fastjson:1.2.31"
+    compile "com.beust:jcommander:1.48"
+    compile "com.google.zxing:core:3.2.1"
+    compile "com.google.zxing:javase:3.2.1"
+    compile "com.jfinal:cos:2017.5"
+    compile "commons-codec:commons-codec:1.9"
+    compile "it.sauronsoftware.cron4j:cron4j:2.2.5"
+    compile "javax.activation:activation:1.1"
+    compile "javax.mail:mail:1.4.1"
+    compile "joda-time:joda-time:2.9.3"
+    compile "log4j:log4j:1.2.16"
+    compile "mysql:mysql-connector-java:5.1.44"
+    compile "net.sf.ehcache:ehcache-core:2.6.11"
+    compile "org.apache.commons:commons-email:1.2"
+    compile "org.jsoup:jsoup:1.9.2"
+    compile "org.slf4j:slf4j-api:1.7.25"
+    compile "org.slf4j:slf4j-nop:1.7.25"
+    compile "javax.websocket:javax.websocket-api:1.0"*/
+
+
+
+
+
+
+    providedCompile fileTree(include: ['*.jar'], dir: 'libs-complle-only')
     providedCompile   'javax.servlet:javax.servlet-api:3.1.0'
-    providedCompile   'javax.servlet:jstl:1.2'
+   // providedCompile   'javax.servlet:jstl:1.2'
+    providedCompile "javax.servlet:javax.servlet-api:3.1.0"
+
+
+    providedCompile "org.springframework:spring-webmvc:5.0.7.RELEASE"
+    //providedCompile "org.springframework:spring-context:4.3.17.RELEASE"
+   // providedCompile "org.springframework:spring-context:$springVersion"
+  //  compile "org.springframework:spring-jdbc:$springVersion"
 
 }
