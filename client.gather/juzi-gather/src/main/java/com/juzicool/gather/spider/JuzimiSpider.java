@@ -1,31 +1,18 @@
 package com.juzicool.gather.spider;
 
 import com.juzicool.gather.*;
-import com.juzicool.gather.processor.JuzimiProcessor;
 import com.juzicool.gather.utils.RegexUtil;
 import com.juzicool.gather.utils.SelectableUtls;
 import com.juzicool.gather.utils.UrlUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Request;
-import us.codecraft.webmagic.Spider;
-import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.downloader.HttpClientDownloader;
 import us.codecraft.webmagic.proxy.Proxy;
 import us.codecraft.webmagic.proxy.SimpleProxyProvider;
-import us.codecraft.webmagic.scheduler.DuplicateRemovedScheduler;
-import us.codecraft.webmagic.scheduler.Scheduler;
-import us.codecraft.webmagic.scheduler.component.DuplicateRemover;
-import us.codecraft.webmagic.scheduler.component.HashSetDuplicateRemover;
 import us.codecraft.webmagic.selector.Html;
 import us.codecraft.webmagic.selector.Selectable;
-import us.codecraft.webmagic.utils.HttpConstant;
 
 import java.io.File;
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 public class JuzimiSpider {
@@ -41,22 +28,40 @@ public class JuzimiSpider {
 
 
     public static void main(String[] args) {
-
-        File file = new File("./juzimi.db");
-        //JuzimiSpider spider = new JuzimiSpider(file);
         Gloabal.beforeMain();
+
+
+        File file = new File("./juzimi.db");  //抓取状态保存在这个文件。
+        //JuzimiSpider spider = new JuzimiSpider(file);
 
         HttpClientDownloader httpClientDownloader = new HttpClientDownloader();
         httpClientDownloader.setProxyProvider(SimpleProxyProvider.from(new Proxy("web-proxy.oa.com",8080)));
 
 
         JuzimiProcessor p = new JuzimiProcessor();
-        SimpleDB db = new SimpleDB();
-        db.openFile(file);
-        SimpleDBSpider spider =  new SimpleDBSpider(db,p);
+
+        FileSpider spider =  new FileSpider(file,p);
+
+        spider.setKeyGetter(new FileSpider.KeyGetter() {
+            //避免对同一个url抓取，减少抓取次数。
+            @Override
+            public String getKey(String url) {
+                //过滤哪些无用的数据。
+                String path = UrlUtils.getPath(url);
+                int index = path.indexOf("#");
+
+                if(index > 0){
+                    path = path.substring(0,index);
+                }
+                return path;
+            }
+        });
+
+        //重新开始上次请求失败的url请求
+        spider.restoreErrorRequest();
 
         spider.addUrl("https://www.juzimi.com/album/48574");
-        spider.stopWhileExceutedSize(7);
+        spider.stopWhileExceutedSize(3);
 
         spider.thread(1).run();
     }
@@ -82,7 +87,7 @@ public class JuzimiSpider {
                     Selectable selct = (Selectable)obj;
 
                     String juziUrl = selct.links().toString();
-                    System.out.println("add juzi:" + juziUrl +" , title  : " + albumTitle+",desc:"+albumDesc);
+                   // System.out.println("add juzi:" + juziUrl +" , title  : " + albumTitle+",desc:"+albumDesc);
 
 
                     Request request = new Request();
@@ -138,64 +143,6 @@ public class JuzimiSpider {
             System.out.println(String.format("gather juzi : [%s],[%s],[%s],%s",albumTitle,albumDesc,tags,content)  );
 
         }
-
-
-
-
-
-
-/*        private boolean parseCase1(Html html, List<Juzi> result) {
-            List lists = html.xpath("div[@class='views-field views-field-phpcode']").nodes();
-
-            if(lists.size() > 0) {
-                for(int i = 0 ;i < lists.size();i++) {
-                    Selectable selct = (Selectable)lists.get(i);
-
-                    Selectable juziE =selct.xpath("a[@class='xlistju']/text()");
-                    Selectable fromE=selct.xpath("span[@class='views-field-field-oriarticle-value']/text()");
-                    Selectable authorE =selct.xpath("a[@class='views-field-field-oriwriter-value']/text()");
-
-                    Juzi juzi = new Juzi();
-                    juzi.content = SelectableUtls.toSimpleText(juziE);
-                    juzi.from = fromE.toString();
-                    juzi.author = authorE.toString();
-
-                    write(juzi);
-
-
-                }
-                return true;
-            }
-            return false;
-        }
-
-        private boolean parseCase2(Html html,List<Juzi> result) {
-            List lists = html.xpath("div[@class='views-field-phpcode']").nodes();
-
-            if(lists.size() > 0) {
-                for(int i = 0 ;i < lists.size();i++) {
-                    Selectable selct = (Selectable)lists.get(i);
-
-                    Selectable juziE =selct.xpath("a[@class='xlistju']");
-
-                    Selectable fromE=selct.xpath("span[@class='views-field-field-oriarticle-value']/text()");
-                    Selectable authorE =selct.xpath("a[@class='views-field-field-oriwriter-value']/text()");
-
-                    Juzi juzi = new Juzi();
-                    juzi.content = SelectableUtls.toSimpleText(juziE);
-                    juzi.from = fromE.toString();
-                    juzi.author = authorE.toString();
-
-                    write(juzi);
-
-
-                }
-                if(result.size()>0) {
-                    return true;
-                }
-            }
-            return false;
-        }*/
 
 
     }

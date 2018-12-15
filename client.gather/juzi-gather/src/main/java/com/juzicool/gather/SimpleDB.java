@@ -2,6 +2,7 @@ package com.juzicool.gather;
 
 import java.io.*;
 import java.sql.*;
+import java.util.ArrayList;
 
 public class SimpleDB {
 
@@ -61,6 +62,8 @@ public class SimpleDB {
     private KV mKv;
     private Queue mQueue;
 
+    private ArrayList<Queue> extraQueues = new ArrayList();
+
     public SimpleDB(){
 
     }
@@ -69,11 +72,21 @@ public class SimpleDB {
         mFile = file;
         jdbcUrl = "jdbc:sqlite:" +file.getAbsolutePath();
         try {
-            mQueue =new Queue(createConnection());
+            mQueue =new Queue("simple_db_queue",createConnection());
             mKv = new KV(createConnection());
            // mKv.prepare();
         } catch (SQLException e) {
            throw new RuntimeException(e);
+        }
+    }
+
+    public Queue crateQueue(String queueName){
+        try {
+            Queue  q =new Queue( queueName,createConnection());
+            return q;
+            // mKv.prepare();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -91,6 +104,9 @@ public class SimpleDB {
         }
         if(mQueue!=null){
             mQueue.close();
+        }
+        for(Queue queue: extraQueues){
+            queue.close();
         }
     }
 
@@ -259,10 +275,11 @@ public class SimpleDB {
         private final String PRIORITY = "priority";
         private final String QUEUE_KEY = "key";
 
-        private final String QUEUE_TABLE = "simple_db_queue";
+        private final String QUEUE_TABLE;
         private Connection mConnection;
 
-        private Queue(Connection connection){
+        private Queue(String tableName,Connection connection){
+            QUEUE_TABLE = tableName;
             mConnection = connection;
             String sql = "CREATE TABLE IF NOT EXISTS "+QUEUE_TABLE+" (\n" + QUEUE_KEY + "  text PRIMARY KEY,\n"
                     + PRIORITY + " integer ,"  + DATA + " BLOB);";
