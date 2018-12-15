@@ -10,7 +10,11 @@ import com.juzicool.gather.utils.SelectableUtls;
 import com.juzicool.gather.utils.UrlUtils;
 import org.apache.commons.lang3.StringUtils;
 import us.codecraft.webmagic.Page;
+import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.Spider;
+import us.codecraft.webmagic.downloader.HttpClientDownloader;
+import us.codecraft.webmagic.proxy.Proxy;
+import us.codecraft.webmagic.proxy.SimpleProxyProvider;
 import us.codecraft.webmagic.selector.Html;
 import us.codecraft.webmagic.selector.Selectable;
 
@@ -34,14 +38,21 @@ public class JuzimiSpider {
 
         File file = new File("./juzimi.db");
         //JuzimiSpider spider = new JuzimiSpider(file);
-        //Gloabal.beforeMain();
+        Gloabal.beforeMain();
+
+        HttpClientDownloader httpClientDownloader = new HttpClientDownloader();
+        httpClientDownloader.setProxyProvider(SimpleProxyProvider.from(new Proxy("web-proxy.oa.com",8080)));
 
 
        JuzimiProcessor p = new JuzimiProcessor();
 
         Spider spider =  Spider.create(p);
+        spider.setDownloader(httpClientDownloader);
 
         spider.addUrl("https://www.juzimi.com/album/48576");
+        spider.addUrl("https://www.juzimi.com/album/48574");
+
+
         //spider.addUrl("https://www.juzimi.com/album/2364?page=1");  //优美的句子,美好,难过，或暂，长久,难忘
 
         spider.thread(1).run();
@@ -49,6 +60,8 @@ public class JuzimiSpider {
 
 
     public static class JuzimiProcessor extends BasePageProcessor {
+
+        private int count = 0;
 
 
         @Override
@@ -59,12 +72,46 @@ public class JuzimiSpider {
             Html html = page.getHtml();
 
 
+
             if(isAlbum(url)){
 
-                List herfList = html.xpath("a[@class='xlistju']@href").nodes();
-                for(Object selectable : herfList){
-                    System.out.println("href: " + selectable);
+                String albumTitle = html.xpath("h1[@class='xqalbumusertitle']/span/text()").toString();
+                String albumDesc = html.xpath("div[@class='contentalbum clear-block']/text()").toString();
+
+
+                List list = html.xpath("a[@class='xlistju']").nodes();
+                for(Object obj : list){
+                    Selectable selct = (Selectable)obj;
+
+                    String juziUrl = selct.links().toString();
+                    System.out.println("add juzi:" + juziUrl +" , title  : " + albumTitle+",desc:"+albumDesc);
+
+                    if(count < 1){
+                        count++;
+                        Request request = new Request();
+                        request.setUrl(juziUrl);
+                        request.putExtra("albumTitle",albumTitle);
+                        request.putExtra("albumDesc",albumDesc);
+                        page.addTargetRequest(request);
+
+                    }
+
                 }
+
+                list = html.links().nodes();
+
+
+                for(Object obj : list){
+                    Selectable selct = (Selectable)obj;
+                    String subUrl = selct.toString();
+                    if(isAlbum(subUrl)){
+                        System.out.println("add juzi albumn:" + subUrl);
+                    }
+                    //System.out.println("add juzi:" + juziUrl);
+
+                }
+
+
 
             }
             if(isJuzi(url)){
@@ -74,17 +121,43 @@ public class JuzimiSpider {
 
         }
 
+        private void addAlbumUrl(String url){
+
+        }
+
         private boolean isJuzi(String url){
+            url = UrlUtils.getUrlWithoutQuery(url);
             String path = UrlUtils.getPath(url);
-            return RegexUtil.containText("/ju/\\d+",path);
+            return RegexUtil.containText("ju/\\d+",path);
         }
 
         private boolean isAlbum(String url){
+            url = UrlUtils.getUrlWithoutQuery(url);
             String path = UrlUtils.getPath(url);
-            return RegexUtil.containText("/album/\\d+",path);
+            return RegexUtil.containText("album/\\d+",path);
         }
 
         public void processJuzi(Page page) {
+            String albumTitle = (String)page.getRequest().getExtra("albumTitle");
+            String albumDesc =  (String)page.getRequest().getExtra("albumDesc");
+
+
+            Html html = page.getHtml();
+
+            List tagsLink =  html.xpath("div[@class='xqlinks']/a").nodes();
+            StringBuffer tagSb = new StringBuffer();
+            for(Object obj : tagsLink){
+                Selectable selct = (Selectable)obj;
+
+                tagSb.append(SelectableUtls.toSimpleText(selct) +",");
+                //System.out.println("add juzi:" + juziUrl);
+
+            }
+            String tags = tagSb.toString();
+
+            String content = html.xpath("h1[@id='xqtitle']/text()").toString();
+
+            System.out.println(String.format("gather juzi : [%s],[%s],[%s],%s",albumTitle,albumDesc,tags,content)  );
 
         }
 

@@ -9,7 +9,7 @@ public class UrlUtils {
      */
     public static String getUrlWithoutQuery(String url){
         int inndex = url.indexOf("?");
-        if(inndex!=1){
+        if(inndex!=-1){
             return url.substring(0,inndex);
         }
         return url;
@@ -17,7 +17,7 @@ public class UrlUtils {
 
     public static String getUrlQuery(String url){
         int inndex = url.indexOf("?");
-        if(inndex!=1){
+        if(inndex!=-1){
             return url.substring(inndex+1,url.length());
         }
         return "";
