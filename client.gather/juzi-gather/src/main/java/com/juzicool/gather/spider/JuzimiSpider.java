@@ -9,16 +9,25 @@ import com.juzicool.gather.utils.RegexUtil;
 import com.juzicool.gather.utils.SelectableUtls;
 import com.juzicool.gather.utils.UrlUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.Spider;
+import us.codecraft.webmagic.Task;
 import us.codecraft.webmagic.downloader.HttpClientDownloader;
 import us.codecraft.webmagic.proxy.Proxy;
 import us.codecraft.webmagic.proxy.SimpleProxyProvider;
+import us.codecraft.webmagic.scheduler.DuplicateRemovedScheduler;
+import us.codecraft.webmagic.scheduler.Scheduler;
+import us.codecraft.webmagic.scheduler.component.DuplicateRemover;
+import us.codecraft.webmagic.scheduler.component.HashSetDuplicateRemover;
 import us.codecraft.webmagic.selector.Html;
 import us.codecraft.webmagic.selector.Selectable;
+import us.codecraft.webmagic.utils.HttpConstant;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,6 +68,67 @@ public class JuzimiSpider {
     }
 
 
+    public static class JuzimiScheduler implements Scheduler {
+
+        private DB db;
+
+        public JuzimiScheduler(DB db){
+            this.db = db;
+        }
+        @Override
+        public Request poll(Task task) {
+
+
+            DB.QueueData data =  db.getQueue().poll();
+            if(data!= null){
+
+                return (Request)data.data;
+            }
+
+            return null;
+        }
+
+        @Override
+        public void push(Request request, Task task) {
+
+            String key = getKey(request.getUrl());
+
+            if (!db.getQueue().has(key) || shouldReserved(request) || noNeedToRemoveDuplicate(request)) {
+                db.getQueue().push(key,(int)request.getPriority(),request);
+            }
+        }
+
+        private boolean isDuplicate(String url) {
+
+            return db.getQueue().has(url);
+        }
+
+        private String getKey(String url) {
+            //过滤哪些无用的数据。
+            String path = UrlUtils.getPath(url);
+            int index = path.indexOf("#");
+
+            if(index > 0){
+                path = path.substring(0,index);
+            }
+
+            return url;
+        }
+
+
+
+        protected boolean shouldReserved(Request request) {
+            return request.getExtra(Request.CYCLE_TRIED_TIMES) != null;
+        }
+
+        protected boolean noNeedToRemoveDuplicate(Request request) {
+            return HttpConstant.Method.POST.equalsIgnoreCase(request.getMethod());
+        }
+
+
+    }
+
+
     public static class JuzimiProcessor extends BasePageProcessor {
 
         private int count = 0;
@@ -71,13 +141,10 @@ public class JuzimiSpider {
             url = UrlUtils.getUrlWithoutQuery(url);
             Html html = page.getHtml();
 
-
-
             if(isAlbum(url)){
 
                 String albumTitle = html.xpath("h1[@class='xqalbumusertitle']/span/text()").toString();
                 String albumDesc = html.xpath("div[@class='contentalbum clear-block']/text()").toString();
-
 
                 List list = html.xpath("a[@class='xlistju']").nodes();
                 for(Object obj : list){
@@ -125,17 +192,6 @@ public class JuzimiSpider {
 
         }
 
-        private boolean isJuzi(String url){
-            url = UrlUtils.getUrlWithoutQuery(url);
-            String path = UrlUtils.getPath(url);
-            return RegexUtil.containText("ju/\\d+",path);
-        }
-
-        private boolean isAlbum(String url){
-            url = UrlUtils.getUrlWithoutQuery(url);
-            String path = UrlUtils.getPath(url);
-            return RegexUtil.containText("album/\\d+",path);
-        }
 
         public void processJuzi(Page page) {
             String albumTitle = (String)page.getRequest().getExtra("albumTitle");
@@ -220,5 +276,18 @@ public class JuzimiSpider {
         }*/
 
 
+    }
+
+
+    private static boolean isJuzi(String url){
+        url = UrlUtils.getUrlWithoutQuery(url);
+        String path = UrlUtils.getPath(url);
+        return RegexUtil.containText("ju/\\d+",path);
+    }
+
+    private static boolean isAlbum(String url){
+        url = UrlUtils.getUrlWithoutQuery(url);
+        String path = UrlUtils.getPath(url);
+        return RegexUtil.containText("album/\\d+",path);
     }
 }

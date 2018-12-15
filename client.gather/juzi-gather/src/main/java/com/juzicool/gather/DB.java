@@ -44,6 +44,15 @@ public class DB {
         jdbcUrl = "jdbc:sqlite:" +file.getAbsolutePath();
     }
 
+    private Queue mQueue = null;
+
+    public Queue getQueue(){
+        if(mQueue == null){
+            mQueue = new Queue(mConnection);
+        }
+        return mQueue;
+    }
+
 
     public void putKv(String key, Serializable value){
         String sql = "INSERT or replace INTO "+TABLE_NAME+"("+KEY+", "+VALUE+") VALUES(?,?)";
@@ -171,6 +180,143 @@ public class DB {
             stmt.execute(sql);
             stmt.closeOnCompletion();
 
+    }
+
+    public static class Queue {
+        private final String DATA = "data";
+        private final String PRIORITY = "priority";
+        private final String QUEUE_KEY = "key";
+
+        private final String QUEUE_TABLE = "queue_db";
+        private Connection mConnection = null;
+
+        private Queue(Connection connection){
+
+            mConnection = connection;
+            String sql = "CREATE TABLE IF NOT EXISTS "+QUEUE_TABLE+" (\n" + QUEUE_KEY + "  text PRIMARY KEY,\n"
+                    + PRIORITY + " integer ,"  + DATA + " BLOB);";
+            try {
+                Statement stmt = mConnection.createStatement();
+                stmt.execute(sql);
+                stmt.closeOnCompletion();
+            }catch (Exception ex){
+                throw new RuntimeException(ex);
+            }
+        }
+
+        public void push(QueueData data){
+            push(data.key,data.priority,data.data);
+        }
+
+        public void push(String key,int priority,Serializable data){
+            String sql = "INSERT or replace INTO "+QUEUE_TABLE+"("+QUEUE_KEY+", "+PRIORITY+", " +DATA+") VALUES(?,?,?)";
+            PreparedStatement pstmt = null;
+            try {
+                Connection conn = mConnection;
+                pstmt = conn.prepareStatement(sql);
+                pstmt.setString(1, key);
+                pstmt.setInt(2, priority);
+                pstmt.setBytes(3, objectToByte(data));
+                pstmt.executeUpdate();
+
+            } catch (SQLException e) {
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (pstmt != null) {
+                        pstmt.close();
+                    }
+                }catch (Exception ex){
+
+                }
+
+            }
+        }
+
+        public boolean has(String key){
+            String sql = "SELECT *  FROM " + QUEUE_TABLE +" where  " + QUEUE_KEY +"='" +key + "'";
+            Statement stmt = null;
+            ResultSet rs = null;
+            try {
+                Connection conn = mConnection;
+                stmt= conn.createStatement();
+                rs = stmt.executeQuery(sql);
+                // loop through the result set
+                if (rs.next()) {
+                   return true;
+                }
+
+            } catch (Exception e) {
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (rs != null) {
+                        rs.close();
+                    }
+                }catch (Exception ex){
+
+                }
+                try {
+                    if (stmt != null) {
+                        stmt.close();
+                    }
+                }catch (Exception ex){
+
+                }
+
+            }
+            return false;
+        }
+
+        public  QueueData poll(){
+            String sql = "SELECT *  FROM " + QUEUE_TABLE +"ORDER BY "+PRIORITY+" desc limit 1";
+            Statement stmt = null;
+            ResultSet rs = null;
+            try {
+                Connection conn = mConnection;
+                stmt= conn.createStatement();
+                rs = stmt.executeQuery(sql);
+                // loop through the result set
+                if (rs.next()) {
+                    byte[] byteData = rs.getBytes(DATA);
+                    int p = rs.getInt(PRIORITY);
+                    String key = rs.getString(QUEUE_KEY);
+                    Serializable obj = byteToObject(byteData);
+                    QueueData data =  new QueueData();
+                    data.data = obj;
+                    data.priority = p;
+                    data.key = key;
+                    return data;
+                }
+
+            } catch (Exception e) {
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (rs != null) {
+                        rs.close();
+                    }
+                }catch (Exception ex){
+
+                }
+                try {
+                    if (stmt != null) {
+                        stmt.close();
+                    }
+                }catch (Exception ex){
+
+                }
+
+            }
+            return  null;
+        }
+    }
+
+    public static class QueueData {
+
+        public String key;
+        public int priority;
+        public Serializable data;
     }
 
 
