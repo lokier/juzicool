@@ -17,8 +17,6 @@ import java.util.List;
 
 public class JuzimiSpider {
 
-    private DB mDB = null;
-
 /*    public JuzimiSpider(File dbFile){
         super(mProcessor);
         mDB = DB.request(dbFile);

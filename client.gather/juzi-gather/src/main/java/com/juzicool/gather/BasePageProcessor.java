@@ -4,13 +4,12 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 
+import com.juzicool.gather.store.JuziExcel;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.PropertyConfigurator;
 
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Site;
 import us.codecraft.webmagic.processor.PageProcessor;
-import us.codecraft.webmagic.selector.Selectable;
 
 public abstract class BasePageProcessor implements PageProcessor,Closeable {
 

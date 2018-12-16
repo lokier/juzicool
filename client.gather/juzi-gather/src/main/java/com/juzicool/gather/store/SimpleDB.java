@@ -1,4 +1,4 @@
-package com.juzicool.gather;
+package com.juzicool.gather.store;
 
 import java.io.*;
 import java.sql.*;
@@ -33,7 +33,7 @@ public class SimpleDB {
 
         System.out.println("queue size : " + db.Queue().size());
 
-        DB.QueueData data = db.Queue().poll();
+        SimpleDB.QueueData data = db.Queue().poll();
         System.out.println("poll data: " + data.data.toString());
 
         data = db.Queue().peek();
@@ -327,7 +327,7 @@ public class SimpleDB {
             return 0;
         }
 
-        public void push(DB.QueueData data){
+        public void push(SimpleDB.QueueData data){
             push(data.key,data.priority,data.data);
         }
 
@@ -391,16 +391,16 @@ public class SimpleDB {
             return false;
         }
 
-        public DB.QueueData peek(){
+        public SimpleDB.QueueData peek(){
             return getPeekOrRemove(false);
         }
 
-        public DB.QueueData poll(){
+        public SimpleDB.QueueData poll(){
 
             return getPeekOrRemove(true);
         }
 
-        private DB.QueueData getPeekOrRemove(boolean removePeek){
+        private SimpleDB.QueueData getPeekOrRemove(boolean removePeek){
             String sql = "SELECT *  FROM " + QUEUE_TABLE +" ORDER BY "+PRIORITY+" desc limit 1";
             Statement stmt = null;
             ResultSet rs = null;
@@ -414,7 +414,7 @@ public class SimpleDB {
                     int p = rs.getInt(PRIORITY);
                     String key = rs.getString(QUEUE_KEY);
                     Serializable obj = byteToObject(byteData);
-                    DB.QueueData data =  new DB.QueueData();
+                    SimpleDB.QueueData data =  new SimpleDB.QueueData();
                     data.data = obj;
                     data.priority = p;
                     data.key = key;

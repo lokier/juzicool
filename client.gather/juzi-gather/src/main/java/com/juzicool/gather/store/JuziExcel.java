@@ -1,10 +1,11 @@
 
 
-package com.juzicool.gather;
+package com.juzicool.gather.store;
 
 import java.io.File;
 import java.io.IOException;
 
+import com.juzicool.gather.Juzi;
 import org.apache.commons.lang3.StringUtils;
 
 import jxl.Workbook;
@@ -45,7 +46,7 @@ public class JuziExcel {
 	}
 
 
-	private void write(int row,Juzi juzi) throws Exception  {
+	private void write(int row, Juzi juzi) throws Exception  {
 
 		Label contentLabel=new Label(1,row,juzi.content);
 		mSheet.addCell(contentLabel);

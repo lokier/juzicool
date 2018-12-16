@@ -1,4 +1,4 @@
-package com.juzicool.gather;
+package com.juzicool.gather.store;
 
 import java.io.*;
 import java.sql.*;

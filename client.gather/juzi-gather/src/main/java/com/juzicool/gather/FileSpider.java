@@ -1,6 +1,6 @@
 package com.juzicool.gather;
 
-import com.juzicool.gather.utils.UrlUtils;
+import com.juzicool.gather.store.SimpleDB;
 import org.apache.commons.lang3.StringUtils;
 import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.Spider;
@@ -105,9 +105,8 @@ public class FileSpider extends Spider {
     public void restoreErrorRequest() {
 
         while(true){
-            DB.QueueData data =  mErrorRequsetQueue.poll();
+            SimpleDB.QueueData data =  mErrorRequsetQueue.poll();
             if(data!= null){
-                data.priority = 10000;//优先基本加高
                 db.Queue().push(data);  //添加到待请求队列
                 db.KV().remove(data.key);  //标志未访问过
                 //Request request =  (Request)data.data;
@@ -133,7 +132,7 @@ public class FileSpider extends Spider {
             }
 
 
-            DB.QueueData data =  db.Queue().poll();
+            SimpleDB.QueueData data =  db.Queue().poll();
             if(data!= null){
                 return (Request)data.data;
             }
