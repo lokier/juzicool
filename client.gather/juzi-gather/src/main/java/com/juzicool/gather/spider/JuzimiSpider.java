@@ -78,7 +78,9 @@ public class JuzimiSpider {
 
         //spider.addUrl("https://www.juzimi.com/albums");
 
-        spider.stopWhileExceutedSize(15000);
+        spider.stopWhileExceutedSize(15000); // 执行超过指定次数请求时停止
+        spider.stopWhileProcessSucessRateSmallerThan(0.5f); // 最近请求成功率低于50%时停止抓取
+
 
         spider.thread(1).run();
     }
