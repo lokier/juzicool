@@ -1,7 +1,8 @@
 package com.juzicool.gather;
 
 public class Juzi {
-	
+	//public long _sqliteId;
+	public long id;
 	public String content;
 	public String from;
 	public String author;
@@ -20,13 +21,18 @@ public class Juzi {
 	applyDesc	VARCHAR(300)	使用场景描述
 	remark
 	*/
-	
-	
+
 	@Override
 	public String toString() {
-		return "Juzi [from=" + from + ", author=" + author + ", category=" + category
-				+ ", remark=" + remark + ", tags=" + tags + ", applyTags=" + applyTags + "content=" + content + "]";
+		return "Juzi{" +
+				"id='" + id + '\'' +
+				", content='" + content + '\'' +
+				", from='" + from + '\'' +
+				", author='" + author + '\'' +
+				", category='" + category + '\'' +
+				", remark='" + remark + '\'' +
+				", tags='" + tags + '\'' +
+				", applyTags='" + applyTags + '\'' +
+				'}';
 	}
-
-	
 }

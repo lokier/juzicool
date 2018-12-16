@@ -1,9 +1,12 @@
 package com.juzicool.gather.spider;
 
 import com.juzicool.gather.*;
+import com.juzicool.gather.store.JuziDB;
+import com.juzicool.gather.utils.JuziUtil;
 import com.juzicool.gather.utils.RegexUtil;
 import com.juzicool.gather.utils.SelectableUtls;
 import com.juzicool.gather.utils.UrlUtils;
+import org.apache.commons.lang3.StringUtils;
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.downloader.HttpClientDownloader;
@@ -23,22 +26,25 @@ public class JuzimiSpider {
     }*/
 
 
-
-
+    /**
+     * 只抓取句子迷album下的句子。
+     * @param args
+     */
     public static void main(String[] args) {
         Gloabal.beforeMain();
 
 
-        File file = new File("./juzimi.db");  //抓取状态保存在这个文件。
-        //JuzimiSpider spider = new JuzimiSpider(file);
+        File gatherFile = new File("./juzimi_ablum_gather.db");  //抓取状态保存在这个文件。
+        File outputFile = new File("./juzimi_ablum_output.db");  //句子结果保存到这个数据库。
 
         HttpClientDownloader httpClientDownloader = new HttpClientDownloader();
         httpClientDownloader.setProxyProvider(SimpleProxyProvider.from(new Proxy("web-proxy.oa.com",8080)));
 
 
-        JuzimiProcessor p = new JuzimiProcessor();
+        //不使用Webmgic的Pipline来处理结果，直接在Processor保存；
+        JuzimiProcessor p = new JuzimiProcessor(outputFile);
 
-        FileSpider spider =  new FileSpider(file,p);
+        FileSpider spider =  new FileSpider(gatherFile,p);
 
         spider.setKeyGetter(new FileSpider.KeyGetter() {
             //避免对同一个url抓取，减少抓取次数。
@@ -58,8 +64,11 @@ public class JuzimiSpider {
         //重新开始上次请求失败的url请求
         spider.restoreErrorRequest();
 
-        spider.addUrl("https://www.juzimi.com/album/48574");
-        spider.stopWhileExceutedSize(3);
+        spider.addUrl("https://www.juzimi.com/album/48576?page=3");
+
+        spider.addUrl("https://www.juzimi.com/albums");
+
+        spider.stopWhileExceutedSize(10);
 
         spider.thread(1).run();
     }
@@ -67,6 +76,12 @@ public class JuzimiSpider {
 
     public static class JuzimiProcessor extends BasePageProcessor {
 
+        JuziDB juziDB;
+
+        public JuzimiProcessor(File output){
+            juziDB = new JuziDB(output);
+            juziDB.prepare();
+        }
 
         @Override
         public void process(Page page) {
@@ -113,15 +128,36 @@ public class JuzimiSpider {
 
             }else if(isJuzi(url)){
                 processJuzi(page);
+            }else {
+
+
+
+                List list =  html.links().nodes();
+                for(Object obj : list) {
+                    //Selectable selct = (Selectable) obj;
+                    String abumnUrl = obj.toString();
+                    if(isAlbum(abumnUrl)){
+                        Request request = new Request();
+                        request.setPriority(5);
+                        request.setUrl(abumnUrl);
+                        page.addTargetRequest(request);
+                    }
+
+                }
+
             }
 
         }
 
 
         public void processJuzi(Page page) {
+            Juzi juzi = new Juzi();
+
             String albumTitle = (String)page.getRequest().getExtra("albumTitle");
             String albumDesc =  (String)page.getRequest().getExtra("albumDesc");
 
+            juzi.remark = albumTitle;
+            juzi.applyTags = albumDesc;
 
             Html html = page.getHtml();
 
@@ -135,10 +171,25 @@ public class JuzimiSpider {
 
             }
             String tags = tagSb.toString();
+            juzi.tags = tags;
 
-            String content = html.xpath("h1[@id='xqtitle']/text()").toString();
+           // String content = html.xpath("h1[@id='xqtitle']/text()").toString();
+            Selectable juziE =html.xpath("h1[@id='xqtitle']");
 
-            System.out.println(String.format("gather juzi : [%s],[%s],[%s],%s",albumTitle,albumDesc,tags,content)  );
+            Selectable fromE=html.xpath("span[contains(@class,'field-field-oriarticle')]");
+            Selectable authorE =html.xpath("span[contains(@class,'field-field-oriwriter')]");
+
+            juzi.content = SelectableUtls.toSimpleText(juziE);
+            juzi.from = SelectableUtls.toSimpleText(fromE);
+            juzi.author =  SelectableUtls.toSimpleText(authorE);
+            if(!StringUtils.isEmpty(juzi.content)){
+
+                juzi.from = JuziUtil.filterBookmark(juzi.from);
+                juzi.author = JuziUtil.filterBookmark(juzi.author);
+
+                juziDB.put(juzi);
+                System.out.println("put juzi : " + juzi.toString());
+            }
 
         }
 

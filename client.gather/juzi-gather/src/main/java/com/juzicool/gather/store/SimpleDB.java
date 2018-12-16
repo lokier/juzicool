@@ -134,6 +134,41 @@ public class SimpleDB {
            stmt.closeOnCompletion();
         }
 
+        public int size(){
+            String sql = "SELECT COUNT("+KEY+") FROM "+ TABLE_NAME;
+            Statement stmt = null;
+            ResultSet rs = null;
+            try {
+                Connection conn = mConnection;
+                stmt= conn.createStatement();
+                rs = stmt.executeQuery(sql);
+                // loop through the result set
+                if (rs.next()) {
+
+                    return rs.getInt(1);
+                }
+
+            } catch (Exception e) {
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (rs != null) {
+                        rs.close();
+                    }
+                }catch (Exception ex){
+
+                }
+                try {
+                    if (stmt != null) {
+                        stmt.close();
+                    }
+                }catch (Exception ex){
+                }
+
+            }
+            return 0;
+        }
+
         public boolean has(String key){
             String sql = "SELECT *  FROM " + TABLE_NAME +" where  " + KEY +"='" +key + "'";
             Statement stmt = null;

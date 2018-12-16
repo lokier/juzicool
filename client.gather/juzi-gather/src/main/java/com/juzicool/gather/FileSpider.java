@@ -70,6 +70,10 @@ public class FileSpider extends Spider {
         super.onError(request);
         //TODO 下载失败的url，要记录下来。
         System.out.println("ruquest error: " + request.getUrl());
+        String key = getUrlKey(request.getUrl());
+        if(!StringUtils.isEmpty(key)){
+            mErrorRequsetQueue.push(key,10000,request);
+        }
     }
 
     protected void onSuccess(Request request) {
@@ -79,10 +83,6 @@ public class FileSpider extends Spider {
         executedSize++;
         if(executedSize>= maxExecutedSize){
             mSchedule.stop();
-        }
-        String key = getUrlKey(request.getUrl());
-        if(!StringUtils.isEmpty(key)){
-            mErrorRequsetQueue.push(key,10000,request);
         }
     }
 
