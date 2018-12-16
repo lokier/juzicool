@@ -2,6 +2,7 @@ package com.juzicool.gather;
 
 import com.juzicool.gather.store.SimpleDB;
 import org.apache.commons.lang3.StringUtils;
+import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.Task;
@@ -33,7 +34,9 @@ public class FileSpider extends Spider {
     private long executedSize = 0;
     private long  maxExecutedSize = Long.MAX_VALUE;
     private KeyGetter keyGetter = null;
-
+    private Boolean[] least20ProocessReuslt = new Boolean[20];
+    private int prccessReusltIndex = 0;
+    private float prccessMaxSuccessRate = 0.4f;
 
     /**
      * SimpleDBSchedule
@@ -62,28 +65,67 @@ public class FileSpider extends Spider {
         return this;
     }
 
-    protected void onStartProcess(Request request){
-
+    /**
+     * 当成功率等于指定值时，停止。默认是0.4;
+     * @param rate
+     * @return
+     */
+    public FileSpider stopWhileProcessSucessRateSmallerThan(float rate){
+        prccessMaxSuccessRate = rate;
+        return this;
     }
 
-    protected void onError(Request request) {
-        super.onError(request);
-        //TODO 下载失败的url，要记录下来。
-        System.out.println("ruquest error: " + request.getUrl());
-        String key = getUrlKey(request.getUrl());
-        if(!StringUtils.isEmpty(key)){
-            mErrorRequsetQueue.push(key,10000,request);
+    /**
+     * 抓取目标结果页面结果。失败的话，可能是网路原因，也可能是抓取规则原因。
+     * @param request
+     * @param ok
+     */
+    protected void onProcessResult(Request request, boolean ok){
+
+        //计算成功率
+        synchronized (this){
+            this.least20ProocessReuslt[this.prccessReusltIndex] = ok;
+            prccessReusltIndex = (prccessReusltIndex+1)% this.least20ProocessReuslt.length;
         }
-    }
 
-    protected void onSuccess(Request request) {
-       super.onSuccess(request);
+        if(!ok) {
+            System.out.println("gather error: " + request.getUrl());
+            String key = getUrlKey(request.getUrl());
+            if (!StringUtils.isEmpty(key)) {
+                mErrorRequsetQueue.push(key, 10000, request);
+            }
+        }
 
-        //mErrorRequsetQueue.
+        //是否超过最大执行次数
         executedSize++;
         if(executedSize>= maxExecutedSize){
+            System.out.println("Spider stop ：超过最大执行次数：" + maxExecutedSize);
+
             mSchedule.stop();
+            return;
         }
+
+        //成功率小于指定次数。
+        float successRate = getProcessSuccessRate();
+        if(successRate < prccessMaxSuccessRate){
+            System.out.println("Spider stop ：采集成功率低于指定数值%：" + prccessMaxSuccessRate);
+            mSchedule.stop();
+            return;
+        }
+    }
+
+    /**
+     * 返回近期处理成功率
+     * @return
+     */
+    public float getProcessSuccessRate(){
+        float okCount = 0;
+        for(Boolean flag: this.least20ProocessReuslt){
+            if(flag == null || flag == true){
+                okCount++;
+            }
+        }
+        return  okCount / this.least20ProocessReuslt.length;
     }
 
     @Override

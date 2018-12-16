@@ -52,8 +52,18 @@ public class Page {
     private List<Request> targetRequests = new ArrayList<Request>();
 
     private String charset;
+
+    private boolean processOk = true;
     
     public Page() {
+    }
+
+    public void setProcessOK(boolean ok){
+         processOk = ok;
+    }
+
+    public boolean isPrcocessOK(){
+        return processOk;
     }
 
     public static Page fail(){

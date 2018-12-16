@@ -318,10 +318,17 @@ public class Spider implements Runnable, Task {
                     @Override
                     public void run() {
                         try {
-                            processRequest(request);
+                            Page page =  processRequest(request);
                             onSuccess(request);
+                            if(page.isPrcocessOK()){
+                                onProcessResult(request,true);
+                            }else{
+                                onProcessResult(request,false);
+                            }
                         } catch (Exception e) {
                             onError(request);
+                            onProcessResult(request,false);
+
                             logger.error("process request " + request + " error", e);
                         } finally {
                             pageCount.incrementAndGet();
@@ -340,6 +347,15 @@ public class Spider implements Runnable, Task {
     }
 
     protected void onStartProcess(Request request){
+
+    }
+
+    /**
+     * 处理request的pege的结果。
+     * @param request
+     * @param ok
+     */
+    protected void onProcessResult(Request request, boolean ok){
 
     }
 
@@ -405,17 +421,19 @@ public class Spider implements Runnable, Task {
         }
     }
 
-    private void processRequest(Request request) {
+    private Page processRequest(Request request) {
         Page page = downloader.download(request, this);
         if (page.isDownloadSuccess()){
             onDownloadSuccess(request, page);
         } else {
             onDownloaderFail(request);
         }
+        return page;
     }
 
     private void onDownloadSuccess(Request request, Page page) {
         if (site.getAcceptStatCode().contains(page.getStatusCode())){
+            page.setProcessOK(true);
             pageProcessor.process(page);
             extractAndAddRequests(page, spawnUrl);
             if (!page.getResultItems().isSkip()) {
@@ -424,6 +442,7 @@ public class Spider implements Runnable, Task {
                 }
             }
         } else {
+            page.setProcessOK(false);
             logger.info("page status code error, page {} , code: {}", request.getUrl(), page.getStatusCode());
         }
         sleep(site.getSleepTime());

@@ -2,6 +2,7 @@ package com.juzicool.gather.spider;
 
 import com.juzicool.gather.*;
 import com.juzicool.gather.store.JuziDB;
+import com.juzicool.gather.store.SimpleDB;
 import com.juzicool.gather.utils.JuziUtil;
 import com.juzicool.gather.utils.RegexUtil;
 import com.juzicool.gather.utils.SelectableUtls;
@@ -37,6 +38,15 @@ public class JuzimiSpider {
         File gatherFile = new File("./juzimi_ablum_gather.db");  //抓取状态保存在这个文件。
         File outputFile = new File("./juzimi_ablum_output.db");  //句子结果保存到这个数据库。
 
+   /*     if(true){
+
+            JuziDB db = new JuziDB(outputFile);
+            db.prepare();
+            System.out.println("size: " + db.size());
+            db.close();
+            return;
+        }*/
+
         HttpClientDownloader httpClientDownloader = new HttpClientDownloader();
         httpClientDownloader.setProxyProvider(SimpleProxyProvider.from(new Proxy("web-proxy.oa.com",8080)));
 
@@ -64,11 +74,11 @@ public class JuzimiSpider {
         //重新开始上次请求失败的url请求
         spider.restoreErrorRequest();
 
-        spider.addUrl("https://www.juzimi.com/album/48576?page=3");
+        //spider.addUrl("https://www.juzimi.com/album/48576?page=3");
 
-        spider.addUrl("https://www.juzimi.com/albums");
+        //spider.addUrl("https://www.juzimi.com/albums");
 
-        spider.stopWhileExceutedSize(10);
+        spider.stopWhileExceutedSize(15000);
 
         spider.thread(1).run();
     }
@@ -86,10 +96,17 @@ public class JuzimiSpider {
         @Override
         public void process(Page page) {
 
+            if(page.getStatusCode()!=200){
+                //采集失败，可能ip被封了
+                page.setProcessOK(false);
+                return;
+            }
+
             String url = page.getRequest().getUrl().toLowerCase();
             url = UrlUtils.getUrlWithoutQuery(url);
             Html html = page.getHtml();
 
+            boolean isGatherOk = false;
             if(isAlbum(url)){
 
                 String albumTitle = html.xpath("h1[@class='xqalbumusertitle']/span/text()").toString();
@@ -109,7 +126,7 @@ public class JuzimiSpider {
                     request.putExtra("albumDesc",albumDesc);
                     request.setPriority(10);
                     page.addTargetRequest(request);
-
+                    isGatherOk = true;
                 }
 
                 list = html.links().nodes();
@@ -129,9 +146,6 @@ public class JuzimiSpider {
             }else if(isJuzi(url)){
                 processJuzi(page);
             }else {
-
-
-
                 List list =  html.links().nodes();
                 for(Object obj : list) {
                     //Selectable selct = (Selectable) obj;
@@ -146,6 +160,8 @@ public class JuzimiSpider {
                 }
 
             }
+            //是否抓取成功，不成功的话保存到失败列表，下一次再试。
+            page.setProcessOK(isGatherOk);
 
         }
 
@@ -189,7 +205,12 @@ public class JuzimiSpider {
 
                 juziDB.put(juzi);
                 System.out.println("put juzi : " + juzi.toString());
+                page.setProcessOK(true);
+                return;
             }
+
+            //不成功的话保存到失败列表，下一次再试。
+            page.setProcessOK(false);
 
         }
 
