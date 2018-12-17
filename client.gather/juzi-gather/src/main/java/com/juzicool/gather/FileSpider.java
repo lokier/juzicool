@@ -145,6 +145,7 @@ public class FileSpider extends Spider {
      * 将上次请求失败的request
      */
     public void restoreErrorRequest() {
+        System.out.println("Spider restoreErrorRequest.....");
 
         while(true){
             SimpleDB.QueueData data =  mErrorRequsetQueue.poll();
@@ -156,6 +157,9 @@ public class FileSpider extends Spider {
                 break;
             }
         }
+
+        System.out.println("Spider restoreErrorRequest finish");
+
 
     }
 

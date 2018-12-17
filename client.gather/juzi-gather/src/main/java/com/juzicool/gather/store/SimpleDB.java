@@ -3,6 +3,7 @@ package com.juzicool.gather.store;
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SimpleDB {
 
@@ -30,6 +31,11 @@ public class SimpleDB {
         db.Queue().push("dww",5,"xcfdsfd");
         db.Queue().push("3442",9,"11111");
         db.Queue().push("3444",6,"333333");
+        db.Queue().push("xcvxcv",1,"xxxxxx");
+        db.Queue().push("sdfxcv",1,"333xxxx333");
+        db.Queue().push("34e44",1,"333xxx333");
+        db.Queue().push("3d444",1,"xxxx");
+        db.Queue().push("344xc4",1,"xxxxx");
 
         System.out.println("queue size : " + db.Queue().size());
 
@@ -49,6 +55,7 @@ public class SimpleDB {
         System.out.println("poll data: " + data.data.toString());
         System.out.println("has dww(false): " + db.Queue().has("false"));
 
+        db.Queue().poll(20);
 
         data = db.Queue().poll();
         System.out.println("queue size : " + db.Queue().size());
@@ -61,6 +68,7 @@ public class SimpleDB {
     private  String jdbcUrl;
     private KV mKv;
     private Queue mQueue;
+    private Connection mConnection = null;
 
     private ArrayList<Queue> extraQueues = new ArrayList();
 
@@ -108,14 +116,29 @@ public class SimpleDB {
         for(Queue queue: extraQueues){
             queue.close();
         }
+
+        try {
+            if (mConnection != null) {
+                mConnection.close();
+            }
+        } catch (SQLException ex) {
+
+        }
+        mConnection = null;
+
+
     }
 
-    private Connection createConnection()throws SQLException{
+    private synchronized Connection createConnection()throws SQLException{
 
         // db parameters
-        Connection con = DriverManager.getConnection(jdbcUrl);
+        if(mConnection == null){
 
-        return con;
+            //共用connnection
+            mConnection = DriverManager.getConnection(jdbcUrl);
+        }
+
+        return mConnection;
     }
 
 
@@ -134,7 +157,7 @@ public class SimpleDB {
            stmt.closeOnCompletion();
         }
 
-        public int size(){
+        public synchronized int size(){
             String sql = "SELECT COUNT("+KEY+") FROM "+ TABLE_NAME;
             Statement stmt = null;
             ResultSet rs = null;
@@ -169,7 +192,7 @@ public class SimpleDB {
             return 0;
         }
 
-        public boolean has(String key){
+        public synchronized boolean has(String key){
             String sql = "SELECT *  FROM " + TABLE_NAME +" where  " + KEY +"='" +key + "'";
             Statement stmt = null;
             ResultSet rs = null;
@@ -203,7 +226,7 @@ public class SimpleDB {
             return false;
         }
 
-        public void put(String key, Serializable value){
+        public synchronized void put(String key, Serializable value){
             String sql = "INSERT or replace INTO "+TABLE_NAME+"("+KEY+", "+VALUE+") VALUES(?,?)";
             PreparedStatement pstmt = null;
             try {
@@ -227,6 +250,13 @@ public class SimpleDB {
             }
         }
 
+   /*     public void remove(String key) {
+
+            String[] keys = new String[1];
+            keys[0] = key;
+            remove(keys);
+        }
+*/
         public void remove(String key){
 
             String sql = "delete  from " + TABLE_NAME +" where " + KEY +" ='"+ key +"'";
@@ -250,7 +280,7 @@ public class SimpleDB {
             }
         }
 
-        public <T extends Serializable> T get(String key,T defaultValue){
+        public synchronized <T extends Serializable> T get(String key,T defaultValue){
             String sql = "SELECT "+VALUE+" FROM " + TABLE_NAME +" where " + KEY +" ='" +key +"'";
             Statement stmt = null;
             ResultSet rs = null;
@@ -431,12 +461,23 @@ public class SimpleDB {
         }
 
         public SimpleDB.QueueData poll(){
-
             return getPeekOrRemove(true);
         }
 
+        public List<QueueData> poll(int size){
+            return getPeekOrRemove(true,size);
+        }
+
         private synchronized SimpleDB.QueueData getPeekOrRemove(boolean removePeek){
-            String sql = "SELECT *  FROM " + QUEUE_TABLE +" ORDER BY "+PRIORITY+" desc limit 1";
+            List<QueueData> ret = getPeekOrRemove(removePeek,1);
+            if (ret != null && ret.size() > 0) {
+                return ret.get(0);
+            }
+            return null;
+        }
+
+        private synchronized List<QueueData> getPeekOrRemove(boolean removePeek, int size){
+            String sql = "SELECT *  FROM " + QUEUE_TABLE +" ORDER BY "+PRIORITY+" desc limit " +size;
             Statement stmt = null;
             ResultSet rs = null;
             try {
@@ -444,7 +485,8 @@ public class SimpleDB {
                 stmt= conn.createStatement();
                 rs = stmt.executeQuery(sql);
                 // loop through the result set
-                if (rs.next()) {
+                ArrayList<QueueData> list = new ArrayList<>();
+                while (rs.next()) {
                     byte[] byteData = rs.getBytes(DATA);
                     int p = rs.getInt(PRIORITY);
                     String key = rs.getString(QUEUE_KEY);
@@ -453,13 +495,32 @@ public class SimpleDB {
                     data.data = obj;
                     data.priority = p;
                     data.key = key;
+                    list.add(data);
+                }
 
-                    if(removePeek){
+                if(list.isEmpty()){
+                    return null;
+                }
+
+
+                if(removePeek){
+                    boolean needBatch = list.size() > 1;
+                    if(needBatch){
+                        conn.setAutoCommit(false);
+                    }
+                    for(QueueData data: list){
                         stmt.execute("delete  from " + QUEUE_TABLE +" where " + QUEUE_KEY +" ='"+ data.key +"'");
                     }
 
-                    return data;
+                    if(needBatch){
+                        conn.commit();
+                        conn.setAutoCommit(true);
+                    }
                 }
+
+
+
+                return list;
 
             } catch (Exception e) {
                 throw  new RuntimeException(e);
@@ -480,7 +541,6 @@ public class SimpleDB {
                 }
 
             }
-            return  null;
         }
 
         private void close(){
