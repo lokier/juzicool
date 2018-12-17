@@ -48,13 +48,14 @@ public class JuzimiSpider {
         }*/
 
         HttpClientDownloader httpClientDownloader = new HttpClientDownloader();
-        httpClientDownloader.setProxyProvider(SimpleProxyProvider.from(new Proxy("web-proxy.oa.com",8080)));
+        httpClientDownloader.setProxyProvider(new IpProxyProvider());
 
 
         //不使用Webmgic的Pipline来处理结果，直接在Processor保存；
         JuzimiProcessor p = new JuzimiProcessor(outputFile);
 
         FileSpider spider =  new FileSpider(gatherFile,p);
+        spider.setDownloader(httpClientDownloader);
 
         spider.setKeyGetter(new FileSpider.KeyGetter() {
             //避免对同一个url抓取，减少抓取次数。
@@ -77,11 +78,11 @@ public class JuzimiSpider {
         spider.addUrl("https://www.juzimi.com/album/48576?page=3");
         spider.addUrl("https://www.juzimi.com/albums");
 
-        spider.stopWhileExceutedSize(3); // 执行超过指定次数请求时停止
+        spider.stopWhileExceutedSize(550); // 执行超过指定次数请求时停止
         spider.stopWhileProcessSucessRateSmallerThan(0.5f); // 最近请求成功率低于50%时停止抓取
 
 
-        spider.thread(1).run();
+        spider.thread(10).run();
     }
 
 

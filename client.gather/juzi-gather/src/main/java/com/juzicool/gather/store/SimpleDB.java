@@ -327,7 +327,7 @@ public class SimpleDB {
             }
         }
 
-        public int size(){
+        public synchronized int size(){
             String sql = "SELECT COUNT("+QUEUE_KEY+") FROM "+ QUEUE_TABLE;
             Statement stmt = null;
             ResultSet rs = null;
@@ -366,7 +366,7 @@ public class SimpleDB {
             push(data.key,data.priority,data.data);
         }
 
-        public void push(String key, int priority, Serializable data){
+        public synchronized void push(String key, int priority, Serializable data){
             String sql = "INSERT or replace INTO "+QUEUE_TABLE+"("+QUEUE_KEY+", "+PRIORITY+", " +DATA+") VALUES(?,?,?)";
             PreparedStatement pstmt = null;
             try {
@@ -391,7 +391,7 @@ public class SimpleDB {
             }
         }
 
-        public boolean has(String key){
+        public synchronized boolean has(String key){
             String sql = "SELECT *  FROM " + QUEUE_TABLE +" where  " + QUEUE_KEY +"='" +key + "'";
             Statement stmt = null;
             ResultSet rs = null;
@@ -435,7 +435,7 @@ public class SimpleDB {
             return getPeekOrRemove(true);
         }
 
-        private SimpleDB.QueueData getPeekOrRemove(boolean removePeek){
+        private synchronized SimpleDB.QueueData getPeekOrRemove(boolean removePeek){
             String sql = "SELECT *  FROM " + QUEUE_TABLE +" ORDER BY "+PRIORITY+" desc limit 1";
             Statement stmt = null;
             ResultSet rs = null;

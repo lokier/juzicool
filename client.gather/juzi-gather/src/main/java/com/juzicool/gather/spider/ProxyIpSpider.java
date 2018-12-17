@@ -2,11 +2,15 @@ package com.juzicool.gather.spider;
 
 import com.juzicool.gather.FileSpider;
 import com.juzicool.gather.Gloabal;
+import com.juzicool.gather.IpTest;
+import com.juzicool.gather.utils.SelectableUtls;
 import com.juzicool.gather.utils.UrlUtils;
 import us.codecraft.webmagic.Page;
+import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.Site;
 import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.downloader.HttpClientDownloader;
+import us.codecraft.webmagic.downloader.HttpUriRequestConverter;
 import us.codecraft.webmagic.processor.PageProcessor;
 import us.codecraft.webmagic.proxy.Proxy;
 import us.codecraft.webmagic.proxy.SimpleProxyProvider;
@@ -29,21 +33,30 @@ public class ProxyIpSpider {
 
 
         HttpClientDownloader httpClientDownloader = new HttpClientDownloader();
-        httpClientDownloader.setProxyProvider(SimpleProxyProvider.from(new Proxy("web-proxy.oa.com",8080)));
+        //httpClientDownloader.setProxyProvider(SimpleProxyProvider.from(new Proxy("web-proxy.oa.com",8080)));
 
+        httpClientDownloader.setHttpUriRequestConverter(new HttpUriRequestConverter());
 
         Spider spider =  new Spider(new P());
 
-        final int pageSize = 1;
+        final int pageSize = 12;
         for(int i = 1; i<=pageSize;i++){
-            spider.addUrl("http://www.89ip.cn/index_"+pageSize+".html");
+            Request r = new Request();
+            r.getHeaders().put("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.26 Safari/537.36 Core/1.63.6801.400 QQBrowser/10.3.2928.400");
+            r.setUrl("http://www.89ip.cn/index_"+i+".html");
+            spider.addRequest(r);
         }
 
+        spider.thread(10).run();
 
-        spider.thread(1).run();
+        System.out.println("\n==============ip list==========");
+        System.out.println(gSb.toString());
     }
 
+    private static  StringBuffer gSb = new StringBuffer();
+
     private static class P implements PageProcessor, Closeable {
+
 
         @Override
         public void close() throws IOException {
@@ -57,19 +70,24 @@ public class ProxyIpSpider {
 
            List<Selectable> trNodes= html.xpath("tbody/tr").nodes();
            for(Selectable trNode: trNodes){
-                String ip = trNode.xpath("td/[1]").smartContent().toString();
-                String prot = trNode.xpath("td/[2]").smartContent().toString();
+                String ip = SelectableUtls.toSimpleText(trNode.xpath("td[1]")).trim();
+                String port =SelectableUtls.toSimpleText(trNode.xpath("td[2]")).trim();
 
-                System.out.println("");
+                if(IpTest.checkProxyIp(ip,Integer.parseInt(port))){
+                    String line = "list.add(new Proxy(\""+ip+"\","+port+"));";
+                    System.out.println(line);
+                    gSb.append(line +"\n");
+                }
+
            }
         }
 
         @Override
         public Site getSite() {
-            return null;
+            return gSite;
         }
 
-        private Site gSite = Site.me().setRetryTimes(2).setSleepTime(500).setTimeOut(3000);
+        private Site gSite = Site.me().setRetryTimes(2).setSleepTime(1200).setTimeOut(3000);
 
     }
 
