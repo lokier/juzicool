@@ -3,24 +3,38 @@ package com.juzicool.gather;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.HttpContext;
 
 import java.io.IOException;
 
 public class IpTest {
 
     private static HttpClient createClient(){
-        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpRequestRetryHandler handler = new HttpRequestRetryHandler(){
+
+            @Override
+            public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
+                return false;
+            }
+        };
+        CloseableHttpClient httpClient = HttpClientBuilder.create().setRetryHandler(handler).build();
+        //httpClient.getParams().
         return httpClient;
     }
 
     public static Boolean checkProxyIp(String proxyIp, int proxyPort) {
         String reqUrl="https://www.juzimi.com/aboutus";
         HttpClient client = createClient();
-        RequestConfig config =  RequestConfig.custom().setSocketTimeout(2000).setConnectTimeout(2000)
+        RequestConfig config =  RequestConfig.custom()
+                .setSocketTimeout(2000)
+                .setConnectTimeout(2000)
+                .setConnectionRequestTimeout(1000)
                 .setProxy(new HttpHost(proxyIp,proxyPort))
                 .build();
 

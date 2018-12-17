@@ -46,7 +46,7 @@ public class JuzimiSpider {
             db.close();
             return;
         }*/
-
+        long startTime = System.currentTimeMillis();
         HttpClientDownloader httpClientDownloader = new HttpClientDownloader();
         httpClientDownloader.setProxyProvider(new IpProxyProvider());
 
@@ -78,13 +78,14 @@ public class JuzimiSpider {
         spider.addUrl("https://www.juzimi.com/album/48576?page=3");
         spider.addUrl("https://www.juzimi.com/albums");
 
-        spider.stopWhileExceutedSize(550); // 执行超过指定次数请求时停止
+        spider.stopWhileExceutedSize(10000); // 执行超过指定次数请求时停止
         spider.stopWhileProcessSucessRateSmallerThan(0.5f); // 最近请求成功率低于50%时停止抓取
 
 
-        spider.thread(10).run();
-    }
+        spider.thread(15).run();
 
+        System.out.println("totalItme: " + (System.currentTimeMillis() - startTime));
+    }
 
     public static class JuzimiProcessor extends BasePageProcessor {
 

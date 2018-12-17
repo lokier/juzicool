@@ -55,6 +55,41 @@ public class IpProxyProvider implements ProxyProvider {
         list.add(new Proxy("183.47.2.201",43174));
         list.add(new Proxy("58.58.213.55",8888));
         list.add(new Proxy("14.115.105.202",808));
+
+
+        list.add(new Proxy("112.67.187.155",9797));
+        list.add(new Proxy("210.61.216.66",60209));
+        list.add(new Proxy("124.205.143.212",54755));
+        list.add(new Proxy("222.128.9.235",33428));
+        list.add(new Proxy("222.212.88.12",32142));
+        list.add(new Proxy("180.164.24.165",53281));
+        list.add(new Proxy("183.6.120.29",1080));
+        list.add(new Proxy("59.127.55.215",56732));
+        list.add(new Proxy("124.16.90.183",1080));
+        list.add(new Proxy("58.63.112.186",30893));
+        list.add(new Proxy("180.169.186.155",1080));
+        list.add(new Proxy("183.129.207.88",11056));
+        list.add(new Proxy("219.246.90.204",3128));
+        list.add(new Proxy("112.95.18.123",8088));
+        list.add(new Proxy("59.110.136.213",8080));
+
+        list.add(new Proxy("175.148.79.43",1133));
+        list.add(new Proxy("123.207.234.226",3128));
+        list.add(new Proxy("58.45.223.13",10800));
+        list.add(new Proxy("183.172.106.233",1080));
+        list.add(new Proxy("111.230.211.23",1080));
+        list.add(new Proxy("1.175.133.183",3128));
+        list.add(new Proxy("211.141.111.114",61395));
+        list.add(new Proxy("220.180.50.14",53281));
+        list.add(new Proxy("222.128.9.235",33428));
+        list.add(new Proxy("222.221.11.119",3128));
+        list.add(new Proxy("118.89.148.211",1080));
+        list.add(new Proxy("124.16.112.74",1080));
+
+        list.add(new Proxy("61.183.233.6",54896));
+        list.add(new Proxy("182.207.232.135",49166));
+        list.add(new Proxy("116.192.175.93",41944));
+        list.add(new Proxy("180.104.63.159",8118));
     }
 
     @Override
