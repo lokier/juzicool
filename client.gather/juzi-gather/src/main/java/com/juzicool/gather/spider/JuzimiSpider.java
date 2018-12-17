@@ -74,11 +74,10 @@ public class JuzimiSpider {
         //重新开始上次请求失败的url请求
         spider.restoreErrorRequest();
 
-        //spider.addUrl("https://www.juzimi.com/album/48576?page=3");
+        spider.addUrl("https://www.juzimi.com/album/48576?page=3");
+        spider.addUrl("https://www.juzimi.com/albums");
 
-        //spider.addUrl("https://www.juzimi.com/albums");
-
-        spider.stopWhileExceutedSize(15000); // 执行超过指定次数请求时停止
+        spider.stopWhileExceutedSize(3); // 执行超过指定次数请求时停止
         spider.stopWhileProcessSucessRateSmallerThan(0.5f); // 最近请求成功率低于50%时停止抓取
 
 
@@ -147,6 +146,7 @@ public class JuzimiSpider {
 
             }else if(isJuzi(url)){
                 processJuzi(page);
+                return;
             }else {
                 List list =  html.links().nodes();
                 for(Object obj : list) {
@@ -157,6 +157,7 @@ public class JuzimiSpider {
                         request.setPriority(5);
                         request.setUrl(abumnUrl);
                         page.addTargetRequest(request);
+                        isGatherOk = true;
                     }
 
                 }
