@@ -84,7 +84,7 @@ public class ProxyIpSpider {
                    String ip = SelectableUtls.toSimpleText(trNode.xpath("td[1]")).trim();
                    String port =SelectableUtls.toSimpleText(trNode.xpath("td[2]")).trim();
                    if(IpTest.checkProxyIp(ip,Integer.parseInt(port))){
-                       String line = "list.add(new Proxy(\""+ip+"\","+port+"));";
+                       String line = String.format("putProxy(\"%s\",%s);",ip,port );
                        System.out.println(line);
                        gSb.append(line +"\n");
                    }
@@ -95,7 +95,7 @@ public class ProxyIpSpider {
                    String ip = SelectableUtls.toSimpleText(trNode.xpath("td[1]")).trim();
                    String port =SelectableUtls.toSimpleText(trNode.xpath("td[2]")).trim();
                    if(IpTest.checkProxyIp(ip,Integer.parseInt(port))){
-                       String line = "list.add(new Proxy(\""+ip+"\","+port+"));";
+                       String line = String.format("putProxy(\"%s\",%s);",ip,port );
                        System.out.println(line);
                        gSb.append(line +"\n");
                    }
