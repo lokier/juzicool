@@ -1,4 +1,5 @@
 rootProject.name = 'juzicool.dev'
 include 'jfinal-club'
 include 'jfinal-3.5'
+include 'juzicool-web'
 

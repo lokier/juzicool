@@ -1,0 +1,155 @@
+#define layout2()
+<!DOCTYPE html>
+<html class="">
+<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1">
+<meta name="renderer" content="webkit">
+
+<meta name="keywords" content="#(seoKeywords ?? '句子酷,诗意、古典、优美、唯美的句子,名人名言、感悟，正能量、人生，心灵鸡汤,亲情、友情、思念，想家、爱情、难过、祝福，伤感的句子')" />
+<meta name="description" content="#(seoDescr ?? '句子库是一个句子搜索引擎和句子类别收录与展示网站。用户可以通过关键词直接找到自己想要看到的句子；并且分类出目前最热门的句子分类供用户查看和使用；用户可以评论和发表对这个句子的鉴赏；同时,用户可以发表自己喜欢的句子')" />
+<title>#(seoTitle ?? "句子酷|查找你想要的句子")</title>
+
+<link href="favicon.ico?v=20180831" rel="shortcut icon" type="image/x-icon">
+<script type="text/javascript">
+	var _74409ADBCF76C2D32BF7E1E2F64D113D="";
+	var G_POST_HASH=_74409ADBCF76C2D32BF7E1E2F64D113D;
+	var G_INDEX_SCRIPT = "?/";
+	var G_SITE_NAME = "JuziCool";
+	var G_BASE_URL = "/";
+	var G_STATIC_URL = "/static";
+	var G_UPLOAD_URL = "/uploads";
+	var G_USER_ID = "";
+	var G_USER_NAME = "";
+	var G_UPLOAD_ENABLE = "N";
+	var G_UNREAD_NOTIFICATION = 0;
+	var G_NOTIFICATION_INTERVAL = 100000;
+	var G_CAN_CREATE_TOPIC = "";
+	var G_ADVANCED_EDITOR_ENABLE = "Y";
+	var FILE_TYPES = "jpg,jpeg,png,gif,zip,doc,docx,rar,pdf,psd";
+	var G_DRAFT_ENABLED = "";
+
+	</script>
+
+<link rel="stylesheet" type="text/css" href="/assets-v2/css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="/assets-v2/css/icon.css">
+<link href="./assets-v2/css/common.css" rel="stylesheet" type="text/css">
+<link href="./assets-v2/css/link.css" rel="stylesheet" type="text/css">
+<link href="./assets-v2/css/style.css" rel="stylesheet" type="text/css">
+<link href="./assets-v2/css/shoutu.css" rel="stylesheet" type="text/css">
+<script src="./assets-v2/css/jquery.2.js" type="text/javascript"></script>
+<script src="./assets-v2/css/jquery.form.js" type="text/javascript"></script>
+<script src="./assets-v2/css/plug-in_module.js" type="text/javascript"></script>
+<script src="./assets-v2/css/aws.js" type="text/javascript"></script>
+<script src="./assets-v2/css/aw_template.js" type="text/javascript"></script>
+<script src="./assets-v2/css/app.js" type="text/javascript"></script>
+<script type="text/javascript" src="/assets-v2/css/compatibility.js"></script>
+<script type="text/javascript" src="/assets-v2/css/stickUp.min.js"></script>
+<script type="text/javascript" src="/assets-v2/css/headroom.min.js"></script>
+	<script type="text/javascript">
+	#if(loginAccount)
+
+	#else
+		function updateCaptcha() {
+		$(".captcha").attr("src", "/login/captcha?v=" + Math.random());
+		$("#captchaInput").val("");
+	}
+	#end
+		
+</script>
+<body #@bodyAttr?() ><noscript unselectable="on" id="noscript">
+    <div class="aw-404 aw-404-wrap container">
+        <img src="/assets-v2/css/img/no-js.jpg">
+        <p>你的浏览器禁用了JavaScript, 请开启后刷新浏览器获得更好的体验!</p>
+    </div>
+</noscript>
+<!-- 中部主体容器 -->
+#@main()
+
+<!-- 底部容器 -->
+<div class="aw-footer-wrap">
+    <div class="aw-footer">
+    	<p> <b><a style="font-size:15px" href="./coopration" target="_blank" >《句子库网站招募合伙人计划》</a></b></p>
+        Copyright © 2018 <a href='http://www.miibeian.gov.cn'>(粤ICP备18150237号)</a>, All Rights Reserved
+
+	        <span class="hidden-xs">
+	        	Powered By 句子酷
+	        	#if(loginAccount)
+							<a  href="/admin" target="_blank">管理</a>
+							<a href="/logout" >注销</a>
+						</a>
+						#else	
+						<a class="login" href="javascript:;" data-toggle="modal" data-target="#loginAjax">登录</a>
+						#end
+	        </span>
+
+            </div>
+</div>
+
+<a class="aw-back-top hidden-xs" href="javascript:;" onclick="$.scrollTo(1, 600, {queue:true});"><i
+class="icon icon-up"></i></a>
+
+###  登陆页面对话框
+<div id="aw-ajax-box" class="aw-ajax-box"></div>
+
+#if(loginAccount)
+
+#else
+<div class="modal fade stui-login-ajax" id="loginAjax" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">登录账号</h4>
+            </div>
+            <div class="modal-body">
+            	<div class="logo text-center">
+			        <a href="javascript:void();"><img src="./assets-v2/css/img/logo.png" alt="" /></a>
+			    </div>
+            	<form id="login_form" method="post"  onsubmit="return false"  action="/login/doLogin?returnUrl=.">
+					<input type="hidden" name="return_url" value="" />
+					<ul class="list clearfix">
+						<li>
+							<input type="text" id="aw-login-user-name" class="form-control" placeholder="邮箱 " name="userName" />
+						</li>
+						<li>
+							<input type="password" id="aw-login-user-password" class="form-control" placeholder="密码" name="password" />
+						</li>
+						<li class="last">
+							<input type="text" name="captcha"  id="captchaInput"/>
+							<img id = "captcha" class="captcha"  title="点击刷新"   src="/login/captcha" onclick="updateCaptcha();"/>
+							
+						</li>
+						<li class="last">
+							<label><input id="keepLogin" name='keepLogin'  type="checkbox" value="1"/>记住我</label>
+						</li>
+		
+						<li>
+							<a href="javascript:;" onclick="AWS.ajax_post($('#login_form'), AWS.ajax_processer, 'error_message');" id="login_submit" class="pull-right btn btn-block btn-large btn-primary">登录</a>
+						</li>
+					</ul>
+					
+					<!--
+					<div class="more">
+						<p class="text-color-999">第三方快捷登录</p>
+													<a href="http://demo.qa.shoutu.cn/q001/?/account/openid/weibo/bind/" class="weibo"><i class="icon icon-weibo"></i></a>
+													<a href="http://demo.qa.shoutu.cn/q001/?/account/openid/qq/bind/" class="qq"><i class="icon icon-qq"></i></a>					
+					</div>
+					-->
+				</form>
+            </div>          
+        </div>
+    </div>
+</div>
+#end
+
+</body></html>
+
+### 模板函数安全调用，找到 js() 模板函数则调用，找不到则直接跳过
+### 适合于部分页面在 layout.html 提供的 js 文件之外，还需额外添加 js 资源的应用场景
+#@js?()
+</body>
+</html>
+#end
+
+
