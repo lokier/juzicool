@@ -39,7 +39,7 @@ public class ProxyIpSpider {
 
         Spider spider =  new Spider(new P());
 
-        final int pageSize = 12;
+         int pageSize = 12;
         for(int i = 1; i<=pageSize;i++){
             Request r = new Request();
             r.getHeaders().put("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.26 Safari/537.36 Core/1.63.6801.400 QQBrowser/10.3.2928.400");
@@ -47,7 +47,16 @@ public class ProxyIpSpider {
             spider.addRequest(r);
         }
 
-        spider.thread(10).run();
+ /*       int pageSize = 40;
+        for(int i = 1; i<=pageSize;i++){
+            Request r = new Request();
+            r.getHeaders().put("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.26 Safari/537.36 Core/1.63.6801.400 QQBrowser/10.3.2928.400");
+            r.setUrl("https://www.kuaidaili.com/free/inha/"+i+"/");
+            spider.addRequest(r);
+        }*/
+
+
+        spider.thread(15).run();
 
         System.out.println("\n==============ip list==========");
         System.out.println(gSb.toString());
@@ -66,20 +75,33 @@ public class ProxyIpSpider {
         @Override
         public void process(Page page) {
 
-            Html html = page.getHtml();
+           Html html = page.getHtml();
+           String url = page.getRequest().getUrl();
 
-           List<Selectable> trNodes= html.xpath("tbody/tr").nodes();
-           for(Selectable trNode: trNodes){
-                String ip = SelectableUtls.toSimpleText(trNode.xpath("td[1]")).trim();
-                String port =SelectableUtls.toSimpleText(trNode.xpath("td[2]")).trim();
-
-                if(IpTest.checkProxyIp(ip,Integer.parseInt(port))){
-                    String line = "list.add(new Proxy(\""+ip+"\","+port+"));";
-                    System.out.println(line);
-                    gSb.append(line +"\n");
-                }
-
+           if(url.contains("www.89ip.cn")){
+               List<Selectable> trNodes= html.xpath("tbody/tr").nodes();
+               for(Selectable trNode: trNodes){
+                   String ip = SelectableUtls.toSimpleText(trNode.xpath("td[1]")).trim();
+                   String port =SelectableUtls.toSimpleText(trNode.xpath("td[2]")).trim();
+                   if(IpTest.checkProxyIp(ip,Integer.parseInt(port))){
+                       String line = String.format("putProxy(\"%s\",%s);",ip,port );
+                       System.out.println(line);
+                       gSb.append(line +"\n");
+                   }
+               }
+           }else  if(url.contains("www.kuaidaili.com")){
+               List<Selectable> trNodes= html.xpath("tbody/tr").nodes();
+               for(Selectable trNode: trNodes){
+                   String ip = SelectableUtls.toSimpleText(trNode.xpath("td[1]")).trim();
+                   String port =SelectableUtls.toSimpleText(trNode.xpath("td[2]")).trim();
+                   if(IpTest.checkProxyIp(ip,Integer.parseInt(port))){
+                       String line = String.format("putProxy(\"%s\",%s);",ip,port );
+                       System.out.println(line);
+                       gSb.append(line +"\n");
+                   }
+               }
            }
+
         }
 
         @Override

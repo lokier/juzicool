@@ -16,6 +16,9 @@ import us.codecraft.webmagic.proxy.SimpleProxyProvider;
 import us.codecraft.webmagic.selector.Html;
 import us.codecraft.webmagic.selector.Selectable;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.List;
 
@@ -46,7 +49,7 @@ public class JuzimiSpider {
             db.close();
             return;
         }*/
-
+        long startTime = System.currentTimeMillis();
         HttpClientDownloader httpClientDownloader = new HttpClientDownloader();
         httpClientDownloader.setProxyProvider(new IpProxyProvider());
 
@@ -54,7 +57,7 @@ public class JuzimiSpider {
         //不使用Webmgic的Pipline来处理结果，直接在Processor保存；
         JuzimiProcessor p = new JuzimiProcessor(outputFile);
 
-        FileSpider spider =  new FileSpider(gatherFile,p);
+        final FileSpider spider =  new FileSpider(gatherFile,p);
         spider.setDownloader(httpClientDownloader);
 
         spider.setKeyGetter(new FileSpider.KeyGetter() {
@@ -78,13 +81,25 @@ public class JuzimiSpider {
         spider.addUrl("https://www.juzimi.com/album/48576?page=3");
         spider.addUrl("https://www.juzimi.com/albums");
 
-        spider.stopWhileExceutedSize(550); // 执行超过指定次数请求时停止
+        spider.stopWhileExceutedSize(30000); // 执行超过指定次数请求时停止
         spider.stopWhileProcessSucessRateSmallerThan(0.5f); // 最近请求成功率低于50%时停止抓取
 
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                SpiderStopUI.doWhileCloase(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        spider.stop();
+                    }
+                });
+            }
+        });
 
-        spider.thread(10).run();
+        spider.thread(20).run();
+
+        System.out.println("totalItme: " + (System.currentTimeMillis() - startTime));
     }
-
 
     public static class JuzimiProcessor extends BasePageProcessor {
 
