@@ -41,7 +41,7 @@ public final class JFinal {
 	private Handler handler;
 	private ServletContext servletContext;
 	private String contextPath = "";
-	private static IServer server;
+	//private static IServer server;
 	
 	private static final JFinal me = new JFinal();
 	
@@ -148,16 +148,16 @@ public final class JFinal {
 	}
 	
 	public static void start() {
-		server = com.jfinal.server.jetty.ServerFactory.getServer();
-		server.start();
+		//server = com.jfinal.server.jetty.ServerFactory.getServer();
+		//server.start();
 	}
 	
 	/**
 	 * 用于在 Eclipse 中，通过创建 main 方法的方式启动项目，支持热加载
 	 */
 	public static void start(String webAppDir, int port, String context, int scanIntervalSeconds) {
-		server = com.jfinal.server.jetty.ServerFactory.getServer(webAppDir, port, context, scanIntervalSeconds);
-		server.start();
+		//server = com.jfinal.server.jetty.ServerFactory.getServer(webAppDir, port, context, scanIntervalSeconds);
+		//server.start();
 	}
 	
 	/**
@@ -183,7 +183,7 @@ public final class JFinal {
 	}
 	
 	public static void stop() {
-		server.stop();
+		//server.stop();
 	}
 	
 	/**
@@ -193,8 +193,8 @@ public final class JFinal {
 	 */
 	public static void main(String[] args) {
 		if (args == null || args.length == 0) {
-			server = com.jfinal.server.jetty.ServerFactory.getServer();
-			server.start();
+		//	server = com.jfinal.server.jetty.ServerFactory.getServer();
+		//	server.start();
 			return ;
 		}
 		
@@ -204,8 +204,8 @@ public final class JFinal {
 			int port = Integer.parseInt(args[1]);
 			String context = args[2];
 			int scanIntervalSeconds = Integer.parseInt(args[3]);
-			server = com.jfinal.server.jetty.ServerFactory.getServer(webAppDir, port, context, scanIntervalSeconds);
-			server.start();
+			//server = com.jfinal.server.jetty.ServerFactory.getServer(webAppDir, port, context, scanIntervalSeconds);
+			//server.start();
 			return ;
 		}
 		

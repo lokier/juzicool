@@ -17,6 +17,12 @@ repositories {
     maven { url "http://repo.maven.apache.org/maven2" }
 }
 
+
+war{
+    exclude('libs-complle-only')
+}
+
+
 dependencies {
 
    // providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
@@ -84,13 +90,13 @@ dependencies {
 
 
 
-    providedCompile fileTree(include: ['*.jar'], dir: 'libs-complle-only')
-    providedCompile   'javax.servlet:javax.servlet-api:3.1.0'
-   // providedCompile   'javax.servlet:jstl:1.2'
+   // providedCompile fileTree(dir: 'libs-complle-only',include: ['*.jar'])
+    //providedCompile   'javax.servlet:javax.servlet-api:3.1.0'
     providedCompile "javax.servlet:javax.servlet-api:3.1.0"
-
-
+    providedCompile "org.mortbay.jasper:apache-el:8.5.33"
+    providedCompile "org.mortbay.jasper:apache-jsp:8.5.33"
     providedCompile "org.springframework:spring-webmvc:5.0.7.RELEASE"
+
     //providedCompile "org.springframework:spring-context:4.3.17.RELEASE"
    // providedCompile "org.springframework:spring-context:$springVersion"
   //  compile "org.springframework:spring-jdbc:$springVersion"
