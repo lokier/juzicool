@@ -122,6 +122,11 @@ public class FileSpider extends Spider {
         }
     }
 
+    @Override
+    public void stop() {
+        mSchedule.stop();
+    }
+
     /**
      * 返回近期处理成功率
      * @return
