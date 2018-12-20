@@ -1,8 +1,8 @@
 package com.juzicool.gather.spider;
 
+import com.juzicool.data.Juzi;
+import com.juzicool.data.db.JuziDB;
 import com.juzicool.gather.*;
-import com.juzicool.gather.store.JuziDB;
-import com.juzicool.gather.store.SimpleDB;
 import com.juzicool.gather.utils.JuziUtil;
 import com.juzicool.gather.utils.RegexUtil;
 import com.juzicool.gather.utils.SelectableUtls;

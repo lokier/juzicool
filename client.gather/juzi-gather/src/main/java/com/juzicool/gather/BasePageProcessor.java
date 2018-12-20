@@ -4,7 +4,8 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 
-import com.juzicool.gather.store.JuziExcel;
+import com.juzicool.data.Juzi;
+import com.juzicool.data.db.JuziExcel;
 import org.apache.commons.lang3.StringUtils;
 
 import us.codecraft.webmagic.Page;

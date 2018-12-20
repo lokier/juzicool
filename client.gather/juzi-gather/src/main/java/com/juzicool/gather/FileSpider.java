@@ -1,8 +1,7 @@
 package com.juzicool.gather;
 
-import com.juzicool.gather.store.SimpleDB;
+import com.juzicool.data.db.SimpleDB;
 import org.apache.commons.lang3.StringUtils;
-import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.Spider;
 import us.codecraft.webmagic.Task;

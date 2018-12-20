@@ -1,18 +1,14 @@
 
 package com.juzicool.gather.processor.juzimi;
 
+import com.juzicool.data.Juzi;
 import com.juzicool.gather.Gloabal;
-import com.juzicool.gather.Juzi;
-import com.juzicool.gather.utils.SelectableUtls;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Spider;
-import us.codecraft.webmagic.selector.Html;
-import us.codecraft.webmagic.selector.Selectable;
 
 
 /***

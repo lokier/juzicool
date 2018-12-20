@@ -1,9 +1,8 @@
 
 package com.juzicool.gather.processor.juzimi;
 
+import com.juzicool.data.Juzi;
 import com.juzicool.gather.BasePageProcessor;
-import com.juzicool.gather.Gloabal;
-import com.juzicool.gather.Juzi;
 import com.juzicool.gather.utils.SelectableUtls;
 
 import java.util.ArrayList;

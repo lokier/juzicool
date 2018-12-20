@@ -16,7 +16,7 @@ repositories {
 dependencies {
     //testCompile group: 'junit', name: 'junit', version: '4.12'
     //implementation "us.codecraft:webmagic-core:0.7.3"
-    compile(":juzi-data")
+    compile project(":juzi-data")
 
     compile project(":webmagic-core")
     compile project(":webmagic-extension")

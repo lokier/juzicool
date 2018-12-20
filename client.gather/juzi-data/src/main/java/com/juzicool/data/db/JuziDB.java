@@ -1,6 +1,7 @@
 package com.juzicool.data.db;
 
-import com.juzicool.gather.Juzi;
+
+import com.juzicool.data.Juzi;
 
 import java.io.File;
 import java.sql.*;
