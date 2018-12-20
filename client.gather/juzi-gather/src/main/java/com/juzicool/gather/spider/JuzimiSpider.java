@@ -78,10 +78,10 @@ public class JuzimiSpider {
         //重新开始上次请求失败的url请求
         spider.restoreErrorRequest();
 
-        spider.addUrl("https://www.juzimi.com/album/48576?page=3");
-        spider.addUrl("https://www.juzimi.com/albums");
+       // spider.addUrl("https://www.juzimi.com/album/48576?page=3");
+        //spider.addUrl("https://www.juzimi.com/albums");
 
-        spider.stopWhileExceutedSize(30000); // 执行超过指定次数请求时停止
+        spider.stopWhileExceutedSize(4000); // 执行超过指定次数请求时停止
         spider.stopWhileProcessSucessRateSmallerThan(0.5f); // 最近请求成功率低于50%时停止抓取
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -160,6 +160,13 @@ public class JuzimiSpider {
                     }
                 }
 
+                if(!isGatherOk){
+                    String simpleText = SelectableUtls.toSimpleText(html);
+                    if(simpleText.contains("没有收录任何句子")){
+                        isGatherOk = true;
+                    }
+                }
+
             }else if(isJuzi(url)){
                 processJuzi(page);
                 return;
@@ -173,11 +180,10 @@ public class JuzimiSpider {
                         request.setPriority(5);
                         request.setUrl(abumnUrl);
                         page.addTargetRequest(request);
-                        isGatherOk = true;
                     }
 
                 }
-
+                isGatherOk = true;
             }
             //是否抓取成功，不成功的话保存到失败列表，下一次再试。
             page.setProcessOK(isGatherOk);
@@ -222,8 +228,11 @@ public class JuzimiSpider {
                 juzi.from = JuziUtil.filterBookmark(juzi.from);
                 juzi.author = JuziUtil.filterBookmark(juzi.author);
 
+                long start = System.currentTimeMillis();
                 juziDB.put(juzi);
-                System.out.println("put juzi : " + juzi.toString());
+                long time =System.currentTimeMillis() - start;
+
+                System.out.println(String.format("put[%d] juzi : " ,time, juzi.toString()));
                 page.setProcessOK(true);
                 return;
             }

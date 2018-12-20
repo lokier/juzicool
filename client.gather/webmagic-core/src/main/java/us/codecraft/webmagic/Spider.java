@@ -320,14 +320,10 @@ public class Spider implements Runnable, Task {
                         try {
                             Page page =  processRequest(request);
                             onSuccess(request);
-                            if(page.isPrcocessOK()){
-                                onProcessResult(request,true);
-                            }else{
-                                onProcessResult(request,false);
-                            }
+                            onProcessResult(request,page.isDoProcess(),page.isPrcocessOK());
                         } catch (Exception e) {
                             onError(request);
-                            onProcessResult(request,false);
+                            onProcessResult(request,false,false);
 
                             logger.error("process request " + request + " error", e);
                         } finally {
@@ -352,10 +348,9 @@ public class Spider implements Runnable, Task {
 
     /**
      * 处理request的pege的结果。
-     * @param request
-     * @param ok
+
      */
-    protected void onProcessResult(Request request, boolean ok){
+    protected void onProcessResult(Request request,boolean isDoProcess ,boolean isProcessOk){
 
     }
 
@@ -433,7 +428,8 @@ public class Spider implements Runnable, Task {
 
     private void onDownloadSuccess(Request request, Page page) {
         if (site.getAcceptStatCode().contains(page.getStatusCode())){
-            page.setProcessOK(true);
+            page.setProcessOK(false);
+            page.setDoProcess(true);
             pageProcessor.process(page);
             extractAndAddRequests(page, spawnUrl);
             if (!page.getResultItems().isSkip()) {

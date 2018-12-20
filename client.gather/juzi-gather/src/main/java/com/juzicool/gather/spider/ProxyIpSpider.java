@@ -83,10 +83,16 @@ public class ProxyIpSpider {
                for(Selectable trNode: trNodes){
                    String ip = SelectableUtls.toSimpleText(trNode.xpath("td[1]")).trim();
                    String port =SelectableUtls.toSimpleText(trNode.xpath("td[2]")).trim();
+                   long startTime =System.currentTimeMillis();
+
                    if(IpTest.checkProxyIp(ip,Integer.parseInt(port))){
-                       String line = String.format("putProxy(\"%s\",%s);",ip,port );
-                       System.out.println(line);
-                       gSb.append(line +"\n");
+                       long end = System.currentTimeMillis() - startTime;
+                       if(end < 5000){
+                           String line = String.format("putProxy(\"%s\",%s);//t= %d",ip,port,end );
+                           System.out.println(line);
+                           gSb.append(line +"\n");
+                       }
+
                    }
                }
            }else  if(url.contains("www.kuaidaili.com")){
@@ -94,10 +100,15 @@ public class ProxyIpSpider {
                for(Selectable trNode: trNodes){
                    String ip = SelectableUtls.toSimpleText(trNode.xpath("td[1]")).trim();
                    String port =SelectableUtls.toSimpleText(trNode.xpath("td[2]")).trim();
+                   long startTime =System.currentTimeMillis();
+
                    if(IpTest.checkProxyIp(ip,Integer.parseInt(port))){
-                       String line = String.format("putProxy(\"%s\",%s);",ip,port );
-                       System.out.println(line);
-                       gSb.append(line +"\n");
+                       long end = System.currentTimeMillis() - startTime;
+                       if(end < 5000){
+                           String line = String.format("putProxy(\"%s\",%s);//t= %d",ip,port,end );
+                           System.out.println(line);
+                           gSb.append(line +"\n");
+                       }
                    }
                }
            }

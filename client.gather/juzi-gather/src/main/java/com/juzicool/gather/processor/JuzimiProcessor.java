@@ -85,8 +85,10 @@ public class JuzimiProcessor extends BasePageProcessor {
 	public void process(Page page) {
 		String html = page.getHtml().toString();
 
+		String simpleText = SelectableUtls.toSimpleText(page.getHtml());
 		System.err.println("is succuess : " + page.isDownloadSuccess());
-		System.out.println(html);
+		System.out.println(simpleText);
+		System.out.println("is flag : " + simpleText.contains("没有收录任何句子"));
 
 		ArrayList<Juzi> rest = new ArrayList<>();
 		if(parseCase1(page.getHtml(), rest)
@@ -108,7 +110,7 @@ public class JuzimiProcessor extends BasePageProcessor {
 
 
 		//spider.addUrl("https://www.juzimi.com/album/2364?page=0");
-		spider.addUrl("https://www.juzimi.com/album/2364?page=1");  //优美的句子,美好,难过，或暂，长久,难忘
+		spider.addUrl("https://www.juzimi.com/album/481295");  //优美的句子,美好,难过，或暂，长久,难忘
 
 		spider.thread(1).run();
 	}

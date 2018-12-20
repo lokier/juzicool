@@ -78,20 +78,29 @@ public class FileSpider extends Spider {
     /**
      * 抓取目标结果页面结果。失败的话，可能是网路原因，也可能是抓取规则原因。
      * @param request
-     * @param ok
+     * @param
      */
-    protected void onProcessResult(Request request, boolean ok){
+    protected void onProcessResult(Request request,boolean isDoProcess ,boolean isProcessOk){
+        String key = getUrlKey(request.getUrl());
+
+        if(!isDoProcess){
+            //没下载成功
+            //放进错误列表，下次继续采集。
+            mErrorRequsetQueue.push(key, 10000, request);
+
+            return;
+        }
 
         //计算成功率
         synchronized (this){
-            this.least20ProocessReuslt[this.prccessReusltIndex] = ok;
+            this.least20ProocessReuslt[this.prccessReusltIndex] = isProcessOk;
             prccessReusltIndex = (prccessReusltIndex+1)% this.least20ProocessReuslt.length;
         }
 
-        if(!ok) {
-            System.out.println("gather error: " + request.getUrl());
-            String key = getUrlKey(request.getUrl());
+        if(!isProcessOk) {
+            System.err.println("采集错误: " + request.getUrl());
             if (!StringUtils.isEmpty(key)) {
+                //放进错误列表，下次继续采集。
                 mErrorRequsetQueue.push(key, 10000, request);
             }
         }
@@ -177,8 +186,12 @@ public class FileSpider extends Spider {
                 return null;
             }
 
-
+            long start = System.currentTimeMillis();
             SimpleDB.QueueData data =  db.Queue().poll();
+            long time = System.currentTimeMillis() - start;
+
+            System.out.println("poll queue time: " + time);
+
             if(data!= null){
                 return (Request)data.data;
             }
