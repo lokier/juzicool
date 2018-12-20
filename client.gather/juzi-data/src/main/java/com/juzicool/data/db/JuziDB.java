@@ -174,7 +174,7 @@ public class JuziDB {
         return new Iterator(mConnection);
     }
 
-    private static class Iterator{
+    public static class Iterator{
 
         private Connection mConnection = null;
         private int offset = 0;
