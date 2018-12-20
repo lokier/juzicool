@@ -232,7 +232,7 @@ public class JuzimiSpider {
                 juziDB.put(juzi);
                 long time =System.currentTimeMillis() - start;
 
-                System.out.println(String.format("put[%d] juzi : " ,time, juzi.toString()));
+                System.out.println(String.format("put[%d] juzi : %s" ,time, juzi.toString()));
                 page.setProcessOK(true);
                 return;
             }
