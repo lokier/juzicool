@@ -29,7 +29,7 @@ public class IpTest {
     }
 
     public static Boolean checkProxyIp(String proxyIp, int proxyPort) {
-        String reqUrl="https://www.juzimi.com/aboutus";
+        String reqUrl="https://www.juzimi.com/ju/469610";
         HttpClient client = createClient();
         RequestConfig config =  RequestConfig.custom()
                 .setSocketTimeout(2000)

@@ -54,8 +54,17 @@ public class Page {
     private String charset;
 
     private boolean processOk = true;
+    private boolean doProcess = false;
     
     public Page() {
+    }
+
+    public boolean isDoProcess() {
+        return doProcess;
+    }
+
+    public void setDoProcess(boolean doProcess) {
+        this.doProcess = doProcess;
     }
 
     public void setProcessOK(boolean ok){
