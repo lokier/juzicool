@@ -40,7 +40,7 @@ public class JuzimiAlbumProcessor extends JuzimiProcessor {
 		JuziAlbum album = mMap.get(url);
 		if(album!= null){
 			juzi.category = album.categoy;
-			juzi.applyTags =album.applyTags;
+			juzi.applyDesc =album.applyTags;
 			juzi.tags = album.tags;
 			juzi.remark = album.remark;
 		}

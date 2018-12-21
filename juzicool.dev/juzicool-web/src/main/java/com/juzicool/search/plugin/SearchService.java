@@ -15,24 +15,15 @@
 package com.juzicool.search.plugin;
 
 import com.jfinal.plugin.activerecord.Page;
-import com.jfinal.plugin.activerecord.SqlPara;
-import com.jfinal.plugin.ehcache.CacheKit;
+import com.juzicool.search.Juzi;
 import com.juzicool.search.JuziObject;
 import com.juzicool.search.util.JuziUtils;
-import com.jfinal.club.common.safe.JsoupFilter;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.jfinal.club.common.model.Feedback;
-import com.jfinal.club.common.model.Juzi;
-import com.jfinal.club.common.model.Project;
-import com.jfinal.club.common.model.Share;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.PrimitiveIterator.OfDouble;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.http.HttpEntity;
@@ -59,7 +50,7 @@ public class SearchService {
 	 * 更新句子的索引
 	 */
 	public void updateSearchIndex(List<Juzi> juziList) {
-			CountDownLatch latch = new CountDownLatch(juziList.size());
+			/*CountDownLatch latch = new CountDownLatch(juziList.size());
 			RestClient client = es.requestClient();
 			try {
 			
@@ -67,7 +58,7 @@ public class SearchService {
 					String jsonString = JuziUtils.toJson(juzi);
 					
 					//juziId++;
-					Request request = new Request("put",  "/"+INDEXS+"/"+INDEX_NAME_TYPE+"/"+juzi.getId());
+					Request request = new Request("put",  "/"+INDEXS+"/"+INDEX_NAME_TYPE+"/"+juzi);
 	
 					request.setJsonEntity(jsonString);
 					client.performRequestAsync(request, new ResponseListener() {
@@ -90,14 +81,13 @@ public class SearchService {
 			}finally {
 				es.releaseClient(client);
 			}
-			
+			*/
 		
 	}
 	
 	/**
 	 * 
 	 * @param query
-	 * @param pageIndex  从1开始。
 	 * @param pageSize
 	 * @return
 	 */

@@ -1,16 +1,15 @@
 package com.juzicool.search.admin.task;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import com.jfinal.club.common.model.Juzi;
 import com.jfinal.kit.LogKit;
 import com.jfinal.kit.PathKit;
 import com.jfinal.plugin.activerecord.Db;
+import com.juzicool.search.Juzi;
 import com.juzicool.search.JuziObject;
 import com.juzicool.search.admin.JuziExcelReader;
 import com.juzicool.search.plugin.SearchService;
@@ -64,7 +63,7 @@ public class ImportJuziByFileTask {
 	
 	
 	public void start() {
-		isRunning = true;
+	/*	isRunning = true;
 		final ImportJuziByFileTask task = this;
 		add(task);
 		new Thread() {
@@ -123,7 +122,7 @@ public class ImportJuziByFileTask {
 				isRunning = false;
 				release(task);
 			}
-		}.start();
+		}.start();*/
 	}
 	
 }

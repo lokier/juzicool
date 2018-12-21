@@ -119,7 +119,7 @@ public class JuziDB {
             pstmt.setString(5, juzi.category);
             pstmt.setString(6, juzi.remark);
             pstmt.setString(7, juzi.tags);
-            pstmt.setString(8, juzi.applyTags);
+            pstmt.setString(8, juzi.applyDesc);
             pstmt.executeUpdate();
         } catch (SQLException e) {
             throw  new RuntimeException(e);
@@ -201,7 +201,7 @@ public class JuziDB {
                     juzi.category = rs.getString("category");
                     juzi.tags = rs.getString("tags");
                     juzi.remark = rs.getString("remark");
-                    juzi.applyTags = rs.getString("applyTags");
+                    juzi.applyDesc = rs.getString("applyTags");
                     list.add(juzi);
                 }
                 if(list.isEmpty()){

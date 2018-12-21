@@ -1,7 +1,7 @@
 package com.juzicool.search.util;
 
 import com.alibaba.fastjson.JSON;
-import com.jfinal.club.common.model.Juzi;
+import com.juzicool.search.Juzi;
 import com.juzicool.search.JuziObject;
 
 public class JuziUtils {

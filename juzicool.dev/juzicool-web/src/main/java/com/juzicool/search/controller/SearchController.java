@@ -13,12 +13,10 @@
  */
 
 package com.juzicool.search.controller;
-import java.net.URLEncoder;
 
 import com.jfinal.aop.Before;
 import com.jfinal.club.common.controller.BaseController;
 import com.jfinal.club.common.interceptor.AuthCacheClearInterceptor;
-import com.jfinal.club.common.model.Juzi;
 import com.jfinal.plugin.activerecord.Page;
 import com.juzicool.search.JuziObject;
 import com.juzicool.search.plugin.SearchService;

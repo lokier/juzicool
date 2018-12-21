@@ -11,8 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.downloader.HttpClientDownloader;
-import us.codecraft.webmagic.proxy.Proxy;
-import us.codecraft.webmagic.proxy.SimpleProxyProvider;
 import us.codecraft.webmagic.selector.Html;
 import us.codecraft.webmagic.selector.Selectable;
 
@@ -198,7 +196,7 @@ public class JuzimiSpider {
             String albumDesc =  (String)page.getRequest().getExtra("albumDesc");
 
             juzi.remark = albumTitle;
-            juzi.applyTags = albumDesc;
+            juzi.applyDesc = albumDesc;
 
             Html html = page.getHtml();
 

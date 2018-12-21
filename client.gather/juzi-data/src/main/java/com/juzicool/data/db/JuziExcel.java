@@ -81,7 +81,7 @@ public class JuziExcel {
 		}
 		
 		
-		String applyTags = juzi.applyTags;
+		String applyTags = juzi.applyDesc;
 		if(!StringUtils.isEmpty(applyTags)) {
 			Label label=new Label(7,row,applyTags);
 			mSheet.addCell(label);

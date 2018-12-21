@@ -1,0 +1,49 @@
+PUT /juzicool
+{
+	"settings": {
+        "refresh_interval" : "5s",
+        "number_of_shards": "1",
+        "number_of_replicas": "1"
+        
+	},
+	"mappings": {
+		"juzi": {
+			"properties": {
+				"content": {
+					"type": "text",
+					"analyzer": "ik_max_word"
+				},
+				"from": {
+					"type": "text",
+					"analyzer": "ik_smart"
+				},
+				"author": {
+					"type": "text",
+					"analyzer": "ik_smart"
+				},
+				"category": {
+					"type": "keyword"
+				},
+				"remark": {
+					"type": "text",
+					"analyzer": "ik_max_word"
+				},
+				"tags": {
+					"type": "text",
+					"analyzer": "ik_smart"
+				},
+				"applyDesc": {
+					"type": "text",
+					"analyzer": "ik_smart"
+				},
+				"length": {
+					"type": "short"
+				},
+				"updateTime": {
+					"type": "date",
+					"format": "epoch_millis"
+				}
+			}
+		}
+	}
+}

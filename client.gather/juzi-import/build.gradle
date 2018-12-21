@@ -1,0 +1,22 @@
+plugins {
+    id 'java'
+}
+
+group 'com.juzicool'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
+
+}
+
+dependencies {
+    compile project(":juzi-data")
+
+    compile 'org.elasticsearch.client:elasticsearch-rest-client:6.5.1'
+    compile group: 'mysql', name: 'mysql-connector-java', version:'5.1.44'
+    compile "com.alibaba:fastjson:1.2.31"
+
+}

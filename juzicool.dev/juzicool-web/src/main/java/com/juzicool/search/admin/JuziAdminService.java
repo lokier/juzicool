@@ -21,7 +21,6 @@ import com.juzicool.search.util.JuziUtils;
 import com.jfinal.kit.LogKit;
 import com.jfinal.kit.Ret;
 import com.jfinal.club.common.model.Document;
-import com.jfinal.club.common.model.Juzi;
 import com.jfinal.club.document.DocumentService;
 
 import java.io.File;
@@ -35,7 +34,7 @@ import java.util.List;
 public class JuziAdminService  {
 
 
-	private Juzi dao = new Juzi().dao();
+	//private Juzi dao = new Juzi().dao();
 	//private ElasticSearch es =  ElasticSearch.get();
 	private SearchService mSearchService = new SearchService();
 
@@ -56,7 +55,7 @@ public class JuziAdminService  {
 	 */
 	public boolean batchImportByExecelFile(File excelFile, int accountId) {
 		
-		try {
+		/*try {
 			JuziExcelReader reader  = new JuziExcelReader(excelFile);
 			reader.prepare();
 			
@@ -85,7 +84,7 @@ public class JuziAdminService  {
 		}catch (Exception e) {
 			LogKit.warn(e.getMessage(),e);
 		}
-		
+		*/
 		return false;
 		
 	}

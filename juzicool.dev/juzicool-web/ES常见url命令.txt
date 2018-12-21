@@ -1,0 +1,60 @@
+
+创建索引：
+PUT /juzicool
+{
+  "mappings": {
+    "juzi": { 
+      "properties": { 
+        "content":    { "type": "text", "analyzer":"ik_max_word","search_analyzer":"ik_smart" }, 
+        "from":     { "type": "keyword"  }, 
+        "author":      { "type": "keyword" },  
+         "category":      { "type": "keyword" },  
+         "remark":      { "type": "text","analyzer":"ik_max_word","search_analyzer":"ik_smart" },  
+         "tags":      { "type": "keyword" },  
+          "applyTags":      { "type": "text" ,"analyzer":"ik_max_word","search_analyzer":"ik_smart" }
+      }
+    }
+  }
+}
+
+
+删除索引
+DELETE /juzicool
+
+
+
+
+分词查看：
+GET /juzicool/juzi/1000000/_termvectors?fields=content
+
+GET _analyze
+{
+  "text": "文明古国",
+  "analyzer":"ik_smart"
+}
+
+
+查找：
+term是代表完全匹配，也就是精确查询，搜索前不会再对搜索词进行分词;
+match类查询:  也就是模糊搜索，会先对搜索词进行分词,分词完毕后再逐个对分词结果进行匹配；
+#match all ： 
+
+多字段查询：
+GET /juzicool/juzi/_search?explain=false
+{
+     "query": {
+        "multi_match": {
+            "query":  " 哭 高兴",
+            "type":   "most_fields", 
+            "fields": [ "tags","remark","applyDesc","content","category","author" ,"from"],
+            "analyzer": "ik_smart"
+          
+        }
+    },
+    "size":50,
+    "from":0
+}
+
+
+document测试数据：
+{"applyTags":"城市里忙碌","author":"","category":"感悟","content":"生活的奴隶，忐忑抱怨讥讽 生活的主人，踏实明朗幸福 双重身份，兴许就是最佳方案","from":"","remark":"最安静的心跳与思绪才是我们真实的自己，为自己保留几年，生产期随时，但味道也许会变，最真实的自己献给青春， 城市自述","tags":"治愈"}

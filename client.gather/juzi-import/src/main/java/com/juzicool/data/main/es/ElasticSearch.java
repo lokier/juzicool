@@ -83,6 +83,12 @@ public class ElasticSearch {
 		return restClient;
 	}
 
+	public RestClient creatClient(){
+		RestClient restClient = mBuilder.build();
+		return restClient;
+	}
+
+
 	
 	public void releaseClient(RestClient client) {
 		

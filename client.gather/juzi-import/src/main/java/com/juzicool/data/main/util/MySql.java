@@ -11,18 +11,25 @@ import java.util.ArrayList;
 public class MySql {
     //定义MySql JDBC驱动字符串
     private static final String jdbc="com.mysql.jdbc.Driver";
-    //定义 MySql 连接数据库URL字符串
-    private static final String url="jdbc:mysql://127.0.0.1/";
-    //数据库名称
-    private static final String datebase="test";
-    //用户名
-    private static final String user="root";
-    //用户密码
-    private static final String password="123456";
     //全局连接
     private Connection conn=null;
     //默认打印debug信息
     private boolean debug=true;
+
+    //定义 MySql 连接数据库URL字符串
+    private  final String url;
+    //数据库名称
+    //用户名
+    private  final String user;
+    //用户密码
+    private  final String password;
+
+    public MySql(String url,String userName,String password){
+        this.url = url;
+        this.user = userName;
+        this.password = password;
+
+    }
 
     /**
      * 设置是否打印调试信息
@@ -92,7 +99,7 @@ public class MySql {
      * 动态加载MySql驱动
      * @throws SQLException
      */
-    public void loadJdbcDriver() throws SQLException {
+    private void loadJdbcDriver() throws SQLException {
         try {
             if(debug) System.out.println("Loading JDBC Driver...");
             Class.forName(jdbc);
@@ -107,14 +114,19 @@ public class MySql {
         return conn;
     }
 
+
+
     /**
      * 连接MySql数据库
      * @throws SQLException
      */
     public void connect() throws SQLException{
+
+        loadJdbcDriver();
+
         try {
             if(debug) System.out.println("Connect to MySql Server...");
-            conn=DriverManager.getConnection(url+datebase,user,password);
+            conn=DriverManager.getConnection(url,user,password);
             //设置连接相关属性
             //setConnAttrs(readOnly,autoCommit)
         } catch (SQLException e) {
@@ -126,11 +138,11 @@ public class MySql {
      * 关闭MySql数据库
      * @throws SQLException
      */
-    public void disconnect() throws SQLException{
+    public void disconnect(){
         try {
             if(debug) System.out.println("DisConnect to MySql Server...");
             conn.close();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             //throw new SQLException("DisConnect to MySql Server Error : " + e.getMessage());
         }
     }
@@ -157,6 +169,7 @@ public class MySql {
             throw new SQLException("Load excSql Driver Error :"+ e.getMessage());
         }
     }
+
 
     /**
      * 从数据库获取数据(此处假设全是String类型)
@@ -192,17 +205,10 @@ public class MySql {
     }
 
     public static void main(String[] args) throws SQLException {
-        MySql demo=new MySql();
-//		demo.setDeug(false);
-        demo.loadJdbcDriver();
+        String url = "jdbc:mysql://localhost:3306/jfinal_club?characterEncoding=utf8&useSSL=false&zeroDateTimeBehavior=convertToNull";
+        MySql demo=new MySql(url,"root","1234");
         demo.connect();
-//		String insertStr="insert into student values('3','lucy',18)";
-//		String delStr="delete from student where id=3;";
-//		demo.execSql(delStr);
-//		String queryStr="select ID,NAME from student;";
-//		ArrayList<ArrayList<String>> date= new ArrayList<>();
-//		date=demo.getStringData(queryStr, 2);
-//		System.out.println(date);
+
         demo.printDatabaseInfo();
         demo.disconnect();
     }
