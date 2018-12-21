@@ -104,6 +104,104 @@ public class JuziDB {
         }
     }
 
+    public void deletes(long[] juzis){
+
+        if(juzis == null || juzis.length == 0){
+            return;
+        }
+
+        String sql = "delete from "+TABLE_NAME+" where id in (";
+
+        StringBuffer sb = new StringBuffer(sql);
+        sb.append(juzis[0]);
+        for(int i=1;i<juzis.length;i++) {
+           sb.append(","+juzis[i]);
+        }
+        sb.append(")");
+
+        sql = sb.toString();
+
+        PreparedStatement pstmt = null;
+        try {
+            Connection conn = mConnection;
+           // conn.setAutoCommit(false);
+            pstmt = conn.prepareStatement(sql);
+          /*  for(Juzi juzi :juzis){
+                pstmt.setInt(1,(int)juzi.id);
+                pstmt.addBatch();
+            }*/
+            pstmt.executeUpdate();
+           // conn.commit();
+        } catch (SQLException e) {
+            Connection conn = mConnection;
+
+            try {
+                conn.rollback();
+            } catch (SQLException ex) {
+
+            }
+            throw  new RuntimeException(e);
+        }finally {
+            Connection conn = mConnection;
+
+
+            try {
+                conn.setAutoCommit(true);
+            } catch (SQLException e) {
+
+            }
+            try {
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+            }catch (Exception ex){
+
+            }
+
+        }
+
+    }
+
+    public List<Juzi> getFirsPage(int size){
+        String sql = "SELECT *  FROM " + TABLE_NAME +" LIMIT  " +size+ "   OFFSET " + 0;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            Connection conn = mConnection;
+            stmt= conn.createStatement();
+            rs = stmt.executeQuery(sql);
+            ArrayList<Juzi> list = new ArrayList<>();
+            while (rs.next()) {
+                list.add(toJuzi(rs));
+            }
+            if(list.isEmpty()){
+                return null;
+            }
+            return list;
+        } catch (Exception e) {
+            throw  new RuntimeException(e);
+        }finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+            }catch (Exception ex){
+
+            }
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            }catch (Exception ex){
+
+            }
+
+        }
+        //return ;
+    }
+
+
+
 
     public void put(Juzi juzi){
         String sql = "INSERT or replace INTO "+TABLE_NAME+"(" +
@@ -193,16 +291,7 @@ public class JuziDB {
                 rs = stmt.executeQuery(sql);
                 ArrayList<Juzi> list = new ArrayList<>();
                 while (rs.next()) {
-                    Juzi juzi = new Juzi();
-                    juzi.id = rs.getLong("id");
-                    juzi.content = rs.getString("content");
-                    juzi.author = rs.getString("author");
-                    juzi.from = rs.getString("_from");
-                    juzi.category = rs.getString("category");
-                    juzi.tags = rs.getString("tags");
-                    juzi.remark = rs.getString("remark");
-                    juzi.applyDesc = rs.getString("applyTags");
-                    list.add(juzi);
+                    list.add(toJuzi(rs));
                 }
                 if(list.isEmpty()){
                     return null;
@@ -233,6 +322,18 @@ public class JuziDB {
     }
 
 
+    private static Juzi toJuzi(ResultSet rs)throws SQLException{
+        Juzi juzi = new Juzi();
+        juzi.id = rs.getLong("id");
+        juzi.content = rs.getString("content");
+        juzi.author = rs.getString("author");
+        juzi.from = rs.getString("_from");
+        juzi.category = rs.getString("category");
+        juzi.tags = rs.getString("tags");
+        juzi.remark = rs.getString("remark");
+        juzi.applyDesc = rs.getString("applyTags");
+        return juzi;
+    }
 
 
 }

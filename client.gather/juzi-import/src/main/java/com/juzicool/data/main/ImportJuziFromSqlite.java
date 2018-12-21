@@ -45,6 +45,11 @@ public class ImportJuziFromSqlite {
             return;
         }
 
+        if(es_index_version == null){
+            System.err.println("es_index_version should not null");
+            return;
+        }
+
 
 
         MySql mySql = new MySql(mysql_url,mysql_name,mysql_password);
@@ -72,38 +77,60 @@ public class ImportJuziFromSqlite {
             PreparedStatement juziPs = conn.prepareStatement(insertJuzi,Statement.RETURN_GENERATED_KEYS);
             PreparedStatement juziExPs = conn.prepareStatement(insertJuziEx);
 
-
-            JuziDB.Iterator it = juziDB.createIterator();
+            //JuziDB.Iterator it = juziDB.createIterator();
             List<Juzi> batchList = null;
             int count = 0;
+            long batchFirstId = -1L;
+            boolean hasCheckData = false;
+            int batchSize = 500;
             do {
-                batchList = it.next(300);
-                if (batchList != null) {
+                batchList = juziDB.getFirsPage(batchSize);
 
-                    count += batchList.size();
-                    //插入数据库
-                    juziPs.clearBatch();
-                    juziExPs.clearBatch();
-                    insertJuziToDB(batchList,juziPs);
+                if(batchList == null || batchList.size() == 0){
+                    break;
+                }
+                final long[] ids = getIds(batchList);
+
+                long newBatchFirstId = batchList.get(0).id;
+                if(newBatchFirstId == batchFirstId){
+                    //简单判断下导入的内容有没有重复。
+                    throw  new RuntimeException("import repeat data!:" + newBatchFirstId);
+                }
+                batchFirstId = newBatchFirstId;
+
+                count += batchList.size();
+                //插入数据库
+                juziPs.clearBatch();
+                juziExPs.clearBatch();
+                insertJuziToDB(batchList, juziPs);
 
 
-                    if(es_index_version> 0){
-                        //构建索引
-                        updateSearchIndex(client,batchList,es_index_name,es_index_name_type);
+                if (es_index_version > 0) {
+                    //构建索引
+                    updateSearchIndex(client, batchList, es_index_name, es_index_name_type);
+                }
+                insertJuziExToDB(batchList, juziExPs, es_index_version);
+
+                conn.commit();//执行
+
+                //删除导入的批量数据
+                juziDB.deletes(ids);
+
+                System.out.println(String.format("handle: %d/%d", count, juziTotalSize));
+                //System.out.println(String.format("new size %d", juziDB.size()));
+
+                //第一次简单的检查下导入源的数据有没有删除
+                if(!hasCheckData){
+                    int newjuziTotalSize = juziDB.size();
+                    if(newjuziTotalSize + batchList.size() != juziTotalSize){
+                        throw  new RuntimeException("JuziDB 应该删除已导入的数据！");
                     }
-                    insertJuziExToDB(batchList,juziExPs,es_index_version);
-
-
-                    System.out.println(String.format("handle: %d/%d", count, juziTotalSize));
-                    conn.commit();//执行
-
-                    if(count >899){
-                        break;
-                    }
+                    hasCheckData = true;
                 }
 
-            } while (batchList != null);
 
+
+            } while (batchList != null);
 
         }catch (Exception ex){
             try{
@@ -210,6 +237,14 @@ public class ImportJuziFromSqlite {
             throw listener.ex;
         }
 
+    }
+
+    private static long[]  getIds(List<Juzi> juziList) {
+        long[] ids = new long[juziList.size()];
+        for(int i = 0 ; i < juziList.size();i++){//Juzi juzi : juziList){
+            ids[i] = juziList.get(i).id;
+        }
+        return ids;
     }
 
     private static class  UpdateIndexResponseListener implements ResponseListener{
