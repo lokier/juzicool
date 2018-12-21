@@ -66,7 +66,7 @@ public class JuziDB {
 
     public JuziDB(File file){
         mFile = file;
-        jdbcUrl = "jdbc:sqlite:" +file.getAbsolutePath();
+        jdbcUrl = "jdbc:sqlite:" +file.getName();
     }
 
     public void prepare(){

@@ -5,6 +5,8 @@ import com.juzicool.data.Juzi;
 import com.juzicool.data.db.JuziDB;
 import com.juzicool.data.main.es.ElasticSearch;
 import com.juzicool.data.main.util.MySql;
+import com.juzicool.data.main.util.Prop;
+import com.juzicool.data.main.util.PropKit;
 import com.juzicool.data.utils.JuziUtils;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -18,22 +20,44 @@ import java.util.concurrent.CountDownLatch;
 public class ImportJuziFromSqlite {
 
     public static void main(String[] args) {
-        final String es_host = "localhost";
-        final int es_port = 9200;
-        final String es_name = "";
-        final String es_password = "";
-        final int es_timeout = 30000;
 
-        final String sqliteFilePath = "./juzimi_ablum_output.db";
-        final String mysql_url = "jdbc:mysql://localhost:3306/jfinal_club?characterEncoding=utf8&useSSL=false&zeroDateTimeBehavior=convertToNull";
-        final String mysql_name = "root";
-        final String mysql_password = "1234";
-        final String es_index_name = "juzicool";
-        final String es_index_name_type = "juzi";
+       // args = new String[]{"juzi-import\\bin\\import-sqlite-file.properties"};
 
-        Integer accountId = -1;
-        Integer sourceType = 100;
-        Integer es_index_version = 1; // 建立索引的版本号，0为不建立索引。
+        if(args == null || args.length < 1){
+            System.err.println("缺少指定properties文件");
+            return ;
+        }
+
+        String propFilePath = args[0];
+
+        File file = new File(propFilePath);
+
+        if(!file.exists()){
+            System.err.println("指定参数文件不存在：" + file.getAbsolutePath());
+
+        }
+
+        Prop prp = PropKit.use(file);
+
+        final String es_host = prp.get("es_host","localhost");
+        final int es_port = prp.getInt("es_port",9200);
+        final String es_name =  prp.get("es_name","");
+        final String es_password =  prp.get("es_password","");
+        final int es_timeout = prp.getInt("es_timeout",30000);
+        final String es_index_name = prp.get("es_index_name","");
+        final String es_index_name_type = prp.get("es_index_name_type","");
+
+        final String sqliteFilepath =   prp.get("sqliteFilepath",null) ; // "./juzimi_ablum_output.db";
+
+        final String mysql_url = prp.get("mysql_url","");
+        final String mysql_name = prp.get("mysql_name","");
+        final String mysql_password = prp.get("mysql_password","");
+
+
+        Integer accountId = prp.getInt("accountId",null);
+        Integer sourceType = prp.getInt("sourceType",null);
+        Integer es_index_version = prp.getInt("es_index_version",null);
+        // 建立索引的版本号，0为不建立索引。
 
         if(accountId == null){
             System.err.println("accountId should not null");
@@ -50,12 +74,19 @@ public class ImportJuziFromSqlite {
             return;
         }
 
+        File sqlFile = new File(sqliteFilepath);
+
+        if(!sqlFile.exists()){
+            System.err.println("sqlite 文件不存在");
+            return;
+        }
+
 
 
         MySql mySql = new MySql(mysql_url,mysql_name,mysql_password);
         mySql.setDeug(false);
         ElasticSearch search = new ElasticSearch(es_host,es_port,es_name,es_password,es_timeout);
-        JuziDB juziDB = new JuziDB(new File(sqliteFilePath));
+        JuziDB juziDB = new JuziDB(sqlFile);
         RestClient client =  search.creatClient();
         try {
             juziDB.prepare();
@@ -128,9 +159,8 @@ public class ImportJuziFromSqlite {
                     hasCheckData = true;
                 }
 
-
-
             } while (batchList != null);
+            System.out.println(String.format("导入完成，共完成/%d个数据！", count));
 
         }catch (Exception ex){
             try{
