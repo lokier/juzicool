@@ -66,12 +66,13 @@ public class JuziDB {
 
     public JuziDB(File file){
         mFile = file;
-        jdbcUrl = "jdbc:sqlite:" +file.getName();
+        jdbcUrl = "jdbc:sqlite:" +file.getAbsolutePath();
     }
 
     public void prepare(){
         // db parameters
         try {
+            Class.forName("org.sqlite.JDBC");
             mConnection = DriverManager.getConnection(jdbcUrl);
             String createSql = "CREATE TABLE IF NOT EXISTS "+TABLE_NAME+" (\n" +
                     "   id integer  PRIMARY KEY AUTOINCREMENT,\n" +

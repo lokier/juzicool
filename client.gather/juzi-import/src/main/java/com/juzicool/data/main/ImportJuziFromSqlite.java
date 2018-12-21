@@ -89,13 +89,15 @@ public class ImportJuziFromSqlite {
         JuziDB juziDB = new JuziDB(sqlFile);
         RestClient client =  search.creatClient();
         try {
+            mySql.connect();
+
+
             juziDB.prepare();
 
             int juziTotalSize = juziDB.size();
 
             System.out.println("juzi total size: " + juziTotalSize);
 
-            mySql.connect();
 
             Connection conn = mySql.getConnection();
 
