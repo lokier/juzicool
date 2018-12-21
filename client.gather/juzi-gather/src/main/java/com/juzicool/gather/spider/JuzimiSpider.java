@@ -82,15 +82,10 @@ public class JuzimiSpider {
         spider.stopWhileExceutedSize(4000); // 执行超过指定次数请求时停止
         spider.stopWhileProcessSucessRateSmallerThan(0.5f); // 最近请求成功率低于50%时停止抓取
 
-        SwingUtilities.invokeLater(new Runnable() {
+        SpiderStopUI.doWhileCloase(new ActionListener() {
             @Override
-            public void run() {
-                SpiderStopUI.doWhileCloase(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        spider.stop();
-                    }
-                });
+            public void actionPerformed(ActionEvent e) {
+                spider.stop();
             }
         });
 
