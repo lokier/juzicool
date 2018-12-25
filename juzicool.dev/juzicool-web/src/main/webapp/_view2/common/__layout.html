@@ -57,6 +57,17 @@
 	#end
 		
 </script>
+<script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?e8dab0acdbab66654b400801972d96c6";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+</script>
+
+</head>
 <body #@bodyAttr?() ><noscript unselectable="on" id="noscript">
     <div class="aw-404 aw-404-wrap container">
         <img src="/assets-v2/css/img/no-js.jpg">
@@ -144,7 +155,6 @@ class="icon icon-up"></i></a>
 </div>
 #end
 
-</body></html>
 
 ### 模板函数安全调用，找到 js() 模板函数则调用，找不到则直接跳过
 ### 适合于部分页面在 layout.html 提供的 js 文件之外，还需额外添加 js 资源的应用场景
