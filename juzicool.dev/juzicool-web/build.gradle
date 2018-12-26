@@ -47,7 +47,6 @@ war{
     exclude('upload')
 }
 
-
 gretty {
     // 端口默认8080
     // serlvetContainer 支持 jetty7/8/9，tomcat7/8

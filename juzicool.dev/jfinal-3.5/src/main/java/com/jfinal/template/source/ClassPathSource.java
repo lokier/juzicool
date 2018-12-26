@@ -48,6 +48,8 @@ public class ClassPathSource implements ISource {
 	protected long lastModified;
 	protected ClassLoader classLoader;
 	protected URL url;
+
+	public static ClassLoader gBackUPClassLoadr  = null; //
 	
 	public ClassPathSource(String fileName) {
 		this(null, fileName, EngineConfig.DEFAULT_ENCODING);
@@ -63,6 +65,11 @@ public class ClassPathSource implements ISource {
 		this.encoding= encoding;
 		this.classLoader = getClassLoader();
 		this.url = classLoader.getResource(finalFileName);
+
+		if (url == null && gBackUPClassLoadr!= null) {
+			this.url = gBackUPClassLoadr.getResource(finalFileName);
+		}
+
 		if (url == null) {
 			throw new IllegalArgumentException("File not found : \"" + finalFileName + "\"");
 		}

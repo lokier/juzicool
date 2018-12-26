@@ -38,7 +38,7 @@ a:link{ text-decoration:none;}
 .index-logo{ padding-left:90px;margin-bottom: 30px;}
 .index-logo a{display:block; width: 124px; height: 94px;background:url('img/logo.png') no-repeat; background-position: 50% 50%;  background-size: cover;}
 
-.index-center{ text-align:center;margin:auto;width:320px;height:320px;clear:both}
+.index-center{ text-align:center;margin:auto;width:350px;height:320px;clear:both;}
 
 .aw-search-box-main{ margin: 0 0 0 0px;}
 .aw-search-box-main input{ width: 180px; padding: 6px 10px; background-color: #f9f9f9; font-size: 12px;}

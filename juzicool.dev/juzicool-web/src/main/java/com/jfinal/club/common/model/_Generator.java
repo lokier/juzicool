@@ -19,7 +19,15 @@ import com.jfinal.plugin.activerecord.dialect.MysqlDialect;
 import com.jfinal.plugin.activerecord.generator.Generator;
 import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.club.common.JFinalClubConfig;
+import com.jfinal.template.source.ClassPathSource;
+import com.sun.org.apache.xpath.internal.operations.Mod;
+
 import javax.sql.DataSource;
+import java.io.File;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.net.URL;
 
 /**
  * Model、BaseModel、_MappingKit 生成器
@@ -53,22 +61,98 @@ public class _Generator {
 		return druidPlugin.getDataSource();
 	}
 
+	private static String detectSrcPath() {
+		try {
+			String path = PathKit.class.getResource("/").toURI().getPath();
+			return new File(path).getParentFile().getParentFile().getParentFile().getCanonicalPath();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static class ModuleClassLoader extends ClassLoader{
+		private File mDir;
+
+		public ModuleClassLoader(ClassLoader classLoader){
+			super(classLoader);
+			mDir = new File("db-generate-jf");
+		}
+
+		public ModuleClassLoader(){
+			mDir = new File("db-generate-jf");
+		}
+
+
+
+
+		@Override
+		protected URL findResource(String name) {
+
+			int index = name.lastIndexOf("/");
+			String fileName = name.substring(index+1);
+
+			File file = new File(mDir,fileName);
+			if(file.exists()){
+				try {
+					return file.toURL();
+				}catch (Exception ex){
+					ex.printStackTrace();
+				}
+			}
+
+			return super.findResource(name);
+		}
+	}
+
+/*	public static void main(String[] args) {
+
+
+		try{
+			Class<?> aClass = moduleClassLoader.loadClass(_Generator.class.getCanonicalName());
+
+			Method saddMethod2 = aClass.getMethod("_main", new Class[] {String[].class });
+
+			Object g =  aClass.newInstance();
+			//Constructor c=aClass.getConstructor(DataSource.class,String.class,String.class,String.class,String.class);//获取有参构造
+			//gen = (Generator)c.newInstance(getDataSource(), baseModelPackageName, baseModelOutputDir, modelPackageName, modelOutputDir);
+			saddMethod2.invoke(g,new Object[]{args});
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}*/
+
+
 	public static void main(String[] args) {
 		// base model 所使用的包名
 		String baseModelPackageName = "com.jfinal.club.common.model.base";
-		// base model 文件保存路径
-		String baseModelOutputDir = PathKit.getWebRootPath()
-				+ "/src/main/java/com/jfinal/club/common/model/base";
 
+		String moduelDir = detectSrcPath();
+
+		ClassLoader moduleClassLoader = new ModuleClassLoader();
+		ClassPathSource.gBackUPClassLoadr = moduleClassLoader;
+
+
+		// base model 文件保存路径
+		String baseModelOutputDir = moduelDir + "/src/main/java/com/jfinal/club/common/model/base";
+
+
+		System.out.println("工程目录："+ moduelDir);
 		System.out.println("输出路径："+ baseModelOutputDir);
+
+
 
 		// model 所使用的包名 (MappingKit 默认使用的包名)
 		String modelPackageName = "com.jfinal.club.common.model";
 		// model 文件保存路径 (MappingKit 与 DataDictionary 文件默认保存路径)
 		String modelOutputDir = baseModelOutputDir + "/..";
 
-		// 创建生成器
+
+
 		Generator gen = new Generator(getDataSource(), baseModelPackageName, baseModelOutputDir, modelPackageName, modelOutputDir);
+
+		System.out.println("Generator classloard："+ gen.getClass().getClassLoader());
+
 		// 设置数据库方言
 		gen.setDialect(new MysqlDialect());
 		// 添加不需要生成的表名
@@ -79,6 +163,7 @@ public class _Generator {
 		gen.setGenerateDaoInModel(false);
 		// 设置是否生成字典文件
 		gen.setGenerateDataDictionary(false);
+
 		// 设置需要被移除的表名前缀用于生成modelName。例如表名 "osc_user"，移除前缀 "osc_"后生成的model名为 "User"而非 OscUser
 		// gernerator.setRemovedTableNamePrefixes("t_");
 		// 生成

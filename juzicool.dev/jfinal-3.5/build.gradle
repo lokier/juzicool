@@ -23,6 +23,15 @@ war{
 }
 
 
+//from文件夹目录下的所有jf文件打包进工程
+processResources {
+    from('src/main/java') {
+        include '**/*.jf'
+    }
+}
+
+
+
 dependencies {
 
    // providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
