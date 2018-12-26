@@ -66,10 +66,6 @@ public class ClassPathSource implements ISource {
 		this.classLoader = getClassLoader();
 		this.url = classLoader.getResource(finalFileName);
 
-		if (url == null && gBackUPClassLoadr!= null) {
-			this.url = gBackUPClassLoadr.getResource(finalFileName);
-		}
-
 		if (url == null) {
 			throw new IllegalArgumentException("File not found : \"" + finalFileName + "\"");
 		}
@@ -88,6 +84,9 @@ public class ClassPathSource implements ISource {
 	}
 	
 	protected ClassLoader getClassLoader() {
+		if(gBackUPClassLoadr != null){
+			return gBackUPClassLoadr;
+		}
 		ClassLoader ret = Thread.currentThread().getContextClassLoader();
 		return ret != null ? ret : getClass().getClassLoader();
 	}

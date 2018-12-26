@@ -73,13 +73,10 @@ public class _Generator {
 	private static class ModuleClassLoader extends ClassLoader{
 		private File mDir;
 
-		public ModuleClassLoader(ClassLoader classLoader){
-			super(classLoader);
-			mDir = new File("db-generate-jf");
-		}
 
-		public ModuleClassLoader(){
-			mDir = new File("db-generate-jf");
+
+		public ModuleClassLoader(String dir){
+			mDir = new File(dir);
 		}
 
 
@@ -129,7 +126,7 @@ public class _Generator {
 
 		String moduelDir = detectSrcPath();
 
-		ClassLoader moduleClassLoader = new ModuleClassLoader();
+		ClassLoader moduleClassLoader = new ModuleClassLoader(moduelDir+"/db-generate-jf");
 		ClassPathSource.gBackUPClassLoadr = moduleClassLoader;
 
 
