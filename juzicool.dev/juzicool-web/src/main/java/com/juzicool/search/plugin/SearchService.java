@@ -17,6 +17,7 @@ package com.juzicool.search.plugin;
 import com.jfinal.plugin.activerecord.Page;
 import com.juzicool.search.Juzi;
 import com.juzicool.search.JuziObject;
+import com.juzicool.search.util.HtmlUtils;
 import com.juzicool.search.util.JuziUtils;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -126,21 +127,23 @@ public class SearchService {
 				JSONArray hitsArray = hitsObject.getJSONArray("hits");
 				int length = hitsArray!= null ? hitsArray.size():0;
 				for(int i = 0; i < length;i++) {
-					JSONObject juziItem = hitsArray.getJSONObject(i).getJSONObject("_source");
+					JSONObject juziItem  = hitsArray.getJSONObject(i);
+					JSONObject  sorceItem= juziItem.getJSONObject("_source");
+					long id = juziItem.getLong("_id");
 					
-					
-					String applyDesc = juziItem.getString("applyDesc");
-					String author = juziItem.getString("author");
-					String category = juziItem.getString("category");
-					String content = toHtml(juziItem.getString("content"));
-					String from = juziItem.getString("from");
-					//juzi.length = juziItem.getIntValue("length");
-					String remark = juziItem.getString("remark");
-					String tags = juziItem.getString("tags");
-					long  updateTime = juziItem.getLongValue("updateTime");
+					String applyDesc = sorceItem.getString("applyDesc");
+					String author = sorceItem.getString("author");
+					String category = sorceItem.getString("category");
+					String content = sorceItem.getString("content");
+					String from = sorceItem.getString("from");
+					//juzi.length = sorceItem.getIntValue("length");
+					String remark = sorceItem.getString("remark");
+					String tags = sorceItem.getString("tags");
+					long  updateTime = sorceItem.getLongValue("updateTime");
 					
 					Juzi juzi = new Juzi();
-					
+
+					juzi.setId(id);
 					juzi.setApplyDesc(applyDesc);
 					juzi.setAuthor(author);
 					juzi.setContent(content);
@@ -197,17 +200,7 @@ public class SearchService {
 	
 	}
 	
-	private static String toHtml(String text) {
-		if(text == null) {
-			return null;
-		}
-		
-		text = text.replaceAll("\r\n", "<br/>");
-		text = text.replaceAll("\r", "<br/>");
-		text = text.replaceAll("\n", "<br/>");
 
-		return text;
-	}
 }
 
 

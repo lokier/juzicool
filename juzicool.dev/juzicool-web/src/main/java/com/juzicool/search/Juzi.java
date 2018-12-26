@@ -56,6 +56,16 @@ public class Juzi implements JuziObject{
 		return this.content!= null ? this.content.length():0;
 	}
 
+	@Override
+	public long getId() {
+		return id;
+	}
+
+	@Override
+	public void setId(long id) {
+		this.id = id;
+	}
+
 	public void setContent(String content) {
 		this.content = content;
 	}

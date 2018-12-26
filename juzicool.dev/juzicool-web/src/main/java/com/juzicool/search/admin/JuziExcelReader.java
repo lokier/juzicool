@@ -157,6 +157,16 @@ public class JuziExcelReader {
 		}
 
 
+		@Override
+		public long getId() {
+			return 0;
+		}
+
+		@Override
+		public void setId(long id) {
+
+		}
+
 		public void setContent(String content) {
 			this.content = content;
 		}

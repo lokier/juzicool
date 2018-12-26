@@ -1,0 +1,92 @@
+#set(seoTitle="句子酷|查找你想要的句子！")
+#@layout2()
+#define main()
+<!-- 内容容器 -->
+
+	<div class="stui-header-wrap top-fixed headroom--not-bottom top-fixed-up headroom--top" id="header-top">
+		<div class="container">
+			<div class="row">
+				<!-- logo -->
+				<div class="aw-logo hidden-xs">
+					<a href="http://demo.qa.shoutu.cn/q001"></a>
+				</div>
+				<!-- end logo -->
+				
+		
+				
+				<!-- 搜索框 -->
+				<div class="aw-search-box  hidden-xs hidden-sm">
+					<form class="navbar-search" action="http://demo.qa.shoutu.cn/q001/?/search/" id="global_search_form" method="post">
+						<input class="form-control search-query" type="text" value="" placeholder="搜索问题、话题或人" autocomplete="off" name="q" id="aw-search-query">
+						<span title="搜索" id="global_search_btns" onclick="_hmt.push(['_trackEvent', 'search', 'query', $('#aw-search-query').val()]);$(&#39;#global_search_form&#39;).submit();"><i class="icon icon-search"></i></span>
+						
+					</form>
+				</div>
+				<!-- end 搜索框 -->
+				
+				<!-- 用户栏 -->
+				
+					
+			
+				
+				<!-- end 用户栏 -->
+				<!-- 发起 -->
+								<!-- end 发起 -->
+			</div>
+		</div>
+	</div>
+	
+<div class="aw-container-wrap">
+	<div class="container">
+		<div class="row">
+			<div class="aw-content-wrap clearfix">
+
+				<div class="col-sm-12 col-md-9 padding-0">
+
+
+		<div class="aw-main-content">
+
+
+						<!-- end tab切换 -->
+						<div class="aw-mod aw-explore-list">
+							<div class="mod-body">
+
+								<p>
+									<a href="javascript:">#(juzi.category)</a>
+								</p>
+
+								<h4>
+										#(juzi.content)
+
+								</h4>
+
+
+								<p>
+												<span class="text-color-999">
+												#if(juzi.author!=null && juzi.author!="")
+													作者：<b>#(juzi.author)</b>&nbsp;
+												#end
+												#if(juzi.from!=null && juzi.from!="")
+													来自：<b>#(juzi.from)</b>&nbsp;
+												#end
+
+
+												</span>
+
+								</p>
+
+							</div>
+
+						</div>
+					</div>
+				</div>
+
+
+
+
+			</div>
+		</div>
+	</div>
+</div>
+
+#end

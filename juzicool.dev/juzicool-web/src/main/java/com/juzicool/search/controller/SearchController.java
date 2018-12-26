@@ -17,6 +17,8 @@ package com.juzicool.search.controller;
 import com.jfinal.aop.Before;
 import com.jfinal.club.common.controller.BaseController;
 import com.jfinal.club.common.interceptor.AuthCacheClearInterceptor;
+import com.jfinal.club.common.model.Juzi;
+import com.jfinal.club.common.model.JuziGroup;
 import com.jfinal.plugin.activerecord.Page;
 import com.juzicool.search.JuziObject;
 import com.juzicool.search.plugin.SearchService;
@@ -29,9 +31,13 @@ import com.juzicool.search.util.UrlUtils;
 public class SearchController extends BaseController {
 
 	SearchService srv = SearchService.me;
+	JuziGroup mGroupDao = new JuziGroup().dao();
+	Juzi mJuziDao = new Juzi().dao();
 
 	public void index() {
+		Page<JuziGroup> grops = mGroupDao.paginate(1,10,"select *", "from juzi_group order by id asc");
 
+		this.setAttr("groups",grops.getList());
 		render("index.html");
 	}
 	
@@ -80,6 +86,74 @@ public class SearchController extends BaseController {
 	
 	public void coopration() {
 		this.render("coopration.html");
+	}
+
+
+
+	public void juzi(){
+		Integer juziId = super.getParaToInt("id", -1);
+
+		Juzi juzi = mJuziDao.findById(juziId);
+
+		if(juzi == null){
+			renderError(404);
+			return;
+		}
+		setAttr("juzi",juzi);
+		render("juzi_detail.html");
+	}
+
+	public void group(){
+
+		Integer groupId = super.getParaToInt("id", -1);
+		int currentPage = super.getParaToInt("page", 1); //从1开始
+		int pageSize = super.getParaToInt("size", 0);
+
+		if(currentPage < 1) {
+			currentPage = 1;
+		}
+
+		if(pageSize >20) {
+			pageSize = 20;
+		}
+		if(pageSize < 1) {
+			pageSize = 10;
+		}
+
+
+		JuziGroup group = mGroupDao.findById(groupId);
+
+		if(group == null){
+			renderError(404);
+			return;
+		}
+
+		String query= group.getTags();
+		if(query.isEmpty()) {
+			render("index.html");
+			return;
+		}
+
+		Page<JuziObject> pageResult = srv.query(query,currentPage,pageSize);
+
+		if(pageResult == null) {
+			this.renderError(404);
+			return;
+		}
+
+		int totalPage = pageResult.getTotalPage() > 100 ?100:pageResult.getTotalPage();
+
+		Page<JuziGroup> grops = mGroupDao.paginate(1,10,"select *", "from juzi_group order by id asc");
+
+		this.setAttr("groups",grops.getList());
+		this.setAttr("page", pageResult);
+		this.setAttr("currentPage", currentPage);
+		this.setAttr("totalPage", totalPage);
+		this.setAttr("groupId", groupId);
+		this.setAttr("linkPage", "./group?id="+groupId+"&size="+pageSize);
+		this.setAttr("group", group);
+
+		render("group.html");
 	}
 
 	@Before(AuthCacheClearInterceptor.class)

@@ -17,7 +17,7 @@
 				<!-- 搜索框 -->
 				<div class="aw-search-box  hidden-xs hidden-sm">
 					<form class="navbar-search" action="/search" id="global_search_form" method="get">
-						<input class="form-control search-query" type="text" value="#(q)" placeholder="搜索问题、话题或人" autocomplete="off" name="q" id="aw-search-query">
+						<input class="form-control search-query" type="text" value="" placeholder="搜索问题、话题或人" autocomplete="off" name="q" id="aw-search-query">
 						<span title="搜索" id="global_search_btns" onclick="_hmt.push(['_trackEvent', 'search', 'query', $('#aw-search-query').val()]);$(&#39;#global_search_form&#39;).submit();"><i class="icon icon-search"></i></span>
 						
 					</form>
@@ -50,14 +50,23 @@
 		<div class="aw-main-content">
 						
 						<!-- tab切换 -->
-						<ul class="nav nav-tabs aw-nav-tabs active hidden-xs">
+					<!--	<ul class="nav nav-tabs aw-nav-tabs active hidden-xs">
 							
 	
-							<h2 class="hidden-xs">查找结果</h2>
+							<h2 class="hidden-xs">#(group.name)</h2>
+						</ul>-->
+
+						<ul class="stui-category clearfix">
+							#for(group : groups)
+								#if(group.id==groupId)
+								<li class="active">
+								#else
+								<li	>
+								#end
+									<a href="/group?id=#(group.id)">#(group.name)</a></li>
+							#end
 						</ul>
 						<!-- end tab切换 -->
-	
-												
 	
 						<div class="aw-mod aw-explore-list">
 							<div class="mod-body">
@@ -73,8 +82,8 @@
 											
 											<h4>
 												<a href="/juzi?id=#(juzi.id)">
-												#(juzi.content)
-												<a/>
+													#(juzi.content)
+													<a/>
 											</h4>
 											
 										

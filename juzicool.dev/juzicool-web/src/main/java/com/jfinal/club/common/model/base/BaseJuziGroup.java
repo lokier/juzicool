@@ -17,6 +17,14 @@ public abstract class BaseJuziGroup<M extends BaseJuziGroup<M>> extends Model<M>
 		return getInt("id");
 	}
 
+	public void setName(java.lang.String name) {
+		set("name", name);
+	}
+	
+	public java.lang.String getName() {
+		return getStr("name");
+	}
+
 	public void setTags(java.lang.String tags) {
 		set("tags", tags);
 	}

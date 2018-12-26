@@ -2,7 +2,10 @@ package com.juzicool.search;
 
 public interface JuziObject {
 
-   public void setContent(java.lang.String content);
+	public long getId();
+	public void setId(long id);
+
+    public void setContent(java.lang.String content);
 	
 	public java.lang.String getContent();
 

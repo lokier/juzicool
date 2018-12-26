@@ -30,19 +30,11 @@
 				<!-- end 搜索框 -->
 
 				<ul class="stui-category clearfix">
-					<li><a href="http://demo.qa.shoutu.cn/q001/?/explore/">唯美句子</a></li>
-					<li><a href="http://demo.qa.shoutu.cn/q001/?/explore/category-115">悲伤句子</a></li>
-					<li><a href="http://demo.qa.shoutu.cn/q001/?/explore/category-115">励志句子</a></li>
-					<li><a href="http://demo.qa.shoutu.cn/q001/?/explore/category-115">搞笑句子</a></li>
-
+					#for(group : groups)
+					<li><a href="/group?id=#(group.id)">#(group.name)</a></li>
+					#end
 				</ul>
-				<ul class="stui-category clearfix">
-					<li><a href="http://demo.qa.shoutu.cn/q001/?/explore/">唯美句子</a></li>
-					<li><a href="http://demo.qa.shoutu.cn/q001/?/explore/category-115">悲伤句子</a></li>
-					<li><a href="http://demo.qa.shoutu.cn/q001/?/explore/category-115">励志句子</a></li>
-					<li><a href="http://demo.qa.shoutu.cn/q001/?/explore/category-115">搞笑句子</a></li>
 
-				</ul>
 				
 			</div>
 
