@@ -49,7 +49,7 @@ public class ClassPathSource implements ISource {
 	protected ClassLoader classLoader;
 	protected URL url;
 
-	public static ClassLoader gBackUPClassLoadr  = null; //
+	public static ClassLoader gBackUPClassLoadr  = null; //ADD BY juzicool.COM
 	
 	public ClassPathSource(String fileName) {
 		this(null, fileName, EngineConfig.DEFAULT_ENCODING);
@@ -84,9 +84,12 @@ public class ClassPathSource implements ISource {
 	}
 	
 	protected ClassLoader getClassLoader() {
+		//add by juzicool
 		if(gBackUPClassLoadr != null){
 			return gBackUPClassLoadr;
 		}
+		//END ADD
+
 		ClassLoader ret = Thread.currentThread().getContextClassLoader();
 		return ret != null ? ret : getClass().getClassLoader();
 	}
