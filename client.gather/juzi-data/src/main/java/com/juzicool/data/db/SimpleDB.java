@@ -14,6 +14,8 @@ public class SimpleDB {
         db.openFile(sqlFile);
         db.KV().put("name","sser");
         db.KV().put("name2",234);
+        db.KV().put("name2",234);
+        System.out.println("simple KV ===========================");
 
         System.out.println("name = : " +  db.KV().get("name","error!!!"));
         System.out.println("name2 = : " +  db.KV().get("name2",new Integer(-1)));
@@ -27,6 +29,23 @@ public class SimpleDB {
         System.out.println("has name = (true): " +  db.KV().has("name"));
         db.KV().remove("name");
         System.out.println("has name = (false): " +  db.KV().has("name"));
+
+        ArrayList<String> keys = new ArrayList<>();
+        for(int i = 0; i < 100;i++){
+            String key = "batch_name_"+i;
+            db.KV().put( key,23444);
+            keys.add(key);
+        }
+
+        System.out.println("kv size (>=100):" +db.KV().size());
+        db.KV().remove(keys);
+
+        System.out.println("kv size (<10):" +db.KV().size());
+
+
+        System.out.println("\n");
+        System.out.println("simple QUEUE ===========================");
+
 
         db.Queue().push("dww",5,"xcfdsfd");
         db.Queue().push("3442",9,"11111");
@@ -60,6 +79,19 @@ public class SimpleDB {
         data = db.Queue().poll();
         System.out.println("queue size : " + db.Queue().size());
         System.out.println("data is null: " + (data == null));
+
+        ArrayList<SimpleDB.QueueData> qDatalist = new ArrayList<>();
+        for(int i = 0; i< 100;i++){
+            SimpleDB.QueueData qdata = new SimpleDB.QueueData();
+            qdata.key ="q_data_q+"+i;
+            qdata.priority =1000;
+            qDatalist.add(qdata);
+        }
+        db.Queue().push(qDatalist);
+        System.out.println("after batch push , queue size : " + db.Queue().size());
+        db.Queue().poll(100);
+        System.out.println("after poll(100) , queue size : " + db.Queue().size());
+
 
         db.close();
     }
@@ -280,6 +312,41 @@ public class SimpleDB {
             }
         }
 
+        public void remove(List<String> keys){
+            String sql = "delete  from " + TABLE_NAME +" where " + KEY +" = ? ";
+            PreparedStatement pstmt = null;
+            Connection conn = mConnection;
+            try {
+                conn.setAutoCommit(false);
+                pstmt = conn.prepareStatement(sql);
+                for(String key: keys){
+                    pstmt.setString(1, key);
+                    pstmt.addBatch();
+                }
+                pstmt.executeBatch();
+                conn.commit();
+
+            } catch (SQLException e) {
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (pstmt != null) {
+                        pstmt.close();
+                    }
+                }catch (Exception ex){
+
+                }
+                try {
+                    conn.setAutoCommit(true);
+
+                }catch (Exception ex){
+
+                }
+
+            }
+        }
+
+
         public synchronized <T extends Serializable> T get(String key,T defaultValue){
             String sql = "SELECT "+VALUE+" FROM " + TABLE_NAME +" where " + KEY +" ='" +key +"'";
             Statement stmt = null;
@@ -394,6 +461,42 @@ public class SimpleDB {
 
         public void push(SimpleDB.QueueData data){
             push(data.key,data.priority,data.data);
+        }
+
+        public void push(List<SimpleDB.QueueData> list){
+            String sql = "INSERT or replace INTO "+QUEUE_TABLE+"("+QUEUE_KEY+", "+PRIORITY+", " +DATA+") VALUES(?,?,?)";
+            PreparedStatement pstmt = null;
+            Connection conn = mConnection;
+            try {
+                conn.setAutoCommit(false);
+                pstmt = conn.prepareStatement(sql);
+                for(SimpleDB.QueueData data : list){
+                    pstmt.setString(1, data.key);
+                    pstmt.setInt(2, data.priority);
+                    pstmt.setBytes(3, objectToByte(data.data));
+                    pstmt.addBatch();
+                }
+                pstmt.executeBatch();
+                conn.commit();
+
+            } catch (SQLException e) {
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (pstmt != null) {
+                        pstmt.close();
+                    }
+                }catch (Exception ex){
+
+                }
+                try {
+                    conn.setAutoCommit(true);
+
+                }catch (Exception ex){
+
+                }
+
+            }
         }
 
         public synchronized void push(String key, int priority, Serializable data){

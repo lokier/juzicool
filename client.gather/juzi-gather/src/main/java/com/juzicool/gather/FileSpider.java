@@ -10,6 +10,8 @@ import us.codecraft.webmagic.scheduler.Scheduler;
 import us.codecraft.webmagic.utils.HttpConstant;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class FileSpider extends Spider {
@@ -160,12 +162,22 @@ public class FileSpider extends Spider {
     public void restoreErrorRequest() {
         System.out.println("Spider restoreErrorRequest.....");
 
+        final int batchSize = 1000;
+        int totalSize = mErrorRequsetQueue.size();
+        int count = 0;
         while(true){
-            SimpleDB.QueueData data =  mErrorRequsetQueue.poll();
-            if(data!= null){
-                db.Queue().push(data);  //添加到待请求队列
-                db.KV().remove(data.key);  //标志未访问过
+            List<SimpleDB.QueueData> dataList =  mErrorRequsetQueue.poll(batchSize);
+            if(dataList!= null && dataList.size() > 0){
+                db.Queue().push(dataList);  //添加到待请求队列
+                ArrayList<String> keys = new ArrayList<>(dataList.size());
+                for(SimpleDB.QueueData data : dataList){
+                    keys.add(data.key);
+                }
+                db.KV().remove(keys);  //标志未访问过
                 //Request request =  (Request)data.data;
+                count += dataList.size();
+                System.out.println("progress:" + count +"/" + totalSize);
+
             }else{
                 break;
             }
