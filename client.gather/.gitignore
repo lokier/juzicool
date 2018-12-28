@@ -1,4 +1,5 @@
 *.log
 .gradle
 .idea
+*.db
 juzicool.dev.iml
