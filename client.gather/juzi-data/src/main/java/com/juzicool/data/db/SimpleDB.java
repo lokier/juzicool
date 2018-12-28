@@ -282,7 +282,48 @@ public class SimpleDB {
             }
         }
 
-   /*     public void remove(String key) {
+        public synchronized void put(List<String> keys, Serializable value){
+            String sql = "INSERT or replace INTO "+TABLE_NAME+"("+KEY+", "+VALUE+") VALUES(?,?)";
+            PreparedStatement pstmt = null;
+            Connection conn = mConnection;
+
+            try {
+                conn.setAutoCommit(false);
+                pstmt = conn.prepareStatement(sql);
+                for(String key:keys) {
+                    pstmt.setString(1, key);
+                    pstmt.setBytes(2, objectToByte(value));
+                    pstmt.addBatch();
+                }
+                pstmt.executeBatch();
+                conn.commit();
+            } catch (SQLException e) {
+                try {
+                    conn.rollback();
+                }catch (Exception ex){
+
+                }
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (pstmt != null) {
+                        pstmt.close();
+                    }
+                }catch (Exception ex){
+
+                }
+                try {
+                    conn.setAutoCommit(true);
+                }catch (Exception ex){
+
+                }
+
+
+            }
+        }
+
+
+        /*     public void remove(String key) {
 
             String[] keys = new String[1];
             keys[0] = key;
@@ -327,6 +368,11 @@ public class SimpleDB {
                 conn.commit();
 
             } catch (SQLException e) {
+                try {
+                    conn.rollback();
+                }catch (Exception ex){
+
+                }
                 throw  new RuntimeException(e);
             }finally {
                 try {
@@ -480,6 +526,11 @@ public class SimpleDB {
                 conn.commit();
 
             } catch (SQLException e) {
+                try {
+                    conn.rollback();
+                }catch (Exception ex){
+
+                }
                 throw  new RuntimeException(e);
             }finally {
                 try {
@@ -583,8 +634,8 @@ public class SimpleDB {
             String sql = "SELECT *  FROM " + QUEUE_TABLE +" ORDER BY "+PRIORITY+" desc limit " +size;
             Statement stmt = null;
             ResultSet rs = null;
+            Connection conn = mConnection;
             try {
-                Connection conn = mConnection;
                 stmt= conn.createStatement();
                 rs = stmt.executeQuery(sql);
                 // loop through the result set
@@ -617,7 +668,6 @@ public class SimpleDB {
 
                     if(needBatch){
                         conn.commit();
-                        conn.setAutoCommit(true);
                     }
                 }
 
@@ -626,6 +676,11 @@ public class SimpleDB {
                 return list;
 
             } catch (Exception e) {
+                try {
+                    conn.rollback();
+                }catch (Exception ex){
+
+                }
                 throw  new RuntimeException(e);
             }finally {
                 try {
@@ -642,7 +697,11 @@ public class SimpleDB {
                 }catch (Exception ex){
 
                 }
+                try {
+                    conn.setAutoCommit(true);
+                }catch (Exception ex){
 
+                }
             }
         }
 

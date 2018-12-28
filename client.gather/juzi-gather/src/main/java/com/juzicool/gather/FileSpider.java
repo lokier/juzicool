@@ -10,8 +10,7 @@ import us.codecraft.webmagic.scheduler.Scheduler;
 import us.codecraft.webmagic.utils.HttpConstant;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 public class FileSpider extends Spider {
@@ -28,8 +27,9 @@ public class FileSpider extends Spider {
    // private SimpleDBSchedule
     private static final String ERROR_QUEUE_NAME = "error_reqeust_queues";
 
-    private SimpleDB db = null;
-    private SimpleDB.Queue mErrorRequsetQueue;
+    private CacheDB db = null;
+
+  //  private SimpleDB.Queue mErrorRequsetQueue;
     private SimpleDBSchedule mSchedule;
 
     private long executedSize = 0;
@@ -46,9 +46,9 @@ public class FileSpider extends Spider {
      */
     public FileSpider(File file, PageProcessor pageProcessor) {
         super(pageProcessor);
-        this.db = new SimpleDB();
-        this.db.openFile(file);
-        mErrorRequsetQueue = this.db.crateQueue(ERROR_QUEUE_NAME);
+        SimpleDB  sDb = new SimpleDB();
+        sDb.openFile(file);
+        this.db = new CacheDB(sDb);
         mSchedule = new FileSpider.SimpleDBSchedule(db);
         super.setScheduler(mSchedule);
     }
@@ -87,8 +87,8 @@ public class FileSpider extends Spider {
         if(!isDoProcess){
             //没下载成功
             //放进错误列表，下次继续采集。
-            mErrorRequsetQueue.push(key, 10000, request);
-
+            //mErrorRequsetQueue.push(key, 10000, request);
+            db.pushError(key,10000,request);
             return;
         }
 
@@ -102,7 +102,9 @@ public class FileSpider extends Spider {
             System.err.println("采集错误: " + request.getUrl());
             if (!StringUtils.isEmpty(key)) {
                 //放进错误列表，下次继续采集。
-                mErrorRequsetQueue.push(key, 10000, request);
+               // mErrorRequsetQueue.push(key, 10000, request);
+                db.pushError(key,10000,request);
+
             }
         }
 
@@ -163,17 +165,21 @@ public class FileSpider extends Spider {
         System.out.println("Spider restoreErrorRequest.....");
 
         final int batchSize = 1000;
+        SimpleDB.Queue mErrorRequsetQueue = db.mErrorRequsetQueue;
+        SimpleDB simpleDB = db.db;
+
+
         int totalSize = mErrorRequsetQueue.size();
         int count = 0;
         while(true){
             List<SimpleDB.QueueData> dataList =  mErrorRequsetQueue.poll(batchSize);
             if(dataList!= null && dataList.size() > 0){
-                db.Queue().push(dataList);  //添加到待请求队列
+                simpleDB.Queue().push(dataList);  //添加到待请求队列
                 ArrayList<String> keys = new ArrayList<>(dataList.size());
                 for(SimpleDB.QueueData data : dataList){
                     keys.add(data.key);
                 }
-                db.KV().remove(keys);  //标志未访问过
+                simpleDB.KV().remove(keys);  //标志未访问过
                 //Request request =  (Request)data.data;
                 count += dataList.size();
                 System.out.println("progress:" + count +"/" + totalSize);
@@ -188,22 +194,152 @@ public class FileSpider extends Spider {
 
     }
 
+    public static class CacheDB{
 
-    public class SimpleDBSchedule implements Scheduler {
+        private SimpleDB db;
+        private SimpleDB.Queue mErrorRequsetQueue;
+
+        private HashMap<String,SimpleDB.QueueData> toVisitMap = new HashMap();
+        private HashSet<String> visitedMap = new HashSet();
+        private HashMap<String,SimpleDB.QueueData> errorMap = new HashMap();
+        private List<SimpleDB.QueueData> pollList = null;
+
+
+        public CacheDB(SimpleDB db){
+            this.db = db;
+            mErrorRequsetQueue = db.crateQueue(ERROR_QUEUE_NAME);
+
+        }
+
+        public SimpleDB.QueueData pollNext(){
+            check();
+            if(pollList!= null && pollList.size() > 0){
+                SimpleDB.QueueData data = pollList.remove(0);
+                return data;
+            }
+
+            return null;
+        }
+
+        public boolean hasVisit(String key){
+
+           /* if(visitedMap.contains(key)){
+                return true;
+            }*/
+            if(toVisitMap.containsKey(key)){
+                return true;
+            }
+            if(errorMap.containsKey(key)){
+                return true;
+            }
+            return db.KV().has(key);
+        }
+
+        public void putToVisit(String key,Request request){
+            //check();
+            SimpleDB.QueueData data =  new SimpleDB.QueueData();
+            data.key = key;
+            data.priority = (int)request.getPriority();
+            data.data = request;
+            toVisitMap.put(key,data);
+            visitedMap.add(key);
+            //db.Queue().push(key,(int)request.getPriority(),request);
+           // db.KV().put(key,true);
+        }
+
+        public void pushError(String key, int priority, Request request) {
+            SimpleDB.QueueData data =  new SimpleDB.QueueData();
+            data.key = key;
+            data.priority = priority;
+            data.data = request;
+            errorMap.put(key,data);
+
+            //mErrorRequsetQueue.push(key,priority,request);
+        }
+
+        private synchronized void check(){
+            if (pollList == null || pollList.size()== 0){
+                //
+                save();
+                pollList = db.Queue().poll(300);
+            }
+        }
+
+        public synchronized void save() {
+
+            ArrayList<SimpleDB.QueueData> toVlist = new ArrayList<>();
+            ArrayList<SimpleDB.QueueData> toErroList = new ArrayList<>();
+            HashSet<String> hasVistedList = visitedMap;
+
+            if(pollList!=null){
+                toVlist.addAll(pollList);
+            }
+            toVlist.addAll(toVisitMap.values());
+            toErroList.addAll(errorMap.values());
+
+
+            int batchSize = 1000;
+            saveByBatch(db.Queue(),toVlist,batchSize);
+            saveByBatch(mErrorRequsetQueue,toErroList,batchSize);
+
+
+            toVisitMap.clear();
+            visitedMap.clear();
+            errorMap.clear();
+            if(pollList!= null) {
+                pollList.clear();
+            }
+
+            //db.KV().put
+
+        }
+
+        private void saveByBatch(SimpleDB.Queue queue,ArrayList<SimpleDB.QueueData> list, int batchSize){
+            ArrayList<SimpleDB.QueueData> batch = new ArrayList<>(batchSize);
+            for(SimpleDB.QueueData data:list){
+                batch.add(data);
+                if(batch.size() >= batchSize){
+                    queue.push(batch);
+                    batch.clear();
+                }
+            }
+            if(batch.size()>0){
+                queue.push(batch);
+                batch.clear();
+            }
+        }
+
+
+
+        public void close(){
+            save();
+            db.close();
+
+        }
+
+    }
+
+
+    /***
+     * 弄个缓存。
+     */
+    public  class SimpleDBSchedule implements Scheduler {
         //private SimpleDB db;
         private boolean isStop = false;
+        private CacheDB mCacheDB;
 
-        public SimpleDBSchedule(SimpleDB db){
+        public SimpleDBSchedule(CacheDB db){
             //this.db = db;
+            mCacheDB = db;
         }
         @Override
         public Request poll(Task task) {
-            if(isStop) {
+            if(mCacheDB == null || isStop){
                 return null;
             }
 
             long start = System.currentTimeMillis();
-            SimpleDB.QueueData data =  db.Queue().poll();
+            SimpleDB.QueueData data =  mCacheDB.pollNext();
             long time = System.currentTimeMillis() - start;
 
             System.out.println("poll queue time: " + time);
@@ -218,12 +354,12 @@ public class FileSpider extends Spider {
         @Override
         public void push(Request request, Task task) {
 
-
             String key = FileSpider.this.getUrlKey(request.getUrl());
-
-            if (!db.KV().has(key) || shouldReserved(request) || noNeedToRemoveDuplicate(request)) {
-                db.Queue().push(key,(int)request.getPriority(),request);
-                db.KV().put(key,true);
+            if(mCacheDB == null){
+                return;
+            }
+            if (!mCacheDB.hasVisit(key) || shouldReserved(request) || noNeedToRemoveDuplicate(request)) {
+                mCacheDB.putToVisit(key,request);
             }
         }
 
@@ -239,6 +375,8 @@ public class FileSpider extends Spider {
 
         public void stop() {
             isStop = true;
+            mCacheDB.save();
+            mCacheDB = null;
         }
     }
 }
