@@ -1,19 +1,25 @@
 package com.juzicool.data.main;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.juzicool.data.Juzi;
 import com.juzicool.data.db.JuziDB;
 import com.juzicool.data.main.es.ElasticSearch;
 import com.juzicool.data.main.util.MySql;
 import com.juzicool.data.main.util.Prop;
 import com.juzicool.data.main.util.PropKit;
+import com.juzicool.data.simhash.SimHash;
 import com.juzicool.data.utils.JuziUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.util.EntityUtils;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseListener;
 import org.elasticsearch.client.RestClient;
 import java.io.File;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -21,7 +27,7 @@ public class ImportJuziFromSqlite {
 
     public static void main(String[] args) {
 
-       // args = new String[]{"juzi-import\\bin\\import-sqlite-file.properties"};
+        args = new String[]{"juzi-import\\bin\\import-sqlite-file.properties"};
 
         if(args == null || args.length < 1){
             System.err.println("缺少指定properties文件");
@@ -110,59 +116,71 @@ public class ImportJuziFromSqlite {
             PreparedStatement juziPs = conn.prepareStatement(insertJuzi,Statement.RETURN_GENERATED_KEYS);
             PreparedStatement juziExPs = conn.prepareStatement(insertJuziEx);
 
-            //JuziDB.Iterator it = juziDB.createIterator();
             List<Juzi> batchList = null;
             int count = 0;
+            int succesCount = 0;  //成功导入的内容。
             long batchFirstId = -1L;
             boolean hasCheckData = false;
-            int batchSize = 500;
+            int batchSize = 100;
             do {
                 batchList = juziDB.getFirsPage(batchSize);
 
                 if(batchList == null || batchList.size() == 0){
                     break;
                 }
+                count += batchList.size();
                 final long[] ids = getIds(batchList);
 
-                long newBatchFirstId = batchList.get(0).id;
-                if(newBatchFirstId == batchFirstId){
-                    //简单判断下导入的内容有没有重复。
-                    throw  new RuntimeException("import repeat data!:" + newBatchFirstId);
+                //检查下：过滤重复的内容。
+                long startfitlerRepeatContext = System.currentTimeMillis();
+                List<Juzi> toInsertList = fitlerRepeatContext(client,batchList);
+                System.out.println("   ==> check repeat content spend time: " + (System.currentTimeMillis() - startfitlerRepeatContext));
+                int repeatCount = batchList.size() - toInsertList.size();
+                if(toInsertList != null && toInsertList.size() > 0){
+                    long newBatchFirstId = toInsertList.get(0).id;
+                    if(newBatchFirstId == batchFirstId){
+                        //简单判断下导入的内容有没有重复。
+                        throw  new RuntimeException("import repeat data!:" + newBatchFirstId);
+                    }
+                    batchFirstId = newBatchFirstId;
+
+                    //插入数据库
+                    juziPs.clearBatch();
+                    juziExPs.clearBatch();
+                    insertJuziToDB(toInsertList, juziPs);
+
+
+                    if (es_index_version > 0) {
+                        //构建索引
+                        updateSearchIndex(client, toInsertList, es_index_name, es_index_name_type);
+                    }
+                    insertJuziExToDB(toInsertList, juziExPs, es_index_version);
+
+                    conn.commit();//执行
+
+                    succesCount += toInsertList.size();
+
                 }
-                batchFirstId = newBatchFirstId;
-
-                count += batchList.size();
-                //插入数据库
-                juziPs.clearBatch();
-                juziExPs.clearBatch();
-                insertJuziToDB(batchList, juziPs);
 
 
-                if (es_index_version > 0) {
-                    //构建索引
-                    updateSearchIndex(client, batchList, es_index_name, es_index_name_type);
-                }
-                insertJuziExToDB(batchList, juziExPs, es_index_version);
-
-                conn.commit();//执行
-
-                //删除导入的批量数据
                 juziDB.deletes(ids);
 
-                System.out.println(String.format("handle: %d/%d", count, juziTotalSize));
+
+
+
+                System.out.println(String.format("handle: %d/%d,重复句子:%d", count, juziTotalSize,repeatCount));
                 //System.out.println(String.format("new size %d", juziDB.size()));
 
                 //第一次简单的检查下导入源的数据有没有删除
                 if(!hasCheckData){
                     int newjuziTotalSize = juziDB.size();
-                    if(newjuziTotalSize + batchList.size() != juziTotalSize){
+                    if(newjuziTotalSize + ids.length != juziTotalSize){
                         throw  new RuntimeException("JuziDB 应该删除已导入的数据！");
                     }
                     hasCheckData = true;
                 }
-
             } while (batchList != null);
-            System.out.println(String.format("导入完成，共完成/%d个数据！", count));
+            System.out.println(String.format("导入完成，共完成%d个数据，成功导入个数：%d！", count,succesCount));
 
         }catch (Exception ex){
             try{
@@ -183,6 +201,8 @@ public class ImportJuziFromSqlite {
         }
 
     }
+
+
 
     private static String getInsertJuzSql(int accountId,int sourceType){
 
@@ -243,6 +263,136 @@ public class ImportJuziFromSqlite {
     }
 
 
+    private static List<Juzi> fitlerRepeatContext(RestClient client,List<Juzi> batchList)throws Exception {
+        String[] texts = new String[batchList.size()];
+        for(int i = 0;i < batchList.size();i++){
+            texts[i] = batchList.get(i).content;
+        }
+
+        long[] ids = findRepeatContent(client,texts);
+        if(ids.length != texts.length){
+            throw new RuntimeException("length 一定要相等");
+        }
+        ArrayList<Juzi> ret = new ArrayList<>();
+        for(int i = 0;i < ids.length;i++){
+            if(ids[i]==-1){
+                //不重复
+                ret.add(batchList.get(i));
+            }
+        }
+
+        return ret;
+    }
+
+
+    private static String FIND_REPEAT_ES ="{ " +
+            "\"query\": { " +
+            "  \"bool\": { " +
+            "      \"should\": [ " +
+            "         { \"term\": { \"simhashA\": \"%s\"}}, " +
+            "         { \"term\": { \"simhashB\": \"%s\"}}, " +
+            "         { \"term\": { \"simhashC\": \"%s\"}}, " +
+            "         { \"term\": { \"simhashD\": \"%s\"}} " +
+            "        ] " +
+            "      ,\"minimum_should_match\": 3 " +
+            "      ,\"must\": [ " +
+            "          {\"fuzzy\" : { " +
+            "              \"simhash\" : { " +
+            "               \"value\": \"%s\", " +
+            "               \"boost\": 1.0, " +
+            "               \"fuzziness\": 2, " +
+            "                \"prefix_length\": 0, " +
+            "               \"max_expansions\": 128 " +
+            "                } " +
+            "              } " +
+            "             " +
+            "          } " +
+            "      ]     " +
+            "    } " +
+            "  } " +
+            "  ,\"from\":0 " +
+            "  ,\"size\":3 " +
+            "}";
+
+    /**
+     * 查找重复的句子内容；
+     * @param client
+     * @param texts
+     * @return 返回该句子的ID值,如果为-1，说明没有重复内容。
+     */
+    public static long[] findRepeatContent(RestClient client,String[] texts)throws  Exception{
+        StringBuffer sb = new StringBuffer();
+
+        String[] simHashList = new String[texts.length];
+        for (int i =0 ;i < texts.length;i++) {
+            String text = texts[i];
+            SimHash simHash = SimHash.simHash(text);
+            String[] simABCD = simHash.get4SimHash();
+
+            simHashList[i] = simHash.getSimHash();
+
+            //添加simHash信息
+            sb.append("{}\n");
+            sb.append(String.format(FIND_REPEAT_ES,simABCD[0],simABCD[1],simABCD[2],simABCD[3],simHash.getSimHash())+"\n");
+        }
+        // Request request = new Request("put", "/" + index + "/" + index_name_type + "/" + juzi.id);
+
+        Request request = new Request("post", "/juzicool/juzi/_msearch");
+
+        request.setJsonEntity(sb.toString());
+        UpdateIndexResponseListener listener = new UpdateIndexResponseListener(1);
+        client.performRequestAsync(request, listener);
+
+        listener.latch.await();
+
+        if(listener.hasError){
+            throw listener.ex;
+        }
+
+        HttpEntity entity = listener.response.getEntity();
+
+        String bodyJason =  EntityUtils.toString(entity, "utf8");
+
+        JSONObject obj = JSON.parseObject(bodyJason);
+
+        JSONArray array = obj.getJSONArray("responses");
+        if(array.size() != texts.length){
+            throw new RuntimeException("长度不一致");
+        }
+
+
+        long[] ret = new long[texts.length];
+        for(int i = 0;i < ret.length;i++){
+            ret[i] = -1;
+        }
+
+        for(int i = 0;i < texts.length;i++){
+            JSONObject object = array.getJSONObject(i);
+            JSONObject item =   object.getJSONObject("hits");
+            int hitTotal = item.getInteger("total");
+            if(hitTotal > 0){
+                //可能有重复，需要判重
+                JSONObject itemObj = item.getJSONArray("hits").getJSONObject(0).getJSONObject("_source");
+
+                String simhash = itemObj.getString("simhash");
+
+                int dis = SimHash.getDistance(simhash,simHashList[i]);
+
+                if(dis <= 3){
+                    ret[i] = itemObj.getLong("id");
+                   // System.err.println("重复句子：id = " +  + ret[i]+", txt = " + texts[i]);
+                }
+
+               // continue;
+
+            }
+           // System.out.println(texts[i]);
+           // System.out.println(object.toJSONString());
+        }
+
+        return ret;
+    }
+
     /**
      * 更新句子的索引
      */
@@ -251,10 +401,25 @@ public class ImportJuziFromSqlite {
         StringBuffer sb = new StringBuffer();
 
         for (Juzi juzi : juziList) {
+
             String jsonString = JSON.toJSONString(juzi);
+            JSONObject json = JSONObject.parseObject(jsonString);
+
+            String text = juzi.content;
+
+            SimHash simHash = SimHash.simHash(text);
+            String[] simABCD = simHash.get4SimHash();
+            json.put("simhash",simHash.getSimHash());
+            json.put("simhashA",simABCD[0]);
+            json.put("simhashB",simABCD[1]);
+            json.put("simhashC",simABCD[2]);
+            json.put("simhashD",simABCD[3]);
+
+            //添加simHash信息
+
             //System.out.println(jsonString);
             sb.append("{ \"index\":  { \"_index\": \""+index+"\", \"_type\": \""+index_name_type+"\", \"_id\": \""+juzi.id+"\" }}\n");
-            sb.append(jsonString+"\n");
+            sb.append(json.toJSONString()+"\n");
         }
        // Request request = new Request("put", "/" + index + "/" + index_name_type + "/" + juzi.id);
 
@@ -283,6 +448,7 @@ public class ImportJuziFromSqlite {
         final CountDownLatch latch; // new CountDownLatch(juziList.size());
         boolean hasError = false;
         private Exception ex;
+        private Response response;
 
         public UpdateIndexResponseListener(int countDown){
             latch = new CountDownLatch(countDown);
@@ -290,18 +456,22 @@ public class ImportJuziFromSqlite {
 
         @Override
         public void onSuccess(Response response) {
+            this.response = response;
             latch.countDown();
         }
 
         @Override
         public void onFailure(Exception exception) {
-            latch.countDown();
             hasError = true;
             ex = exception;
+            latch.countDown();
+
         }
 
 
     }
+
+
 
 
 }

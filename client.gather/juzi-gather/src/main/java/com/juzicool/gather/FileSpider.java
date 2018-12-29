@@ -298,6 +298,17 @@ public class FileSpider extends Spider {
                 saveByBatch(db.KV(),hasVistedList,batchSize);
             }
 
+            String ww="mysimhash=doc['a'].value+doc['b'].value+doc['c'].value+doc['d'].value;\n" +
+                    "if(mysimhash.length != simhash.length ){return 0;}\n" +
+                    "distance = 0;\n" +
+                    "for (int i = 0; i < mysimhash.length(); i++) \n" +
+                    "{\n" +
+                    "   if(mysimhash.charAt(i) != simhash.charAt(i)){\n" +
+                    "       distance++;\n" +
+                    "    }\n" +
+                    "}\n" +
+                    "return distance";
+
             toVisitMap.clear();
             visitedMap.clear();
             errorMap.clear();
