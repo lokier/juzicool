@@ -39,17 +39,9 @@ public class JuzimiSpider {
         File gatherFile = new File("./juzimi_ablum_gather.db");  //抓取状态保存在这个文件。
         File outputFile = new File("./juzimi_ablum_output.db");  //句子结果保存到这个数据库。
 
-   /*     if(true){
-
-            JuziDB db = new JuziDB(outputFile);
-            db.prepare();
-            System.out.println("size: " + db.size());
-            db.close();
-            return;
-        }*/
         long startTime = System.currentTimeMillis();
         HttpClientDownloader httpClientDownloader = new HttpClientDownloader();
-       // httpClientDownloader.setProxyProvider(new IpProxyProvider());
+        httpClientDownloader.setProxyProvider(new IpProxyProvider());
 
 
         //不使用Webmgic的Pipline来处理结果，直接在Processor保存；
@@ -76,8 +68,8 @@ public class JuzimiSpider {
         //重新开始上次请求失败的url请求
         spider.restoreErrorRequest();
 
-       // spider.addUrl("https://www.juzimi.com/album/48576?page=3");
-        //spider.addUrl("https://www.juzimi.com/albums");
+        spider.addUrl("https://www.juzimi.com/album/48576?page=3");
+       spider.addUrl("https://www.juzimi.com/albums");
 
         spider.stopWhileExceutedSize(20); // 执行超过指定次数请求时停止
         spider.stopWhileProcessSucessRateSmallerThan(0.5f); // 最近请求成功率低于50%时停止抓取

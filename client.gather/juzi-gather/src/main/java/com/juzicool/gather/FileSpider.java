@@ -211,7 +211,7 @@ public class FileSpider extends Spider {
 
         }
 
-        public SimpleDB.QueueData pollNext(){
+        public synchronized SimpleDB.QueueData pollNext(){
             check();
             if(pollList!= null && pollList.size() > 0){
                 SimpleDB.QueueData data = pollList.remove(0);
@@ -221,7 +221,7 @@ public class FileSpider extends Spider {
             return null;
         }
 
-        public boolean hasVisit(String key){
+        public synchronized boolean hasVisit(String key){
 
            /* if(visitedMap.contains(key)){
                 return true;
@@ -232,10 +232,18 @@ public class FileSpider extends Spider {
             if(errorMap.containsKey(key)){
                 return true;
             }
+            if(pollList!= null) {
+                for(SimpleDB.QueueData data : pollList){
+                    if(key.equals(data.key)){
+                        return true;
+                    }
+                }
+            }
+
             return db.KV().has(key);
         }
 
-        public void putToVisit(String key,Request request){
+        public synchronized void putToVisit(String key,Request request){
             //check();
             SimpleDB.QueueData data =  new SimpleDB.QueueData();
             data.key = key;
@@ -247,7 +255,7 @@ public class FileSpider extends Spider {
            // db.KV().put(key,true);
         }
 
-        public void pushError(String key, int priority, Request request) {
+        public synchronized void pushError(String key, int priority, Request request) {
             SimpleDB.QueueData data =  new SimpleDB.QueueData();
             data.key = key;
             data.priority = priority;
@@ -266,7 +274,7 @@ public class FileSpider extends Spider {
         }
 
         public synchronized void save() {
-
+            long start = System.currentTimeMillis();
             ArrayList<SimpleDB.QueueData> toVlist = new ArrayList<>();
             ArrayList<SimpleDB.QueueData> toErroList = new ArrayList<>();
             HashSet<String> hasVistedList = visitedMap;
@@ -277,11 +285,18 @@ public class FileSpider extends Spider {
             toVlist.addAll(toVisitMap.values());
             toErroList.addAll(errorMap.values());
 
+            System.out.println("save cache, toVisit: " + toVlist.size()+",hasVisit:" + hasVistedList.size() +",erro visit:" + toErroList.size());
 
             int batchSize = 1000;
-            saveByBatch(db.Queue(),toVlist,batchSize);
-            saveByBatch(mErrorRequsetQueue,toErroList,batchSize);
-
+            if(toVlist.size() > 0){
+                saveByBatch(db.Queue(),toVlist,batchSize);
+            }
+            if(toErroList.size() > 0) {
+                saveByBatch(mErrorRequsetQueue, toErroList, batchSize);
+            }
+            if(hasVistedList.size() > 0){
+                saveByBatch(db.KV(),hasVistedList,batchSize);
+            }
 
             toVisitMap.clear();
             visitedMap.clear();
@@ -289,6 +304,7 @@ public class FileSpider extends Spider {
             if(pollList!= null) {
                 pollList.clear();
             }
+            System.out.println("save end..... time: " + (System.currentTimeMillis() - start));
 
             //db.KV().put
 
@@ -300,16 +316,36 @@ public class FileSpider extends Spider {
                 batch.add(data);
                 if(batch.size() >= batchSize){
                     queue.push(batch);
+                    System.out.println("save batch queue : " + batch.size());
                     batch.clear();
                 }
             }
             if(batch.size()>0){
                 queue.push(batch);
+                System.out.println("save batch queue : " + batch.size());
                 batch.clear();
+
             }
         }
 
+        private void saveByBatch(SimpleDB.KV kv,Collection<String> list, int batchSize){
+            ArrayList<String> batch = new ArrayList<>(batchSize);
+            for(String key:list){
+                batch.add(key);
+                if(batch.size() >= batchSize){
+                    kv.put(batch,true);
+                    System.out.println("save batch kv : " + batch.size());
+                    batch.clear();
 
+                }
+            }
+            if(batch.size()>0){
+                kv.put(batch,true);
+                System.out.println("save batch kv : " + batch.size());
+                batch.clear();
+
+            }
+        }
 
         public void close(){
             save();
@@ -375,8 +411,9 @@ public class FileSpider extends Spider {
 
         public void stop() {
             isStop = true;
-            mCacheDB.save();
-            mCacheDB = null;
+            if(mCacheDB!=null){
+                mCacheDB.save();
+            }
         }
     }
 }
