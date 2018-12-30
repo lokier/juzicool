@@ -98,7 +98,7 @@ public class SearchService {
 			throw new RuntimeException("error index must > 0 ");
 		}
 		int pageIndex = currenPage - 1;
-		int offset = pageIndex * pageIndex;
+		int offset = pageIndex * pageSize;
 
 		RestClient client = es.requestClient();
 		

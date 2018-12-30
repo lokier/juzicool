@@ -20,6 +20,8 @@ import org.elasticsearch.client.RestClient;
 import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -83,7 +85,7 @@ public class ImportJuziFromSqlite {
         File sqlFile = new File(sqliteFilepath);
 
         if(!sqlFile.exists()){
-            System.err.println("sqlite 文件不存在");
+            System.err.println("sqlite 文件不存在:" +sqlFile.getAbsolutePath());
             return;
         }
 
@@ -121,13 +123,14 @@ public class ImportJuziFromSqlite {
             int succesCount = 0;  //成功导入的内容。
             long batchFirstId = -1L;
             boolean hasCheckData = false;
-            int batchSize = 100;
+            int batchSize = 200;
             do {
                 batchList = juziDB.getFirsPage(batchSize);
 
                 if(batchList == null || batchList.size() == 0){
                     break;
                 }
+
                 count += batchList.size();
                 final long[] ids = getIds(batchList);
 
@@ -162,10 +165,7 @@ public class ImportJuziFromSqlite {
 
                 }
 
-
                 juziDB.deletes(ids);
-
-
 
 
                 System.out.println(String.format("handle: %d/%d,重复句子:%d", count, juziTotalSize,repeatCount));
@@ -264,20 +264,45 @@ public class ImportJuziFromSqlite {
 
 
     private static List<Juzi> fitlerRepeatContext(RestClient client,List<Juzi> batchList)throws Exception {
-        String[] texts = new String[batchList.size()];
+        //
+        HashMap<SimHash,Juzi> juziMap = new HashMap<>();
         for(int i = 0;i < batchList.size();i++){
-            texts[i] = batchList.get(i).content;
+            Juzi juzi = batchList.get(i);
+            SimHash simHash = SimHash.simHash(juzi.content);
+            //simHashes[i] = simHash;
+
+            //过滤本身含有重复的内容
+            boolean contain = false;
+            for(SimHash sh : juziMap.keySet()){
+                int dis = SimHash.getDistance(sh.getSimHash(),simHash.getSimHash());
+                if(dis <= 3){
+                    contain = true;
+                    break;
+                }
+            }
+            if(!contain){
+                juziMap.put(simHash,juzi);
+            }
+        }
+        if(juziMap.isEmpty()){
+            return new ArrayList<>();
         }
 
-        long[] ids = findRepeatContent(client,texts);
-        if(ids.length != texts.length){
+        SimHash[] simHashes = juziMap.keySet().toArray(new SimHash[juziMap.size()]);
+        long[] ids = findRepeatContent(client,simHashes);
+        if(ids.length != simHashes.length){
             throw new RuntimeException("length 一定要相等");
         }
         ArrayList<Juzi> ret = new ArrayList<>();
         for(int i = 0;i < ids.length;i++){
             if(ids[i]==-1){
                 //不重复
-                ret.add(batchList.get(i));
+                SimHash sh = simHashes[i];
+                Juzi juzi = juziMap.get(sh);
+                if(juzi == null){
+                    throw  new NullPointerException();
+                }
+                ret.add(juzi);
             }
         }
 
@@ -317,19 +342,17 @@ public class ImportJuziFromSqlite {
     /**
      * 查找重复的句子内容；
      * @param client
-     * @param texts
-     * @return 返回该句子的ID值,如果为-1，说明没有重复内容。
+     * @param simHashList
+     * @return 返回该句子的ID值,如果为-1
      */
-    public static long[] findRepeatContent(RestClient client,String[] texts)throws  Exception{
+    public static long[] findRepeatContent(RestClient client,SimHash[] simHashList )throws  Exception{
+
+
         StringBuffer sb = new StringBuffer();
 
-        String[] simHashList = new String[texts.length];
-        for (int i =0 ;i < texts.length;i++) {
-            String text = texts[i];
-            SimHash simHash = SimHash.simHash(text);
+        for (int i =0 ;i < simHashList.length;i++) {
+            SimHash simHash =simHashList[i];
             String[] simABCD = simHash.get4SimHash();
-
-            simHashList[i] = simHash.getSimHash();
 
             //添加simHash信息
             sb.append("{}\n");
@@ -356,17 +379,17 @@ public class ImportJuziFromSqlite {
         JSONObject obj = JSON.parseObject(bodyJason);
 
         JSONArray array = obj.getJSONArray("responses");
-        if(array.size() != texts.length){
+        if(array.size() != simHashList.length){
             throw new RuntimeException("长度不一致");
         }
 
 
-        long[] ret = new long[texts.length];
+        long[] ret = new long[simHashList.length];
         for(int i = 0;i < ret.length;i++){
             ret[i] = -1;
         }
 
-        for(int i = 0;i < texts.length;i++){
+        for(int i = 0;i < simHashList.length;i++){
             JSONObject object = array.getJSONObject(i);
             JSONObject item =   object.getJSONObject("hits");
             int hitTotal = item.getInteger("total");
@@ -376,7 +399,7 @@ public class ImportJuziFromSqlite {
 
                 String simhash = itemObj.getString("simhash");
 
-                int dis = SimHash.getDistance(simhash,simHashList[i]);
+                int dis = SimHash.getDistance(simhash,simHashList[i].getSimHash());
 
                 if(dis <= 3){
                     ret[i] = itemObj.getLong("id");
