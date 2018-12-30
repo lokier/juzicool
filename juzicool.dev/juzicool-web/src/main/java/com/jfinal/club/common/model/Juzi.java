@@ -7,5 +7,13 @@ import com.jfinal.club.common.model.base.BaseJuzi;
  */
 @SuppressWarnings("serial")
 public class Juzi extends BaseJuzi<Juzi> {
+
+
+    //public static final Juzi dao = new Juzi();
+
+    public JuziExt getExt() {
+        Integer id = getId();
+        return JuziExt.dao.findFirst("select * from juzi_ext where juzi_id=? limit 1", id);
+    }
 	
 }

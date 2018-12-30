@@ -7,5 +7,6 @@ import com.jfinal.club.common.model.base.BaseJuziExt;
  */
 @SuppressWarnings("serial")
 public class JuziExt extends BaseJuziExt<JuziExt> {
-	
+    public static final JuziExt dao = new JuziExt();
+
 }

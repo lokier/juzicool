@@ -1,4 +1,7 @@
-#set(seoTitle="句子酷|查找你想要的句子！")
+#set(seoTitle="句子详情|" + (juzi.author?juzi.author+"的句子|":"") +(juzi.from?"《"+juzi.from+"》的摘抄":"") )
+#set(seoKeywords=juzi.tags??"" +","+ juzi.author??""+","+juzi.from??""+","+juzi.category??""+",句子酷")
+#set(seoDescr=juziEx.applyDesc??"" +","+juziEx.remark??"")
+
 #@layout2()
 #define main()
 <!-- 内容容器 -->

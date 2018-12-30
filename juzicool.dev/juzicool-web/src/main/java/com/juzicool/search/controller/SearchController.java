@@ -61,7 +61,7 @@ public class SearchController extends BaseController {
 			pageSize = 10;
 		}
 		if(query.isEmpty()) {
-			 render("index.html");
+			 index();
 			 return;
 		}
 		
@@ -100,6 +100,7 @@ public class SearchController extends BaseController {
 			return;
 		}
 		setAttr("juzi",juzi);
+		setAttr("juziEx",juzi.getExt());
 		render("juzi_detail.html");
 	}
 
@@ -130,7 +131,7 @@ public class SearchController extends BaseController {
 
 		String query= group.getTags();
 		if(query.isEmpty()) {
-			render("index.html");
+			index();
 			return;
 		}
 
