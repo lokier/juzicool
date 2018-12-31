@@ -29,7 +29,10 @@ public class ImportJuziFromSqlite {
 
     public static void main(String[] args) {
 
-        args = new String[]{"juzi-import\\bin\\import-sqlite-file.properties"};
+      /*  if(args== null) {
+            args = new String[]{"juzi-import\\bin\\import-sqlite-file.properties"};
+
+        }*/
 
         if(args == null || args.length < 1){
             System.err.println("缺少指定properties文件");
