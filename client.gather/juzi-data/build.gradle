@@ -1,9 +1,11 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
 group 'com.juzicool'
-version '1.0-SNAPSHOT'
+version '1.0.0-beta'
+
 
 sourceCompatibility = 1.8
 
@@ -17,6 +19,12 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
+
+//打包源码
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
 dependencies {
     //testCompile group: 'junit', name: 'junit', version: '4.12'
     compile "net.sourceforge.jexcelapi:jxl:2.6.12"
@@ -25,4 +33,37 @@ dependencies {
 
     compile "com.hankcs:hanlp:portable-1.7.0"
 
+    //classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1'
+    //classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+}
+
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            //指定group/artifact/version信息，可以不填。默认使用项目group/name/version作为groupId/artifactId/version
+            groupId project.group
+            artifactId 'juzi-data'
+            version project.version
+            //如果是war包填写components.web，如果是jar包填写components.java
+            from components.java
+
+            //配置上传源码
+            artifact sourceJar {
+                classifier "sources"
+            }
+
+        }
+    }
+    repositories {
+        maven {
+            //指定要上传的maven私服仓库
+            url = "https://dl.bintray.com/lokier/juzicool"
+            //认证用户和密码
+            credentials {
+                username 'lokier'
+                password '9147b578baf49c677ed149c8f912a02436645bdd'
+            }
+        }
+    }
 }

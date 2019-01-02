@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 必须使用 com.hankcs:hanlp:portable-1.7.0版本的分词库，否则不同版本的分词特性生成的simHash会不一样；
@@ -20,11 +21,13 @@ public class SimHash {
     }
 
     private final String strSimHash;
+    private final String text;
     //private final int hashbits;
 
 
-    private SimHash(String strSimHash) {
+    private SimHash(String text,String strSimHash) {
        // this.intSimHash = intSimHash;
+        this.text = text;
         this.strSimHash = strSimHash;
     }
 
@@ -36,6 +39,22 @@ public class SimHash {
         return weight;
     }
 
+    public String getText(){
+        return text;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SimHash simHash = (SimHash) o;
+        return Objects.equals(strSimHash, simHash.strSimHash);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(strSimHash);
+    }
 
     public String getSimHash(){
         return strSimHash;
@@ -108,7 +127,7 @@ public class SimHash {
         }
         String strSimHash = simHashBuffer.toString();
 
-        return new SimHash(strSimHash);
+        return new SimHash(text,strSimHash);
     }
     private static BigInteger hash(String source,int hashbits) {
         if (source == null || source.length() == 0) {

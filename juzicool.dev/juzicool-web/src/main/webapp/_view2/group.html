@@ -1,4 +1,5 @@
-#set(seoTitle="句子酷|查找你想要的句子！")
+#set(seoTitle=group.name +"|句子酷")
+#set(seoKeywords=group.tags)
 #@layout2()
 #define main()
 <!-- 内容容器 -->
@@ -81,8 +82,8 @@
 											</p>
 											
 											<h4>
-												<a href="/juzi?id=#(juzi.id)">
-													#(juzi.content)
+												<a href="/juzi?id=#(juzi.id)" target="_blank">
+													#(com.juzicool.search.util.HtmlUtils::toHtml(juzi.content,200))
 													<a/>
 											</h4>
 											

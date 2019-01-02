@@ -30,9 +30,12 @@ import com.juzicool.search.util.UrlUtils;
  */
 public class SearchController extends BaseController {
 
+	private static int MAX_PAGE_SIZE = 10;
+
 	SearchService srv = SearchService.me;
 	JuziGroup mGroupDao = new JuziGroup().dao();
 	Juzi mJuziDao = new Juzi().dao();
+
 
 	public void index() {
 		Page<JuziGroup> grops = mGroupDao.paginate(1,10,"select *", "from juzi_group order by id asc");
@@ -54,14 +57,14 @@ public class SearchController extends BaseController {
 			currentPage = 1;
 		}
 		
-		if(pageSize >20) {
-			pageSize = 20;
+		if(pageSize >MAX_PAGE_SIZE) {
+			pageSize = MAX_PAGE_SIZE;
 		}
 		if(pageSize < 1) {
 			pageSize = 10;
 		}
 		if(query.isEmpty()) {
-			 render("index.html");
+			 index();
 			 return;
 		}
 		
@@ -100,6 +103,7 @@ public class SearchController extends BaseController {
 			return;
 		}
 		setAttr("juzi",juzi);
+		setAttr("juziEx",juzi.getExt());
 		render("juzi_detail.html");
 	}
 
@@ -113,8 +117,8 @@ public class SearchController extends BaseController {
 			currentPage = 1;
 		}
 
-		if(pageSize >20) {
-			pageSize = 20;
+		if(pageSize >MAX_PAGE_SIZE) {
+			pageSize = MAX_PAGE_SIZE;
 		}
 		if(pageSize < 1) {
 			pageSize = 10;
@@ -130,7 +134,7 @@ public class SearchController extends BaseController {
 
 		String query= group.getTags();
 		if(query.isEmpty()) {
-			render("index.html");
+			index();
 			return;
 		}
 
