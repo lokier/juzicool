@@ -69,6 +69,22 @@ public class ProxyIpDBTest {
         }
 
 
+        //插入一个相同key值的ip，正常应该是忽略此次插入
+        ipList.clear();
+        ipList.add(new ProxyIp().setHost("w1").setPort(20).setRate10(0.5f));
+        db.update(ipList);
+        Assert.assertTrue( db.size() == 1);
+        {
+            //上一次的值
+            List<ProxyIp> retlist = db.next(10);
+            Assert.assertTrue(retlist.size() == 1);
+            Assert.assertTrue(retlist.get(0).getHost().equals("w1"));
+            Assert.assertTrue(retlist.get(0).getPort() == 20);
+            Assert.assertTrue(retlist.get(0).getRate10() == 0.5);
+            Assert.assertTrue( retlist.get(0).getExtra() == null);
+        }
+
+
         ipList.add(new ProxyIp().setHost("w2").setPort(20).setRate10(0.5f));
         db.putIfNotExist(ipList);
         Assert.assertTrue( db.size() == 2);
@@ -78,16 +94,16 @@ public class ProxyIpDBTest {
         db.delateAll();
 
         ipList.clear();
-        ipList.add(new ProxyIp().setHost("w1").setPort(20).setRate10(0.5f));
-        ipList.add(new ProxyIp().setHost("w2").setPort(20).setRate10(0.5f));
-        ipList.add(new ProxyIp().setHost("w3").setPort(20).setRate10(0.5f));
-        ipList.add(new ProxyIp().setHost("w4").setPort(20).setRate10(0.5f));
+        ipList.add(new ProxyIp().setHost("w1").setPort(20).setRate10(0.1f));
+        ipList.add(new ProxyIp().setHost("w2").setPort(20).setRate10(0.2f));
+        ipList.add(new ProxyIp().setHost("w3").setPort(20).setRate10(0.3f));
+        ipList.add(new ProxyIp().setHost("w4").setPort(20).setRate10(0.4f));
         ipList.add(new ProxyIp().setHost("w5").setPort(20).setRate10(0.5f));
-        ipList.add(new ProxyIp().setHost("w6").setPort(20).setRate10(0.5f));
-        ipList.add(new ProxyIp().setHost("w7").setPort(20).setRate10(0.5f));
-        ipList.add(new ProxyIp().setHost("w8").setPort(20).setRate10(0.5f));
-        ipList.add(new ProxyIp().setHost("w9").setPort(20).setRate10(0.5f));
-        ipList.add(new ProxyIp().setHost("w10").setPort(20).setRate10(0.5f));
+        ipList.add(new ProxyIp().setHost("w6").setPort(20).setRate10(0.6f));
+        ipList.add(new ProxyIp().setHost("w7").setPort(20).setRate10(0.7f));
+        ipList.add(new ProxyIp().setHost("w8").setPort(20).setRate10(0.8f));
+        ipList.add(new ProxyIp().setHost("w9").setPort(20).setRate10(0.9f));
+        ipList.add(new ProxyIp().setHost("w10").setPort(20).setRate10(1f));
         ipList.add(new ProxyIp().setHost("w1").setPort(20).setRate10(0.5f));
         db.putIfNotExist(ipList);
 
@@ -98,6 +114,16 @@ public class ProxyIpDBTest {
         ProxyIp ip3 =  db.next(1).get(0);
         Assert.assertTrue(!ip1.getHost().equals(ip2.getHost()));
         Assert.assertTrue(!ip2.getHost().equals(ip3.getHost()));
+
+
+
+        retlist = db.next(12,0.9f);
+        Assert.assertTrue(retlist.size() == 2);
+        Assert.assertTrue(retlist.get(0).getHost().equals("w9") || retlist.get(0).getHost().equals("w10"));
+        Assert.assertTrue(retlist.get(1).getHost().equals("w9") || retlist.get(1).getHost().equals("w10"));
+
+
+
 
         Assert.assertTrue(db.next(12).size() == 10);
 

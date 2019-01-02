@@ -43,7 +43,7 @@ public class ProxyIpDB {
                     "   host text  PRIMARY KEY,\n" +
                     "   port integer,\n" +
                     "   rate10 float,\n" +
-                    "   token long,\n" +
+                    "   token long default 0,\n" +
                     "   extra blob\n" +
                     ");";
 
@@ -212,13 +212,24 @@ public class ProxyIpDB {
         }
     }
 
-    /***
-         * 轮询获取IP。
-         * @param size
-         * @return
-         */
-    public List<ProxyIp> next(int size){
-        String sql = "SELECT *  FROM " + TABLE_NAME +"  order by token asc LIMIT  " +size+ "   OFFSET " + 0;
+    public List<ProxyIp> next(int size) {
+
+        return next(size,null);
+    }
+
+        /***
+             * 轮询获取IP。
+             * @param size
+             * @return
+             */
+    public List<ProxyIp> next(int size, Float minRate){
+
+        String where = "";
+        if(minRate != null){
+            where = " where rate10  > " + (minRate - 0.000001f) +" ";
+        }
+
+        String sql = "SELECT *  FROM " + TABLE_NAME + where +" order by token asc LIMIT  " +size+ "   OFFSET " + 0;
         Statement stmt = null;
         ResultSet rs = null;
         try {
@@ -306,6 +317,49 @@ public class ProxyIpDB {
                 pstmt.setFloat(3, ip.getRate10());
                 pstmt.setLong(4, 0);
                 pstmt.setBytes(5, objectToByte(ip.getExtra()));
+                pstmt.addBatch();
+            }
+
+            pstmt.executeBatch();
+            conn.commit();
+
+        } catch (SQLException e) {
+            try {
+                conn.rollback();
+            }catch (Exception ex){
+
+            }
+            throw  new RuntimeException(e);
+        }finally {
+            try {
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+            }catch (Exception ex){
+
+            }
+            try {
+                conn.setAutoCommit(true);
+            }catch (Exception ex){
+
+            }
+        }
+    }
+
+    public void update(Collection<ProxyIp> ipList) {
+        //INSERT OR IGNORE
+        String sql = "INSERT OR replace INTO "+TABLE_NAME+"(" +
+                "host, port,rate10, extra) VALUES(?,?,?,?)";
+        PreparedStatement pstmt = null;
+        Connection conn = mConnection;
+        try {
+            conn.setAutoCommit(false);
+            pstmt = conn.prepareStatement(sql);
+            for(ProxyIp ip : ipList) {
+                pstmt.setString(1, ip.getHost());
+                pstmt.setInt(2, ip.getPort());
+                pstmt.setFloat(3, ip.getRate10());
+                pstmt.setBytes(4, objectToByte(ip.getExtra()));
                 pstmt.addBatch();
             }
 

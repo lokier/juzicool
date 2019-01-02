@@ -16,6 +16,11 @@ public class ProxyIp {
 
     }
 
+    public ProxyIp(String host,int port){
+        this.host = host;
+        this.port = port;
+    }
+
     public String getHost() {
         return host;
     }
@@ -121,4 +126,13 @@ public class ProxyIp {
         }
     }
 
+    @Override
+    public String toString() {
+        return "ProxyIp{" +
+                "host='" + host + '\'' +
+                ", port=" + port +
+                ", rate10=" + rate10 +
+                ", extra=" + extra +
+                '}';
+    }
 }
