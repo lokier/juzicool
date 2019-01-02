@@ -123,10 +123,12 @@ public class IPservcie {
                 spider.addRequest(r);
             }
         }
+         IPservcie.LOG.info("start do collect()");
+         spider.thread(15).run();
+         spider.start();
+         IPservcie.LOG.info("finish do collect()");
 
-        spider.thread(15).run();
-        spider.start();
-    }
+     }
 
 
      class IpPageProcess implements PageProcessor, Closeable {
@@ -169,7 +171,7 @@ public class IPservcie {
              return gSite;
          }
 
-         private Site gSite = Site.me().setRetryTimes(2).setSleepTime(1200).setTimeOut(3000);
+         private Site gSite = Site.me().setRetryTimes(2).setSleepTime(200).setTimeOut(3000);
     }
 
 }

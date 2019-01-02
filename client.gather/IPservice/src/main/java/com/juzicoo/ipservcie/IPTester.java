@@ -75,8 +75,8 @@ public interface IPTester {
                      else
                          return false;
 
-                 } catch (IOException e) {
-                     IPservcie.LOG.warn(e.getMessage(),e);
+                 } catch (Exception e) {
+                    // IPservcie.LOG.warn(e.getMessage(),e);
                      return false;
                  } finally {
                      if(httpGet != null){
