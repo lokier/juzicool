@@ -32,31 +32,33 @@ public class www89ipcn implements IpSource {
     }
 
     @Override
-    public List<ProxyIp> process(IPservcie iPservcie, Page page) {
+    public void process( Page page,DataCommit commit) {
 
         Html html =  page.getHtml();
 
-        ArrayList<ProxyIp> list = new ArrayList<>();
+        //ArrayList<ProxyIp> list = new ArrayList<>();
 
         List<Selectable> trNodes= html.xpath("tbody/tr").nodes();
         for(Selectable trNode: trNodes){
             String ip = SelectableUtls.toSimpleText(trNode.xpath("td[1]")).trim();
             String port =SelectableUtls.toSimpleText(trNode.xpath("td[2]")).trim();
-            long startTime =System.currentTimeMillis();
+            //long startTime =System.currentTimeMillis();
 
-            System.out.println("testing START, ip : " + ip);
-            if(iPservcie.getIPTester().checkProxyIp(ip,Integer.parseInt(port))){
+           // System.out.println("testing START, ip : " + ip);
+
+            commit.submit(ip, Integer.parseInt(port));
+          /*  if(iPservcie.getIPTester().checkProxyIp(ip,Integer.parseInt(port))){
                 long end = System.currentTimeMillis() - startTime;
                 if(end < 5000){
-                    ProxyIp proxy = new ProxyIp(ip,Integer.parseInt(port));
-                    list.add(proxy);
+                   // ProxyIp proxy = new ProxyIp(ip,Integer.parseInt(port));
+
                 }
-            }
-            System.out.println("testing END, ip : " + ip);
+            }*/
+          //  System.out.println("testing END, ip : " + ip);
 
         }
 
-        return list;
+        //return list;
     }
 
     @Override

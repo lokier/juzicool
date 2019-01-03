@@ -45,6 +45,9 @@ public class ProxyIpDB {
                     "   port integer,\n" +
                     "   rate10 float,\n" +
                     "   token long default 0,\n" +
+                    "   useTotalCount integer default 0,\n" +
+                    "   useOkCount integer default 0,\n" +
+                    "   createDate date not null,\n" +
                     "   extra blob\n" +
                     ");";
 
@@ -187,6 +190,10 @@ public class ProxyIpDB {
                 ip.setRate10(rs.getFloat("rate10"));
                 ip.setPort(rs.getInt("port"));
 
+                ip.setUseOkCount(rs.getInt("useOkCount"));
+                ip.setUseTotalCount(rs.getInt("useTotalCount"));
+                ip.setCreateDate(rs.getDate("createDate"));
+
                 Serializable data = byteToObject(rs.getBytes("extra"));
                 if(data instanceof HashMap){
                     ip.setExtra((HashMap)data);
@@ -254,6 +261,10 @@ public class ProxyIpDB {
                 ip.setRate10(rs.getFloat("rate10"));
                 ip.setPort(rs.getInt("port"));
 
+                ip.setUseOkCount(rs.getInt("useOkCount"));
+                ip.setUseTotalCount(rs.getInt("useTotalCount"));
+                ip.setCreateDate(rs.getDate("createDate"));
+
                 Serializable data = byteToObject(rs.getBytes("extra"));
                 if(data instanceof HashMap){
                     ip.setExtra((HashMap)data);
@@ -310,11 +321,10 @@ public class ProxyIpDB {
     }
 
 
-
     public synchronized void putIfNotExist(Collection<ProxyIp> ipList) {
         //INSERT OR IGNORE
         String sql = "INSERT OR IGNORE INTO "+TABLE_NAME+"(" +
-                "host, port,rate10,token, extra) VALUES(?,?,?,?,?)";
+                "host, port,rate10,token, useTotalCount,useOkCount,createDate,extra) VALUES(?,?,?,?,?,?,?,?)";
         PreparedStatement pstmt = null;
         Connection conn = mConnection;
         try {
@@ -325,7 +335,10 @@ public class ProxyIpDB {
                 pstmt.setInt(2, ip.getPort());
                 pstmt.setFloat(3, ip.getRate10());
                 pstmt.setLong(4, 0);
-                pstmt.setBytes(5, objectToByte(ip.getExtra()));
+                pstmt.setInt(5,0);
+                pstmt.setInt(6,0);
+                pstmt.setDate(7,new Date(System.currentTimeMillis()));
+                pstmt.setBytes(8, objectToByte(ip.getExtra()));
                 pstmt.addBatch();
             }
 
@@ -356,8 +369,9 @@ public class ProxyIpDB {
     }
 
     public synchronized void update(Collection<ProxyIp> ipList) {
+
         //INSERT OR IGNORE
-        String sql = "update  "+TABLE_NAME+" set port = ?,rate10=?,extra=? where host = ?";
+        String sql = "update  "+TABLE_NAME+" set port = ?,rate10=?,extra=?,useTotalCount=?,useOkCount=? where host = ?";
         PreparedStatement pstmt = null;
         Connection conn = mConnection;
         try {
@@ -367,7 +381,11 @@ public class ProxyIpDB {
                 pstmt.setInt(1, ip.getPort());
                 pstmt.setFloat(2, ip.getRate10());
                 pstmt.setBytes(3, objectToByte(ip.getExtra()));
-                pstmt.setString(4, ip.getHost());
+
+                pstmt.setInt(4, ip.getUseTotalCount());
+                pstmt.setInt(5, ip.getUseOkCount());
+                pstmt.setString(6, ip.getHost());
+
                 pstmt.addBatch();
             }
 

@@ -75,6 +75,7 @@ public interface IPTester {
                      Runnable closeRunnable = new Runnable() {
                          @Override
                          public void run() {
+                             IPservcie.LOG.debug(String.format(" =====> close test for timeout(%d): %s",timeoutMillion,proxyIp));
 
                              if(IPservcie.LOG.isDebugEnabled()){
                                  IPservcie.LOG.debug(String.format(" =====> close test for timeout(%d): %s",timeoutMillion,proxyIp));

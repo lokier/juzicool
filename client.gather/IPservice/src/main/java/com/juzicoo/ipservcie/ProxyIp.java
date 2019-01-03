@@ -1,6 +1,7 @@
 package com.juzicoo.ipservcie;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +12,9 @@ public class ProxyIp {
 
     private float rate10 = 1f;  //近10次使用的成功率。
     private HashMap<String,Serializable> extra;
+    private int useTotalCount = 0;
+    private int useOkCount = 0;
+    private Date createDate = null;
 
     public ProxyIp(){
 
@@ -19,6 +23,14 @@ public class ProxyIp {
     public ProxyIp(String host,int port){
         this.host = host;
         this.port = port;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDae) {
+        this.createDate = createDae;
     }
 
     public String getHost() {
@@ -124,6 +136,24 @@ public class ProxyIp {
             float rate = okCount / totalCount;
             ip.setRate10(rate);
         }
+    }
+
+    public int getUseTotalCount() {
+        return useTotalCount;
+    }
+
+    public ProxyIp setUseTotalCount(int useTotalCount) {
+        this.useTotalCount = useTotalCount;
+        return this;
+    }
+
+    public int getUseOkCount() {
+        return useOkCount;
+    }
+
+    public ProxyIp setUseOkCount(int useOkCount) {
+        this.useOkCount = useOkCount;
+        return this;
     }
 
     @Override

@@ -71,7 +71,7 @@ public class ProxyIpDBTest {
 
         //插入一个相同key值的ip，正常应该是忽略此次插入
         ipList.clear();
-        ipList.add(new ProxyIp().setHost("w1").setPort(20).setRate10(0.5f));
+        ipList.add(new ProxyIp().setHost("w1").setPort(20).setRate10(0.5f).setUseTotalCount(100).setUseOkCount(50));
         db.update(ipList);
         Assert.assertTrue( db.size() == 1);
         {
@@ -81,6 +81,9 @@ public class ProxyIpDBTest {
             Assert.assertTrue(retlist.get(0).getHost().equals("w1"));
             Assert.assertTrue(retlist.get(0).getPort() == 20);
             Assert.assertTrue(retlist.get(0).getRate10() == 0.5);
+            Assert.assertTrue(retlist.get(0).getUseTotalCount() == 100);
+            Assert.assertTrue(retlist.get(0).getUseOkCount() == 50);
+
             Assert.assertTrue( retlist.get(0).getExtra() == null);
         }
 

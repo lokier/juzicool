@@ -15,8 +15,13 @@ public interface IpSource {
     HashSet<String> getEnterUrls();
 
 
-    List<ProxyIp> process(IPservcie iPservcie,Page page);
+    void process(Page page, DataCommit commit);
 
     void absort();
+
+    interface DataCommit{
+
+        void submit(String ip,int port);
+    }
 
 }

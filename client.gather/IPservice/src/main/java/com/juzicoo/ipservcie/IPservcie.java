@@ -16,6 +16,7 @@ import us.codecraft.webmagic.processor.PageProcessor;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Proxy;
 import java.util.*;
 
 public class IPservcie {
@@ -35,6 +36,7 @@ public class IPservcie {
        System.out.println("start collecting..");
        pool.ready();
        System.out.println("finish collecting..");
+
 
        new Thread(){
 
@@ -240,6 +242,7 @@ public class IPservcie {
                         //mSpider.s
                         mSpider.setExitWhenComplete(true);
                         mSpider.thread(15).run();
+                        mCommit.saveCache();
                         endTime = System.currentTimeMillis();
                     }catch (Exception ex){
                         IPservcie.LOG.error(ex.getMessage(),ex);
@@ -290,11 +293,7 @@ public class IPservcie {
 
             if(source!= null){
                 mProccessSource = source;
-                List<ProxyIp> ipList =  source.process(IPservcie.this,page);
-                if(ipList!= null){
-                    getDB().putIfNotExist(ipList);
-                    IPservcie.LOG.info("DB: add proxyIpSize: " + ipList.size());
-                }
+                source.process(page,mCommit);
                 mProccessSource = null;
             }
 
@@ -307,6 +306,48 @@ public class IPservcie {
          }
 
          private Site gSite = Site.me().setRetryTimes(2).setSleepTime(200).setTimeOut(3000);
+    }
+
+    private CacheIpCommit mCommit = new CacheIpCommit();
+
+
+    private  class CacheIpCommit implements IpSource.DataCommit{
+
+        HashMap<String,ProxyIp> mCahceList = new HashMap<>();
+
+
+
+        @Override
+        public  void submit(String ip, int port) {
+
+            if(mCahceList.containsKey(ip)){
+                return;
+            }
+            System.out.println("[start test ip:]"+ ip);
+            long start = System.currentTimeMillis();
+            boolean isOk =  getIPTester().checkProxyIp(ip,port);
+            System.out.println("[end test ip:]"+ ip +", spendTime: " + (System.currentTimeMillis() - start));
+
+            if(isOk){
+                ProxyIp proxy = new ProxyIp(ip,port);
+                addValidProxy(proxy);
+            }
+
+        }
+
+        private synchronized void addValidProxy(ProxyIp ip){
+            mCahceList.put(ip.getHost(),ip);
+            if(mCahceList.size() > 10) {
+                saveCache();
+            }
+        }
+
+        public synchronized void saveCache(){
+            if(mCahceList.size() > 0) {
+                getDB().putIfNotExist(mCahceList.values());
+                mCahceList.clear();
+            }
+        }
     }
 
 }
