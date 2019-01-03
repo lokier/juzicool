@@ -91,7 +91,7 @@ public class ProxyIp {
        if(okList == null) {
            okList = new Boolean[10];
        }
-
+        okListIndex = okListIndex % 10;
        okList[okListIndex++] = userOk;
         extra.put(KEY_USE_OK_LIST_INDEX,okListIndex);
         extra.put(KEY_USE_OK_LIST,okList);
