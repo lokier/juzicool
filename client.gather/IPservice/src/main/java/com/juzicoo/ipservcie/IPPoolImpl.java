@@ -8,8 +8,10 @@ class IPPoolImpl implements IPPool {
     private int maxPoolSize;
     private int minPoolSize;
     private float minRate;
+    private boolean isDestroy = false;
     private IPExList pooList = new IPExList();
 
+    private HashMap<String,ProxyIp> toUpadateMap = new HashMap<>();
 
 
     IPPoolImpl(IPservcie pservcie, int maxPoolSize, int minPoolSize, float minRate) {
@@ -22,6 +24,9 @@ class IPPoolImpl implements IPPool {
 
     @Override
     public synchronized void addPrioriyIplist(Collection<String> iplist) {
+        if(isDestroy){
+            return;
+        }
 
         ArrayList<String> hosts = new ArrayList<>(iplist);
 
@@ -39,9 +44,12 @@ class IPPoolImpl implements IPPool {
 
     @Override
     public synchronized void ready() {
-
+        if(isDestroy){
+            return;
+        }
+        saveCache();
         List<ProxyIp> ipList =  iPservcie.getDB().next(maxPoolSize,minRate);
-        if(ipList == null || ipList.size() ==0){
+        if(ipList == null || ipList.size() <= minPoolSize){
             iPservcie.doCollect();
         }
         pooList.put(ipList);
@@ -49,19 +57,100 @@ class IPPoolImpl implements IPPool {
 
     @Override
     public synchronized void destroy() {
-        pooList = null;
+
+        saveCache();
+        isDestroy = true;
     }
 
     @Override
     public synchronized ProxyIp request() {
-        return pooList.poll();
+        if(isDestroy || pooList == null){
+            return null;
+        }
+
+        ProxyIp ip =  pooList.poll();
+
+        int unUseSize = pooList.getUnUseSize();
+
+        if(IPservcie.LOG.isDebugEnabled()){
+            IPservcie.LOG.debug(String.format("++[Requst IP](unUse:%d,total:%d,minPool:%d,maxPool:%d):" + (ip!= null ? ip.toString():"null")
+                    ,unUseSize,pooList.hosts.size(),minPoolSize,maxPoolSize));
+        }
+
+        if( unUseSize <= minPoolSize) {
+            //再次收集新的IP
+            saveCache();
+            List<ProxyIp> iplist =  iPservcie.getDB().next( maxPoolSize- unUseSize,minRate);
+
+
+
+
+            if(IPservcie.LOG.isDebugEnabled()){
+                IPservcie.LOG.debug(String.format("   ==>read ip from db:(unUse:%d,total:%d,minPool:%d,maxPool:%d), new ip size:%d"
+                        ,unUseSize,pooList.hosts.size(),minPoolSize,maxPoolSize,(iplist!= null ? iplist.size():0)));
+            }
+
+            if(iplist!= null) {
+                pooList.put(iplist);
+            }
+
+            int newUnuseSize = pooList.getUnUseSize();
+            if(newUnuseSize <= unUseSize){
+                //请求收集新的IP。
+                if(IPservcie.LOG.isDebugEnabled()) {
+                    IPservcie.LOG.debug(String.format("   ==>request collect:(unUse:%d,total:%d,minPool:%d,maxPool:%d)"
+                            , unUseSize, pooList.hosts.size(), minPoolSize, maxPoolSize));
+                }
+                iPservcie.requestCollect();
+
+            }
+
+            if(unUseSize == 0) {
+                iplist =  iPservcie.getDB().next( minPoolSize);
+                if(iplist!= null) {
+                    pooList.put(iplist);
+                }
+                IPservcie.LOG.warn( "没有代理IP可用，拿劣质IP使用!!!!");
+            }
+
+
+
+        }
+
+
+        return ip;
     }
 
     @Override
-    public synchronized void release(ProxyIp ip, boolean userOk) {
-        pooList.remove(ip);
+    public synchronized void release(String ipHost, boolean userOk) {
+        ProxyIp proxy = pooList.remove(ipHost);
 
-        //TODO 更新数据
+        if(proxy!= null){
+            ProxyIp.addIfUseOk(proxy,userOk);
+            ProxyIp.updateRate(proxy);
+            toUpadateMap.put(proxy.getHost(),proxy);
+            if(IPservcie.LOG.isDebugEnabled()) {
+                IPservcie.LOG.debug(String.format("--[release ip](unUse:%d,total:%d,minPool:%d,maxPool:%d): %s"
+                        , pooList.unUseList.size(), pooList.hosts.size(), minPoolSize, maxPoolSize,proxy.toString()));
+            }
+        }else{
+            IPservcie.LOG.warn(String.format("--[release ip] error:(unUse:%d,total:%d,minPool:%d,maxPool:%d) : %s"
+                    , pooList.unUseList.size(), pooList.hosts.size(), minPoolSize, maxPoolSize,ipHost));
+        }
+    }
+
+    private void saveCache(){
+        if(iPservcie == null){
+            return;
+        }
+        if(IPservcie.LOG.isDebugEnabled()) {
+            IPservcie.LOG.debug(String.format("--[save cache]:toUpadateMap = %d"
+                    ,toUpadateMap.size()));
+        }
+        if(toUpadateMap.size() > 0) {
+            iPservcie.getDB().update(toUpadateMap.values());
+        }
+        toUpadateMap.clear();
     }
 
 
@@ -96,7 +185,7 @@ class IPPoolImpl implements IPPool {
                     "host='" + getHost() + '\'' +
                     ", port=" + getPort() +
                     ", rate10=" + getRate10() +
-                    "isUse=" + isUse +
+                    ",isUse=" + isUse +
                     ", useCount=" + useCount +
                     ", lastUseTime=" + lastUseTime +
                     '}';
@@ -108,8 +197,12 @@ class IPPoolImpl implements IPPool {
 
         private HashSet<String> hosts = new HashSet<>();
         private ArrayList<IPEx> unUseList = new ArrayList<IPEx>(1000);
+        private HashMap<String,IPEx> usingMap = new HashMap<>();
 
 
+        public int getUnUseSize(){
+            return unUseList.size();
+        }
 
 
         /***
@@ -130,9 +223,9 @@ class IPPoolImpl implements IPPool {
             }
         }
 
-        public void remove(ProxyIp ip){
-            hosts.remove(ip.getHost());
-
+        public ProxyIp remove(String ipHost){
+            hosts.remove(ipHost);
+            return usingMap.remove(ipHost);
         }
 
         public IPEx poll(){
@@ -143,7 +236,7 @@ class IPPoolImpl implements IPPool {
                     throw new IllegalStateException("should not true");
                 }
                 ex.isUse = true;
-
+                usingMap.put(ex.getHost(),ex);
 
                 //long pollId = seqId.getAndIncrement();
 

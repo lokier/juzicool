@@ -17,5 +17,6 @@ public interface IpSource {
 
     List<ProxyIp> process(IPservcie iPservcie,Page page);
 
+    void absort();
 
 }

@@ -16,6 +16,6 @@ public interface IPPool {
 
     ProxyIp request();
 
-    void release(ProxyIp ip, boolean userOk);
+    void release(String ipHost, boolean userOk);
 
 }

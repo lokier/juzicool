@@ -106,7 +106,7 @@ public class Spider implements Runnable, Task {
 
     private Date startTime;
 
-    private int emptySleepTime = 30000;
+    private int emptySleepTime = 3000;
 
     /**
      * create a spider with pageProcessor.

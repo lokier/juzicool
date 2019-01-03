@@ -1,5 +1,10 @@
 package com.juzicool.gather.spider;
 
+import com.juzicoo.ipservcie.IPPool;
+import com.juzicoo.ipservcie.IPTester;
+import com.juzicoo.ipservcie.IPservcie;
+import com.juzicoo.ipservcie.WebMagicIpProxy;
+import com.juzicoo.ipservcie.source.www89ipcn;
 import com.juzicool.data.Juzi;
 import com.juzicool.data.db.JuziDB;
 import com.juzicool.gather.*;
@@ -38,10 +43,24 @@ public class JuzimiSpider {
 
         File gatherFile = new File("./juzimi_ablum_gather.db");  //抓取状态保存在这个文件。
         File outputFile = new File("./juzimi_ablum_output.db");  //句子结果保存到这个数据库。
+        File ipProxyFile = new File("./juzi_proxy.db");  //代理ip库
+
+        final int threadSize = 20;
+
+        //初始化IP代理组件
+        System.out.println("初始化IPservcie。。。");
+        IPservcie iPservcie = new IPservcie(ipProxyFile);
+        iPservcie.setIPTester(new IPTester.DefaultIPTester(iPservcie,new String[]{"https://www.juzimi.com/ju/469610"}));
+        iPservcie.setCollectInterval(1f); //至少每隔1小時要收集新的ip。
+        iPservcie.addIpSource(new www89ipcn());
+        final IPPool pool =  iPservcie.createPool(threadSize * 5,threadSize + 1,0.3f);
+        pool.ready();
+        System.out.println("初始化成功。。。");
+
 
         long startTime = System.currentTimeMillis();
         HttpClientDownloader httpClientDownloader = new HttpClientDownloader();
-        httpClientDownloader.setProxyProvider(new IpProxyProvider());
+        httpClientDownloader.setProxyProvider(new WebMagicIpProxy(pool));
 
 
         //不使用Webmgic的Pipline来处理结果，直接在Processor保存；
@@ -68,8 +87,8 @@ public class JuzimiSpider {
         //重新开始上次请求失败的url请求
         spider.restoreErrorRequest();
 
-        spider.addUrl("https://www.juzimi.com/album/48576?page=3");
-       spider.addUrl("https://www.juzimi.com/albums");
+      //  spider.addUrl("https://www.juzimi.com/album/48576?page=3");
+      // spider.addUrl("https://www.juzimi.com/albums");
 
         spider.stopWhileExceutedSize(2000000); // 执行超过指定次数请求时停止
         spider.stopWhileProcessSucessRateSmallerThan(0.5f); // 最近请求成功率低于50%时停止抓取
@@ -81,7 +100,7 @@ public class JuzimiSpider {
             }
         });
 
-        spider.thread(20).run();
+        spider.thread(threadSize).run();
 
         System.out.println("totalItme: " + (System.currentTimeMillis() - startTime));
     }

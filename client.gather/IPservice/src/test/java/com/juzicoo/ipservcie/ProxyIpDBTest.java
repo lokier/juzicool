@@ -132,6 +132,48 @@ public class ProxyIpDBTest {
         db.close();
     }
 
+    @Test
+    public void testUpdateRate() {
+        File sqlFile = new File("proxyIp-test.db");
+
+        ProxyIpDB db = new ProxyIpDB(sqlFile);
+        db.prepare();
+
+        db.delateAll();
+        Assert.assertTrue( db.size() == 0);
+
+        ArrayList<ProxyIp> ipList = new ArrayList<>();
+
+        ipList.add(new ProxyIp().setHost("w1").setPort(20));
+        ipList.add(new ProxyIp().setHost("w2").setPort(20));
+        ipList.add(new ProxyIp().setHost("w3").setPort(23));
+        ipList.add(new ProxyIp().setHost("w4").setPort(20));
+        db.putIfNotExist(ipList);
+
+        ArrayList<String> w3 = new ArrayList<>();
+        w3.add("w3");
+
+        Assert.assertTrue( db.get(w3).get(0).getRate10() == 1.0f);
+
+        ProxyIp proxy = db.get(w3).get(0);
+        ProxyIp.addIfUseOk(proxy,false);
+        ProxyIp.updateRate(proxy);
+
+        ipList.clear();
+        ipList.add(proxy);
+        db.update(ipList);
+
+        Assert.assertTrue( db.get(w3).get(0).getRate10() == 0.9f);
+
+        ipList.clear();
+
+
+
+
+        db.delateAll();
+        db.close();
+    }
+
 
      @Test
       public void testGetAndDelate() {

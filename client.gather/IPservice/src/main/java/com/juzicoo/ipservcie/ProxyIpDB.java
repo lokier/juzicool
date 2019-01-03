@@ -28,6 +28,7 @@ public class ProxyIpDB {
     private Connection mConnection = null;
     private final File mFile;
     private static final String TABLE_NAME = "proxyip";
+    private KV mKv = null;
 
     public ProxyIpDB(File file){
         mFile = file;
@@ -50,13 +51,21 @@ public class ProxyIpDB {
             Statement stmt = mConnection.createStatement();
             stmt.execute(createSql);
             stmt.closeOnCompletion();
+
+            mKv = new KV(mConnection);
+
         }catch (Exception ex){
             throw new RuntimeException(ex);
         }
 
+
     }
 
-    public void close(){
+    public KV KV(){
+        return mKv;
+    }
+
+    public synchronized void close(){
         try {
             if (mConnection != null) {
                 mConnection.close();
@@ -67,7 +76,7 @@ public class ProxyIpDB {
         }
     }
 
-    public void delateAll(){
+    public synchronized void delateAll(){
         String sql = "delete  FROM " + TABLE_NAME;
         Statement stmt = null;
         ResultSet rs = null;
@@ -96,7 +105,7 @@ public class ProxyIpDB {
         }
     }
 
-    public void deletes(String[] hosts){
+    public synchronized void deletes(String[] hosts){
 
         if(hosts == null || hosts.length == 0){
             return;
@@ -155,7 +164,7 @@ public class ProxyIpDB {
     }
 
 
-    public List<ProxyIp> get(List<String> hosts) {
+    public synchronized List<ProxyIp> get(List<String> hosts) {
         String sql = "SELECT *  FROM " + TABLE_NAME +" WHERE host in (";
         StringBuffer sb = new StringBuffer(sql);
         sb.append( "'"+ hosts.get(0) +"'");
@@ -222,7 +231,7 @@ public class ProxyIpDB {
              * @param size
              * @return
              */
-    public List<ProxyIp> next(int size, Float minRate){
+    public synchronized List<ProxyIp> next(int size, Float minRate){
 
         String where = "";
         if(minRate != null){
@@ -302,7 +311,7 @@ public class ProxyIpDB {
 
 
 
-    public void putIfNotExist(Collection<ProxyIp> ipList) {
+    public synchronized void putIfNotExist(Collection<ProxyIp> ipList) {
         //INSERT OR IGNORE
         String sql = "INSERT OR IGNORE INTO "+TABLE_NAME+"(" +
                 "host, port,rate10,token, extra) VALUES(?,?,?,?,?)";
@@ -346,20 +355,19 @@ public class ProxyIpDB {
         }
     }
 
-    public void update(Collection<ProxyIp> ipList) {
+    public synchronized void update(Collection<ProxyIp> ipList) {
         //INSERT OR IGNORE
-        String sql = "INSERT OR replace INTO "+TABLE_NAME+"(" +
-                "host, port,rate10, extra) VALUES(?,?,?,?)";
+        String sql = "update  "+TABLE_NAME+" set port = ?,rate10=?,extra=? where host = ?";
         PreparedStatement pstmt = null;
         Connection conn = mConnection;
         try {
             conn.setAutoCommit(false);
             pstmt = conn.prepareStatement(sql);
             for(ProxyIp ip : ipList) {
-                pstmt.setString(1, ip.getHost());
-                pstmt.setInt(2, ip.getPort());
-                pstmt.setFloat(3, ip.getRate10());
-                pstmt.setBytes(4, objectToByte(ip.getExtra()));
+                pstmt.setInt(1, ip.getPort());
+                pstmt.setFloat(2, ip.getRate10());
+                pstmt.setBytes(3, objectToByte(ip.getExtra()));
+                pstmt.setString(4, ip.getHost());
                 pstmt.addBatch();
             }
 
@@ -390,7 +398,7 @@ public class ProxyIpDB {
     }
 
 
-    public int size(){
+    public synchronized int size(){
         String sql = "SELECT COUNT(host) FROM "+ TABLE_NAME;
         Statement stmt = null;
         ResultSet rs = null;
@@ -465,4 +473,276 @@ public class ProxyIpDB {
     }
 
 
+    public static class KV {
+        private static final String TABLE_NAME = "simple_db_kv";
+        private static final String KEY = "key";
+        private static final String VALUE = "value";
+        private Connection mConnection = null;
+
+        public KV(Connection connection)throws SQLException{
+            mConnection = connection;
+            String sql = "CREATE TABLE IF NOT EXISTS "+TABLE_NAME+" (\n" + KEY + "  text PRIMARY KEY,\n"
+                    + VALUE + " BLOB);";
+            Statement stmt = mConnection.createStatement();
+            stmt.execute(sql);
+            stmt.closeOnCompletion();
+        }
+
+        public synchronized int size(){
+            String sql = "SELECT COUNT("+KEY+") FROM "+ TABLE_NAME;
+            Statement stmt = null;
+            ResultSet rs = null;
+            try {
+                Connection conn = mConnection;
+                stmt= conn.createStatement();
+                rs = stmt.executeQuery(sql);
+                // loop through the result set
+                if (rs.next()) {
+
+                    return rs.getInt(1);
+                }
+
+            } catch (Exception e) {
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (rs != null) {
+                        rs.close();
+                    }
+                }catch (Exception ex){
+
+                }
+                try {
+                    if (stmt != null) {
+                        stmt.close();
+                    }
+                }catch (Exception ex){
+                }
+
+            }
+            return 0;
+        }
+
+        public synchronized boolean has(String key){
+            String sql = "SELECT *  FROM " + TABLE_NAME +" where  " + KEY +"='" +key + "'";
+            Statement stmt = null;
+            ResultSet rs = null;
+            try {
+                Connection conn = mConnection;
+                stmt= conn.createStatement();
+                rs = stmt.executeQuery(sql);
+                // loop through the result set
+                if (rs.next()) {
+                    return true;
+                }
+
+            } catch (Exception e) {
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (rs != null) {
+                        rs.close();
+                    }
+                }catch (Exception ex){
+
+                }
+                try {
+                    if (stmt != null) {
+                        stmt.close();
+                    }
+                }catch (Exception ex){
+                }
+
+            }
+            return false;
+        }
+
+        public synchronized void put(String key, Serializable value){
+            String sql = "INSERT or replace INTO "+TABLE_NAME+"("+KEY+", "+VALUE+") VALUES(?,?)";
+            PreparedStatement pstmt = null;
+            try {
+                Connection conn = mConnection;
+                pstmt = conn.prepareStatement(sql);
+                pstmt.setString(1, key);
+                pstmt.setBytes(2, objectToByte(value));
+                pstmt.executeUpdate();
+
+            } catch (SQLException e) {
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (pstmt != null) {
+                        pstmt.close();
+                    }
+                }catch (Exception ex){
+
+                }
+
+            }
+        }
+
+        public synchronized void put(List<String> keys, Serializable value){
+            String sql = "INSERT or replace INTO "+TABLE_NAME+"("+KEY+", "+VALUE+") VALUES(?,?)";
+            PreparedStatement pstmt = null;
+            Connection conn = mConnection;
+
+            try {
+                conn.setAutoCommit(false);
+                pstmt = conn.prepareStatement(sql);
+                for(String key:keys) {
+                    pstmt.setString(1, key);
+                    pstmt.setBytes(2, objectToByte(value));
+                    pstmt.addBatch();
+                }
+                pstmt.executeBatch();
+                conn.commit();
+            } catch (SQLException e) {
+                try {
+                    conn.rollback();
+                }catch (Exception ex){
+
+                }
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (pstmt != null) {
+                        pstmt.close();
+                    }
+                }catch (Exception ex){
+
+                }
+                try {
+                    conn.setAutoCommit(true);
+                }catch (Exception ex){
+
+                }
+
+
+            }
+        }
+
+
+        /*     public void remove(String key) {
+
+            String[] keys = new String[1];
+            keys[0] = key;
+            remove(keys);
+        }
+*/
+        public void remove(String key){
+
+            String sql = "delete  from " + TABLE_NAME +" where " + KEY +" ='"+ key +"'";
+            Statement stmt = null;
+            // ResultSet rs = null;
+            try {
+                Connection conn = mConnection;
+                stmt= conn.createStatement();
+                stmt.execute(sql);
+
+            } catch (Exception e) {
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (stmt != null) {
+                        stmt.close();
+                    }
+                }catch (Exception ex){
+                }
+
+            }
+        }
+
+        public void remove(List<String> keys){
+            String sql = "delete  from " + TABLE_NAME +" where " + KEY +" = ? ";
+            PreparedStatement pstmt = null;
+            Connection conn = mConnection;
+            try {
+                conn.setAutoCommit(false);
+                pstmt = conn.prepareStatement(sql);
+                for(String key: keys){
+                    pstmt.setString(1, key);
+                    pstmt.addBatch();
+                }
+                pstmt.executeBatch();
+                conn.commit();
+
+            } catch (SQLException e) {
+                try {
+                    conn.rollback();
+                }catch (Exception ex){
+
+                }
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (pstmt != null) {
+                        pstmt.close();
+                    }
+                }catch (Exception ex){
+
+                }
+                try {
+                    conn.setAutoCommit(true);
+
+                }catch (Exception ex){
+
+                }
+
+            }
+        }
+
+
+        public synchronized <T extends Serializable> T get(String key,T defaultValue){
+            String sql = "SELECT "+VALUE+" FROM " + TABLE_NAME +" where " + KEY +" ='" +key +"'";
+            Statement stmt = null;
+            ResultSet rs = null;
+            try {
+                Connection conn = mConnection;
+                stmt= conn.createStatement();
+                rs = stmt.executeQuery(sql);
+                byte[] byteData = null;
+                // loop through the result set
+                while (rs.next()) {
+                    byteData = rs.getBytes(1);
+                }
+                if(byteData!=null){
+                    Serializable obj = byteToObject(byteData);
+                    return (T) obj;
+                }
+
+            } catch (Exception e) {
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (rs != null) {
+                        rs.close();
+                    }
+                }catch (Exception ex){
+
+                }
+                try {
+                    if (stmt != null) {
+                        stmt.close();
+                    }
+                }catch (Exception ex){
+
+                }
+
+            }
+
+            return defaultValue;
+        }
+
+
+        private void close(){
+            try {
+                if (mConnection != null) {
+                    mConnection.close();
+                }
+                mConnection = null;
+            } catch (SQLException ex) {
+
+            }
+        }
+    }
 }

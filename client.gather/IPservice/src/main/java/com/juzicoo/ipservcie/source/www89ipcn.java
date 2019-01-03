@@ -44,6 +44,7 @@ public class www89ipcn implements IpSource {
             String port =SelectableUtls.toSimpleText(trNode.xpath("td[2]")).trim();
             long startTime =System.currentTimeMillis();
 
+            System.out.println("testing START, ip : " + ip);
             if(iPservcie.getIPTester().checkProxyIp(ip,Integer.parseInt(port))){
                 long end = System.currentTimeMillis() - startTime;
                 if(end < 5000){
@@ -51,8 +52,15 @@ public class www89ipcn implements IpSource {
                     list.add(proxy);
                 }
             }
+            System.out.println("testing END, ip : " + ip);
+
         }
 
         return list;
+    }
+
+    @Override
+    public void absort() {
+
     }
 }
