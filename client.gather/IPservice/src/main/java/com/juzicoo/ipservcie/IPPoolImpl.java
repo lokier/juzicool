@@ -1,8 +1,51 @@
 package com.juzicoo.ipservcie;
 
+import com.juzicoo.ipservcie.source.www89ipcn;
+
+import java.io.File;
 import java.util.*;
 
 class IPPoolImpl implements IPPool {
+
+
+    public static void main(String[] args) {
+
+        IPservcie iPservcie = new IPservcie(new File("ipservide.db"));
+        System.out.println("www");
+
+        iPservcie.prepare();
+        iPservcie.getHandler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("wwsdfewrr");
+
+            }
+        },2000);
+        new Thread(){
+
+            @Override
+            public void run(){
+                IPservcie iPservcie = new IPservcie(new File("ipservide.db"));
+
+                iPservcie.setIPTester(new IPTester.DefaultIPTester(iPservcie,new String[]{"https://www.juzimi.com/ju/469610"}));
+
+                long start = System.currentTimeMillis();
+                System.out.println("start : " + start);
+
+                boolean ok = iPservcie.getIPTester().checkProxyIp("119.101.113.141",9999);
+                System.out.println("end : "  +System.currentTimeMillis() +", spend:"+(System.currentTimeMillis() - start) +", ok = " + ok );
+            }
+        }.start();
+
+
+  /*      final IPPool pool =  iPservcie.createPool(20,10,0.6f);
+
+        System.out.println("start collecting..");
+        iPservcie.doCollect();
+        System.out.println("finish collecting..");*/
+
+
+    }
 
     private IPservcie iPservcie;
     private int maxPoolSize;
@@ -130,7 +173,7 @@ class IPPoolImpl implements IPPool {
             ProxyIp.updateRate(proxy);
             toUpadateMap.put(proxy.getHost(),proxy);
             if(IPservcie.LOG.isDebugEnabled()) {
-                IPservcie.LOG.debug(String.format("--[release ip](unUse:%d,total:%d,minPool:%d,maxPool:%d): %s"
+                IPservcie.LOG.debug(String.format("--[release ip](unUse:%d,total:%d,minPool:%d,maxPool:%d): %s, userOk=" + userOk
                         , pooList.unUseList.size(), pooList.hosts.size(), minPoolSize, maxPoolSize,proxy.toString()));
             }
         }else{

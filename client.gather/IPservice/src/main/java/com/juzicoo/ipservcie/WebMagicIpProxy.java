@@ -16,7 +16,7 @@ public class WebMagicIpProxy implements ProxyProvider {
 
     @Override
     public void returnProxy(Proxy proxy, Page page, Task task) {
-        this.pool.release(proxy.getHost(),page.isDoProcess());
+        this.pool.release(proxy.getHost(),page.isDownloadSuccess());
     }
 
     @Override

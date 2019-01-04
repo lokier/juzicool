@@ -167,11 +167,25 @@ public class ProxyIpDBTest {
         db.update(ipList);
 
         Assert.assertTrue( db.get(w3).get(0).getRate10() == 0.9f);
+        Assert.assertTrue( db.get(w3).get(0).getUseTotalCount() == 1);
+        Assert.assertTrue( db.get(w3).get(0).getUseOkCount() == 0);
+
+        proxy = db.get(w3).get(0);
+        ProxyIp.addIfUseOk(proxy,true);
+        ProxyIp.addIfUseOk(proxy,true);
+        Assert.assertTrue( proxy.getUseTotalCount() == 3);
+        Assert.assertTrue( proxy.getUseOkCount() == 2);
+
+        ProxyIp.updateRate(proxy);
 
         ipList.clear();
+        ipList.add(proxy);
+        db.update(ipList);
 
-
-
+        Assert.assertTrue( db.get(w3).get(0).getRate10() == 0.9f);
+        Assert.assertTrue( db.get(w3).get(0).getUseTotalCount() == 3);
+        Assert.assertTrue( db.get(w3).get(0).getUseOkCount() == 2);
+        ipList.clear();
 
         db.delateAll();
         db.close();

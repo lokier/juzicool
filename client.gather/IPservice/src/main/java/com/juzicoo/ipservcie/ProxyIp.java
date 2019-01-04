@@ -103,8 +103,12 @@ public class ProxyIp {
        if(okList == null) {
            okList = new Boolean[10];
        }
+        ip.useTotalCount++;
+       if(userOk){
+           ip.useOkCount++;
+       }
         okListIndex = okListIndex % 10;
-       okList[okListIndex++] = userOk;
+        okList[okListIndex++] = userOk;
         extra.put(KEY_USE_OK_LIST_INDEX,okListIndex);
         extra.put(KEY_USE_OK_LIST,okList);
 

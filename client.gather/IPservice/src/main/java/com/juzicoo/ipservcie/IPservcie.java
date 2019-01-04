@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class IPservcie {
 
@@ -27,6 +28,7 @@ public class IPservcie {
     public static void main(String[] args) {
        IPservcie iPservcie = new IPservcie(new File("ipservide.db"));
 
+
        iPservcie.setIPTester(new IPTester.DefaultIPTester(iPservcie,new String[]{"https://www.juzimi.com/ju/469610"}));
 
        iPservcie.addIpSource(new www89ipcn());
@@ -34,9 +36,11 @@ public class IPservcie {
        final IPPool pool =  iPservcie.createPool(20,10,0.6f);
 
        System.out.println("start collecting..");
-       pool.ready();
+       iPservcie.doCollect();
        System.out.println("finish collecting..");
 
+
+      // iPservcie.destoryWhileFinish();
 
        new Thread(){
 
@@ -76,6 +80,29 @@ public class IPservcie {
 
     }
 
+    private boolean isPreared = false;
+
+    public void prepare(){
+        if(!isPreared) {
+            synchronized (this){
+                if(!isPreared){
+                    getHandler();
+                    isPreared = true;
+                }
+            }
+
+        }
+    }
+
+    public void destoryWhileFinish() {
+        waitWhileCollectFinished();
+        Handler handler = getHandler();
+        if(handler!= null){
+            handler.getLooper().quit();
+        }
+
+       // ddw
+    }
 
 
     private ProxyIpDB db;
@@ -92,6 +119,7 @@ public class IPservcie {
     }
 
     public IPPool createPool(int maxPoolSize,int minPoolSize,float minRate){
+        prepare();
         return new IPPoolImpl(this,maxPoolSize,minPoolSize,minRate);
     }
 
@@ -178,20 +206,26 @@ public class IPservcie {
 
      void  doCollect(){
          requestCollect();
-         try {
-                while (true){
+         waitWhileCollectFinished();
+     }
 
-                    synchronized (this){
-                        if(mCollectRunnable == null || mCollectRunnable.isFinish){
-                            break;
-                        }
-                        Thread.sleep(800);
-                    }
-                }
+     private  void waitWhileCollectFinished(){
+         try {
+             while (true){
+                 synchronized (this){
+                     if(isCollectFinish()){
+                         break;
+                     }
+                     Thread.sleep(800);
+                 }
+             }
          } catch (InterruptedException e) {
 
          }
+     }
 
+     private boolean isCollectFinish(){
+        return mCollectRunnable == null || mCollectRunnable.isFinish;
      }
 
 
@@ -310,6 +344,7 @@ public class IPservcie {
 
     private CacheIpCommit mCommit = new CacheIpCommit();
 
+    private static AtomicInteger mCounter = new AtomicInteger(0);
 
     private  class CacheIpCommit implements IpSource.DataCommit{
 
@@ -324,9 +359,10 @@ public class IPservcie {
                 return;
             }
             System.out.println("[start test ip:]"+ ip);
+            mCounter.incrementAndGet();
             long start = System.currentTimeMillis();
             boolean isOk =  getIPTester().checkProxyIp(ip,port);
-            System.out.println("[end test ip:]"+ ip +", spendTime: " + (System.currentTimeMillis() - start));
+            System.out.println("[end test ip:]"+ ip +" ,port" + port +", spendTime: " + (System.currentTimeMillis() - start) +", 还剩下：" + mCounter.decrementAndGet());
 
             if(isOk){
                 ProxyIp proxy = new ProxyIp(ip,port);

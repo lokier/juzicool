@@ -12,6 +12,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.HttpContext;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public interface IPTester {
 
@@ -19,10 +20,13 @@ public interface IPTester {
     boolean checkProxyIp(String host,int port);
 
 
+
     public static class DefaultIPTester implements IPTester {
 
          private String[] mUrls;
          private IPservcie iPservcie;
+
+
 
          public DefaultIPTester(IPservcie iPservcie,String[] urls) {
              this.iPservcie = iPservcie;
@@ -31,7 +35,11 @@ public interface IPTester {
 
          @Override
          public boolean checkProxyIp(String host, int port) {
-             return check(host,port,5000);
+             try {
+                 return check(host, port, 5000);
+             }catch (Throwable ex){
+                return false;
+             }
          }
 
 
@@ -48,7 +56,8 @@ public interface IPTester {
              return httpClient;
          }
 
-         public Boolean check(final String proxyIp, int proxyPort,final int timeoutMillion) {
+
+         public Boolean check(final String proxyIp, int proxyPort,final long timeoutMillion) {
 
              if(mUrls == null || mUrls.length == 0){
                  return false;
@@ -70,14 +79,12 @@ public interface IPTester {
                  httpGet.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.26 Safari/537.36 Core/1.63.6801.400 QQBrowser/10.3.2928.400");
                  httpGet.setConfig(config);
                  try {
-                     final  HttpResponse response = client.execute(httpGet);
-
                      Runnable closeRunnable = new Runnable() {
                          @Override
                          public void run() {
-                             IPservcie.LOG.debug(String.format(" =====> close test for timeout(%d): %s",timeoutMillion,proxyIp));
+                             //long start = System.currentTimeMillis();
 
-                             if(IPservcie.LOG.isDebugEnabled()){
+                            if(IPservcie.LOG.isDebugEnabled()){
                                  IPservcie.LOG.debug(String.format(" =====> close test for timeout(%d): %s",timeoutMillion,proxyIp));
                              }
                              try{
@@ -85,16 +92,19 @@ public interface IPTester {
                              }catch (Exception ex){
 
                              }
-                            try{
-                                client.close();
-                            }catch (Exception ex){
+                             try{
+                                 client.close();
+                             }catch (Exception ex){
 
-                            }
+                             }
+                            // System.out.println(String.format(" =====> close test for timeout(%d): %s, spendTiem:%d",timeoutMillion,proxyIp,System.currentTimeMillis()- start));
 
                          }
                      };
 
                      iPservcie.getHandler().postDelayed(closeRunnable,timeoutMillion);
+
+                     final  HttpResponse response = client.execute(httpGet);
                      int statuCode = response.getStatusLine().getStatusCode();
                      iPservcie.getHandler().removeCallbacks(closeRunnable);
 
