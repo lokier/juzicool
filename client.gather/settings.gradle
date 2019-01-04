@@ -7,4 +7,6 @@ include 'webmagic-samples'
 include 'juzi-data'
 include 'juzi-import'
 include 'IPservice'
+include 'webwalker'
+include 'juzi-seo-web'
 
