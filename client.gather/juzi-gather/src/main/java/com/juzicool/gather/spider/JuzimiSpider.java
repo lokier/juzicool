@@ -45,7 +45,7 @@ public class JuzimiSpider {
         File outputFile = new File("./juzimi_ablum_output.db");  //句子结果保存到这个数据库。
         File ipProxyFile = new File("./juzi_proxy.db");  //代理ip库
 
-        final int threadSize = 20;
+        final int threadSize = 25;
 
         //初始化IP代理组件
         System.out.println("初始化IPservcie。。。");

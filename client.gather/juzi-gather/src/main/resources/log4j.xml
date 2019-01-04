@@ -36,11 +36,11 @@
         <appender-ref ref="fileAppenderInfo" />
     </logger>
 
-    <logger name="us.codecraft.webmagic.downloader" additivity="false">
-        <!--指定类的日志级别，会影响指定类日志发出信息的成功与否-->
+<!--    <logger name="us.codecraft.webmagic.downloader" additivity="false">
+        &lt;!&ndash;指定类的日志级别，会影响指定类日志发出信息的成功与否&ndash;&gt;
         <level value = "info" />
         <appender-ref ref="fileAppenderInfo" />
-    </logger>
+    </logger>-->
 
 
     <root>
