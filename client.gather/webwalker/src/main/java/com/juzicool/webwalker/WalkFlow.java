@@ -7,14 +7,12 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class WalkFlow {
+public abstract class WalkFlow {
     public static Logger LOG = LoggerFactory.getLogger(WalkFlow.class);
-
-    private String name;
 
     Queue<CaseWrapper> caseQueue = new LinkedList<>();
 
-    public WalkFlow addCase(WalkCase _case, long delay) {
+    protected WalkFlow addCase(WalkCase _case, long delay) {
         CaseWrapper wrapper = new CaseWrapper();
         wrapper._case= _case;
         wrapper.delay = delay;
@@ -22,14 +20,7 @@ public class WalkFlow {
         return this;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public WalkFlow setName(String name) {
-        this.name = name;
-        return this;
-    }
+    public abstract String getName();
 
     /*pacage*/ void execute(WalkTask task,WalkClient client) {
 
@@ -49,16 +40,19 @@ public class WalkFlow {
 
             long startTime = System.currentTimeMillis();
             LOG.info("flow[" +getName()+"]: start do case");
-            TimeoutRunnable runnable = new TimeoutRunnable(wrapper);
-            task.getWalkService().getHandler().postDelayed(runnable,wrapper._case.getTimeout());
-            wrapper._case.doCase(client,wrapper);
-            wrapper.waitingFinish();
-            task.getWalkService().getHandler().removeCallbacks(runnable);
-            runnable.dispose();
-            try {
-                wrapper._case.cancel();
-            } catch (Throwable e) {
 
+
+            wrapper._case.onCreate(client);
+            TimeoutRunnable runnable = new TimeoutRunnable(wrapper);
+
+            try {
+                task.getWalkService().getHandler().postDelayed(runnable, wrapper._case.getTimeout());
+                wrapper._case.doCase(client, wrapper);
+                wrapper.waitingFinish();
+            }finally {
+                task.getWalkService().getHandler().removeCallbacks(runnable);
+                runnable.dispose();
+                wrapper._case.onDestroy();
             }
 
             boolean doCaseOK = wrapper._walkOk;
@@ -78,7 +72,7 @@ public class WalkFlow {
      * @param succes 是否执行成功
      * @param ex
      */
-    /*pacage*/ void onFinished(boolean succes, Throwable ex){
+    /*pacage*/protected void onFinished(boolean succes, Throwable ex){
 
     }
 
@@ -93,7 +87,7 @@ public class WalkFlow {
             LOG.info("        timeout do case = " + wrapper._case.toString() );
 
             try {
-                this.wrapper._case.cancel();
+                this.wrapper._case.onCancel();
             }catch (Throwable ex){
 
             }

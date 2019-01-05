@@ -87,8 +87,8 @@ public class JuzimiSpider {
         //重新开始上次请求失败的url请求
         spider.restoreErrorRequest();
 
-      //  spider.addUrl("https://www.juzimi.com/album/48576?page=3");
-      // spider.addUrl("https://www.juzimi.com/albums");
+        spider.addUrl("https://www.juzimi.com/album/48576?page=3");
+       spider.addUrl("https://www.juzimi.com/albums");
 
         spider.stopWhileExceutedSize(2000000); // 执行超过指定次数请求时停止
         spider.stopWhileProcessSucessRateSmallerThan(0.5f); // 最近请求成功率低于50%时停止抓取

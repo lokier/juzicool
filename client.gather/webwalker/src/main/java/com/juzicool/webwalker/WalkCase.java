@@ -1,24 +1,46 @@
 package com.juzicool.webwalker;
 
-import java.io.Closeable;
-import java.io.IOException;
 
-public interface WalkCase  {
+public abstract class WalkCase  {
+
+    protected WalkClient mClient = null;
 
     /**
      * 返回该case的超时时间
      * @return 毫秒
      */
-    long getTimeout();
+   public abstract long getTimeout();
 
-    void doCase(WalkClient client,WalkPormise pormise);
+   protected abstract void doCase(WalkClient wclient,WalkPormise pormise);
+
 
     /**
-     * 执行过程中，取消执行。
+     * 创建
      */
-    void cancel();
+    protected void onCreate(WalkClient client){
+        mClient = client;
+    }
 
-    public class DumpCase implements WalkCase {
+    /**
+     * 销毁
+     */
+    protected void onDestroy(){
+        mClient = null;
+    }
+
+    /**
+     * 中途取消执行。
+     */
+    protected void onCancel(){
+        try {
+            mClient.getWebClient().close();
+        }catch (Exception ex){
+
+        }
+    }
+
+
+    public static class DumpCase extends WalkCase {
 
         @Override
         public long getTimeout() {
@@ -31,9 +53,20 @@ public interface WalkCase  {
         }
 
         @Override
-        public void cancel() {
+        public void onCancel() {
 
         }
+
+        @Override
+        public void onCreate(WalkClient client) {
+
+        }
+
+        @Override
+        public void onDestroy() {
+
+        }
+
 
     }
 }

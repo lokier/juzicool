@@ -71,12 +71,23 @@ public class WalkTask {
     }
 
     public void sumbit(WalkClient client,WalkFlow flow) {
+        sumbit(client,flow,null);
+    }
+
+        /**
+         *
+         * @param client
+         * @param flow
+         * @param finishCallback
+         */
+    public void sumbit(WalkClient client,WalkFlow flow,Callback<Boolean> finishCallback) {
         if(client == null || flow == null){
             throw  new NullPointerException();
         }
         TaskData data = new TaskData();
         data.client = client;
         data.flow = flow;
+        data.callback = finishCallback;
         synchronized (this){
             queue.add(data);
         }
@@ -85,6 +96,7 @@ public class WalkTask {
     private static class TaskData {
         WalkClient client;
         WalkFlow flow;
+        Callback<Boolean> callback;
     }
 
     private class WalkTaskThead extends Thread{
@@ -114,12 +126,20 @@ public class WalkTask {
                 try{
                     data.flow.execute(WalkTask.this,data.client);
                     data.flow.onFinished(true,null);
+
+                    if(data.callback!= null){
+                        data.callback.onCallback(true);
+                    }
                     LOG.info("    finished WalkFlow: " + data.flow.getName());
 
                 }catch (Throwable ex){
                     ex.printStackTrace();
                     LOG.error(ex.getMessage(),ex);
                     data.flow.onFinished(false,ex);
+
+                    if(data.callback!= null){
+                        data.callback.onCallback(false);
+                    }
                 }
 
             }

@@ -21,7 +21,7 @@ public class WalkService {
 
 
         //在task上面执行一个WalkFlow
-        WalkFlow flow = new WalkFlow();
+        DefaultWalkFlow flow = new DefaultWalkFlow();
         flow.setName("测试flow").addCase(new WalkCase.DumpCase(),100);
 
         WalkClient client = WalkClient.build();
