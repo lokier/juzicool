@@ -1,7 +1,4 @@
-package com.juzicool.test;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.juzicool.webwalker.*;
+package com.juzicool.webwalker;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,6 +12,30 @@ public class webwalkerTester {
         service.prepare(); // 准备工作
 
 
+
+
+        testBasic(service);
+
+
+    }
+
+    private void testWalkThreadManager(WalkService service){
+
+        WalkThreadManager manager = new WalkThreadManager(service);
+
+        //在task上面执行一个WalkFlow
+        DefaultWalkFlow flow = new DefaultWalkFlow();
+
+       // manager.sumbit();
+
+        for(int i = 0; i< 100;i++){
+
+        }
+
+       // manager.s
+    }
+
+    private void testBasic(WalkService service){
         //开启一个WaklTask
         WalkTask task = new  WalkTask();
         service.startTaskNow(task);  //一个WalkTask就是一个Thread线程。
@@ -46,8 +67,9 @@ public class webwalkerTester {
         Assert.assertTrue(_case.hasCallCancel);
         Assert.assertTrue(_case.onCreateTime < _case.onDoCaseTime && _case.onCreateTime > 0);
         Assert.assertTrue(_case.onDoCaseTime < _case.onDestroyTime);
-
     }
+
+
 
     private static class MyCallback implements Callback {
 

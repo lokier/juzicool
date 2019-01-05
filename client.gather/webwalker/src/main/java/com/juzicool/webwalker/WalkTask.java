@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /***
  * 一个WalkTask就是一个Thread线程。

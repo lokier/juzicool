@@ -16,7 +16,7 @@ public class WalkService {
 
         //开启一个WaklTask
         WalkTask task = new  WalkTask();
-        service.startTaskNow(task);  //一个WalkTask就是一个Thread线程。
+        service.startTaskNow(task);  //一个WalkTask就是调度工作任务。
 
 
 

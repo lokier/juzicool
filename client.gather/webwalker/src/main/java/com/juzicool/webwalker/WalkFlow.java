@@ -38,6 +38,7 @@ public abstract class WalkFlow {
                 }
             }
 
+            //TODO  ： 交到WalkThreadMananger处理。
             long startTime = System.currentTimeMillis();
             LOG.info("flow[" +getName()+"]: start do case");
 
