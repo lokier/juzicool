@@ -49,21 +49,6 @@ public class WalkTask {
         return w != null;
     }
 
-    /**
-     * 停止。
-     */
-    public void shutdown(){
-        WalkTaskThead w = mRunningThread;
-        if(w == null) {
-            return ;
-        }
-        w.isStop = true;
-    }
-
-   /* void detachService() {
-         mService = null;
-
-    }*/
 
     void attachService(WalkService walkService) {
         mService = walkService;

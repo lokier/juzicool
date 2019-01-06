@@ -5,16 +5,21 @@ import org.junit.Test;
 public class webwalkerTester {
 
     @Test
+    public void testStartPoint(){
+
+    }
+
+    @Test
     public void testCaseTimeout(){
 
-        WalkService service = new WalkService();
-        service.setMaxTaskThread(5); //设置最大的启动task线程个数
-        service.prepare(); // 准备工作
+       // WalkService service = new WalkService();
+       // service.setMaxTaskThread(5); //设置最大的启动task线程个数
+      //  service.prepare(); // 准备工作
 
 
 
 
-        testBasic(service);
+        //testBasic(service);
 
 
     }
@@ -38,7 +43,7 @@ public class webwalkerTester {
     private void testBasic(WalkService service){
         //开启一个WaklTask
         WalkTask task = new  WalkTask();
-        service.startTaskNow(task);  //一个WalkTask就是一个Thread线程。
+        //service.startTaskNow(task);  //一个WalkTask就是一个Thread线程。
 
 
 

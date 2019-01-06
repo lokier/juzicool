@@ -1,7 +1,6 @@
 package com.juzicool.webwalker;
 
 
-import com.gargoylesoftware.htmlunit.WebClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +10,7 @@ import java.util.Queue;
 /***
  * 一个WalkTask就是一个Thread线程。
  */
-/*package*/ class WalkThreadManager {
+public class WalkThreadManager {
 
     public static interface OnWalkCaseLisnter{
 
@@ -69,6 +68,16 @@ import java.util.Queue;
         dispatch();
     }
 
+    public void sumbit(Runnable runnable) {
+        TaskData data = new TaskData();
+        data.runnable = runnable;
+        synchronized (this){
+            queue.add(data);
+        }
+        dispatch();
+    }
+
+
     private void dispatch(){
         synchronized (this) {
             int caseSize = queue.size();
@@ -104,6 +113,7 @@ import java.util.Queue;
         WalkClient client;
         WalkFlow flow;
         WalkCase _case;
+        Runnable runnable;
         OnWalkCaseLisnter callback;
     }
 
@@ -121,6 +131,17 @@ import java.util.Queue;
                     //没有case可以执行,退出线程执行。
                    break;
                 }
+
+                if(data.runnable != null){
+                    try{
+                        data.runnable.run();
+                    }catch (Throwable ex){
+                        LOG.error(ex.getMessage(),ex);
+                    }
+
+                    continue;
+                }
+
                 WalkFlow flow = data.flow;
                 WalkCase _case = data._case;
                 WalkClient client = data.client;
