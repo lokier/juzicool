@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'war'
 }
 
 group 'com.juzicool'
@@ -21,4 +22,23 @@ dependencies {
 
     compile project(":IPservice")
     compile project(":webwalker")
+
+
+     compile group: 'com.jfinal', name: 'jfinal', version:'3.5'
+
+    //部署的时候不需要
+    compile 'com.jfinal:jetty-server:2018.11'
+    /* compile group: 'org.slf4j', name: 'slf4j-nop', version:'1.7.25'
+    compile group: 'com.alibaba', name: 'druid', version:'1.0.29'
+    compile group: 'com.alibaba', name: 'fastjson', version:'1.2.31'
+    compile group: 'log4j', name: 'log4j', version:'1.2.16'
+    compile group: 'mysql', name: 'mysql-connector-java', version:'5.1.44'
+    compile group: 'com.jfinal', name: 'cos', version:'2017.5'
+    compile group: 'net.sf.ehcache', name: 'ehcache-core', version:'2.6.11'
+    compile group: 'commons-codec', name: 'commons-codec', version:'1.9'
+    compile group: 'org.apache.commons', name: 'commons-email', version:'1.2'
+    compile group: 'org.jsoup', name: 'jsoup', version:'1.9.2'
+    compile group: 'joda-time', name: 'joda-time', version:'2.9.3'
+    compile group: 'it.sauronsoftware.cron4j', name: 'cron4j', version:'2.2.5'
+    compile group: 'com.google.zxing', name: 'javase', version:'3.2.1'*/
 }

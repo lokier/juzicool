@@ -40,9 +40,9 @@ public class ZhifuFlow1 extends WalkFlow {
 
                 HtmlPage nextPage =  anchor.click();
 
-               String text =  nextPage.asText();
+                String text =  nextPage.asText();
 
-               System.out.println("text ： " + text);
+                System.out.println("text ： " + text);
 
                 pormise.accept(null);
 
