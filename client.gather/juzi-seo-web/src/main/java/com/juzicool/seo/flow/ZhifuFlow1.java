@@ -1,13 +1,11 @@
 package com.juzicool.seo.flow;
 
-import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.juzicool.webwalker.WalkCase;
 import com.juzicool.webwalker.WalkClient;
 import com.juzicool.webwalker.WalkFlow;
-import com.juzicool.webwalker.WalkPormise;
 import com.juzicool.webwalker.core.Promise;
 
 import java.io.IOException;
@@ -46,7 +44,7 @@ public class ZhifuFlow1 extends WalkFlow {
 
                System.out.println("text ： " + text);
 
-                pormise.reslove(null);
+                pormise.accept(null);
 
             } catch (IOException e) {
                 pormise.reject(null);

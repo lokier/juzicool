@@ -108,7 +108,7 @@ public class PromiseTester {
             public void run(Promise promise) {
                 c2.args = new Long(System.currentTimeMillis());
                 rets.add(c2);
-                promise.reslove(new Object());
+                promise.accept(new Object());
             }
         },3000).delay(1000)
                 .reject(new Promise.RunFunc() {
@@ -171,7 +171,7 @@ public class PromiseTester {
             public void run(Promise promise) {
                 c2.args = new Long(System.currentTimeMillis());
                 rets.add(c2);
-                promise.reslove(c5);
+                promise.accept(c5);
             }
         },3000).delay(1000)
          .reject(new Promise.RunFunc() {
@@ -186,7 +186,7 @@ public class PromiseTester {
                 Object data = promise.getResolveData();
                 c4.args = new Long(System.currentTimeMillis());
                 rets.add(c4);
-                promise.reslove(finalResolveObj);
+                promise.accept(finalResolveObj);
 
             }
         }) .build();
@@ -228,7 +228,7 @@ public class PromiseTester {
             public void run(Promise promise) {
                 c2.args = new Long(System.currentTimeMillis());
                 rets.add(c2);
-                //promise.reslove(new Object());
+                //promise.accept(new Object());
             }
         },2000)
                 .delay(900)

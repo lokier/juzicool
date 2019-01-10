@@ -202,7 +202,7 @@ public class Promise {
      * 传递给下一个值，最终
      * @param data
      */
-    public final synchronized void reslove(final Object data){
+    public final synchronized void accept(final Object data){
         if(mHandler == null){
             return;
         }

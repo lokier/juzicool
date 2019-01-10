@@ -87,7 +87,7 @@ public class PromiseTester2 {
             public void run(Promise promise) {
                 c2.args = new Long(System.currentTimeMillis());
                 rets.add(c2);
-                promise.reslove(new Object());
+                promise.accept(new Object());
             }
         },3000).delay(1000)
          .reject(new Promise.RunFunc() {
@@ -149,7 +149,7 @@ public class PromiseTester2 {
             public void run(Promise promise) {
                 c2.args = new Long(System.currentTimeMillis());
                 rets.add(c2);
-                //promise.reslove(new Object());
+                //promise.accept(new Object());
             }
         },2000)
                 .delay(900)
