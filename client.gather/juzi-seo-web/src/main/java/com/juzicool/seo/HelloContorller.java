@@ -1,10 +1,12 @@
 package com.juzicool.seo;
 
 import com.jfinal.core.Controller;
+import com.jfinal.kit.PathKit;
 
 public class HelloContorller extends Controller {
 
     public void index() {
-        renderText("Hello JFinal World.");
+        PathKit.getWebRootPath();
+        renderText("WebRoot path : "  + PathKit.getWebRootPath());
     }
 }

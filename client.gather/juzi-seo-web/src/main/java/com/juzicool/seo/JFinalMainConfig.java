@@ -22,6 +22,7 @@ import com.jfinal.kit.Prop;
 import com.jfinal.kit.PropKit;
 import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.template.Engine;
+import com.juzicool.seo.web.IndexController;
 
 
 /**
@@ -64,14 +65,17 @@ public class JFinalMainConfig extends JFinalConfig {
     public void configRoute(Routes me) {
 	   // me.add(new FrontRoutes());
 	   // me.add(new AdminRoutes());
-		me.add("/hello",HelloContorller.class);
-    }
+		//me.add("/hello",HelloContorller.class);
+		me.add("/", IndexController.class,"/_VIEW");
+
+	}
     
     /**
      * 配置模板引擎，通常情况只需配置共享的模板函数
      */
 	public void configEngine(Engine me) {
 		me.setDevMode(p.getBoolean("devMode", false));
+		me.addSharedFunction("/_VIEW/common/_layout.html");
 
 		// 添加角色、权限指令
 		//me.addDirective("role", RoleDirective.class);
@@ -81,7 +85,7 @@ public class JFinalMainConfig extends JFinalConfig {
 		// 添加角色、权限 shared method
 		//me.addSharedMethod(AdminAuthKit.class);
 
-		//me.addSharedFunction("/_view/common/__layout.html");
+		//me.addSharedFunction("/_view/common/_layout.html");
 		//me.addSharedFunction("/_view/common/_paginate.html");
 
 	//	me.addSharedFunction("/_view/_admin/common/__admin_layout.html");
