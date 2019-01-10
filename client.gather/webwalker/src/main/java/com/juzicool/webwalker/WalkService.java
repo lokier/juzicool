@@ -43,7 +43,7 @@ public class WalkService {
             }
 
             @Override
-            void releaseWalkClient() {
+            void releaseWalkClient(WalkClient client) {
 
             }
 
@@ -64,10 +64,7 @@ public class WalkService {
 
         //在task上面执行一个WalkFlow
 
-
         WalkClient client = WalkClient.build();
-
-
 
         service.shutdownWhileIdle(true);
         service.waitUntilShutdown();

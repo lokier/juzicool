@@ -32,6 +32,7 @@ public class PromiseTester {
         PromiseExecutor executor = new PromiseExecutor();
         executor.startup(handler);
 
+        testEmpytCase(executor);
         testfinanlyCaes(executor);
 
        testResoveCaes(executor);
@@ -42,6 +43,51 @@ public class PromiseTester {
 
     }
 
+    private void testEmpytCase(PromiseExecutor executor){
+        Promise.Builder promiseBuilder = new Promise.Builder();
+        Promise promise = promiseBuilder.build();
+        Assert.assertTrue(promise.getStatus() == Promise.Status.PENDING);
+        Assert.assertTrue(promise.isActive());
+        executor.submit(promise);
+        wait_(promise);
+        Assert.assertTrue(promise.getStatus() == Promise.Status.RESOLVED);
+        Assert.assertTrue(promise.isActive() == false);
+
+        promiseBuilder = new Promise.Builder();
+
+        final Obj o1 = new Obj();
+        final Obj o2 = new Obj();
+        final Obj o3 = new Obj();
+        final ArrayList rets = new ArrayList();
+
+        promiseBuilder.resolve(new Promise.RunFunc() {
+            @Override
+            public void run(Promise promise) {
+                o1.args = new Long(System.currentTimeMillis());
+                rets.add(o1);
+            }
+        });
+
+        promiseBuilder.finall(new Promise.RunFunc() {
+            @Override
+            public void run(Promise promise) {
+                o2.args = new Long(System.currentTimeMillis());
+                rets.add(o2);
+            }
+        });
+
+         promise = promiseBuilder.build();
+        Assert.assertTrue(promise.getStatus() == Promise.Status.PENDING);
+        Assert.assertTrue(promise.isActive());
+        executor.submit(promise);
+        wait_(promise);
+        Assert.assertTrue(promise.getStatus() == Promise.Status.RESOLVED);
+        Assert.assertTrue(promise.isActive() == false);
+        Assert.assertTrue(rets.get(0) == o1);
+        Assert.assertTrue(rets.get(1) == o2);
+        Assert.assertTrue(promise.getResolveData() == null);
+
+    }
 
     private void testfinanlyCaes( PromiseExecutor executor){
         final ArrayList rets = new ArrayList();
@@ -112,6 +158,7 @@ public class PromiseTester {
         final Obj c3 = new Obj();
         final Obj c4 = new Obj();
         final Obj c5 = new Obj();
+        final Obj finalResolveObj = new Obj();
 
         Promise promise = new Promise.Builder().then(new Runnable() {
             @Override
@@ -139,6 +186,8 @@ public class PromiseTester {
                 Object data = promise.getResolveData();
                 c4.args = new Long(System.currentTimeMillis());
                 rets.add(c4);
+                promise.reslove(finalResolveObj);
+
             }
         }) .build();
 
@@ -332,20 +381,16 @@ public class PromiseTester {
     }
     private static void wait_(Promise promise){
         while(true){
-            if(promise.getStatus()== Promise.Status.RESOLVED || promise.getStatus() == Promise.Status.REJECT){
+            if(!promise.isActive()){
                 break;
             }
             try {
-                Thread.sleep(500);
+                Thread.sleep(250);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
     }
 
     private class PCase {

@@ -1,6 +1,8 @@
 package com.juzicool.webwalker;
 
 
+import com.juzicool.webwalker.core.Promise;
+
 public abstract class WalkCase  {
 
     protected WalkClient mClient = null;
@@ -11,7 +13,7 @@ public abstract class WalkCase  {
      */
    public abstract long getTimeout();
 
-   protected abstract void doCase(WalkClient wclient,WalkPormise pormise);
+   protected abstract void doCase(WalkClient wclient, Promise pormise);
 
 
     /**
@@ -48,7 +50,7 @@ public abstract class WalkCase  {
         }
 
         @Override
-        public void doCase(WalkClient client, WalkPormise pormise) {
+        public void doCase(WalkClient client, Promise pormise) {
 
         }
 

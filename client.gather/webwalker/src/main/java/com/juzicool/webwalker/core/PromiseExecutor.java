@@ -287,38 +287,45 @@ public class PromiseExecutor {
             });
         }
 
-        void finnlayPromise(Promise promise){
-            Handler  h = mHander;
-            if(h == null){
+        void finnlayPromise(Promise promise) {
+            Handler h = mHander;
+            if (h == null) {
                 return;
             }
-            try {
-                if(promise.status == Promise.Status.REJECT){
-                    if (promise.rejectFunc != null) {
-                        promise.rejectFunc.run(promise);
-                    }
-                } else if(promise.status == Promise.Status.RESOLVED){
-                    if (promise.resloveFunc != null) {
-                        promise.resloveFunc.run(promise);
+
+            if (promise.status == Promise.Status.REJECT) {
+                if (promise.rejectFunc != null) {
+                    for (Promise.RunFunc runFunc : promise.rejectFunc) {
+                        runWithoutExcpetion(runFunc, promise);
                     }
 
                 }
-
-            }catch (Throwable th){
-                th.printStackTrace();
-                LOG.warn(th.getMessage(),th);
-                //TODO log
-            }finally {
-                try{
-                    if (promise.finalFunc != null) {
-                        promise.finalFunc.run(promise);
+            } else if (promise.status == Promise.Status.RESOLVED) {
+                if (promise.resloveFunc != null) {
+                    for (Promise.RunFunc runFunc : promise.resloveFunc) {
+                        runWithoutExcpetion(runFunc, promise);
                     }
-                }catch (Throwable th){
-                    LOG.warn(th.getMessage(),th);
                 }
-                promise.destroy();
             }
 
+            if (promise.finalFunc != null) {
+                for (Promise.RunFunc runFunc : promise.finalFunc) {
+                    runWithoutExcpetion(runFunc, promise);
+                }
+            }
+
+            promise.destroy();
+
+        }
+
+        private void runWithoutExcpetion(Promise.RunFunc runFunc, Promise promise){
+            try {
+                if (runFunc != null) {
+                    runFunc.run(promise);
+                }
+            }catch (Throwable th){
+                LOG.warn(th.getMessage(),th);
+            }
         }
 
         void delayPromise(final Promise promise,long delay){

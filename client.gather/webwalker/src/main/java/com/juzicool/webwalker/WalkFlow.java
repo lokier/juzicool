@@ -1,5 +1,6 @@
 package com.juzicool.webwalker;
 
+import com.juzicool.webwalker.core.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,109 +23,57 @@ public abstract class WalkFlow {
 
     public abstract String getName();
 
-    /*pacage*/ void execute(WalkTask task,WalkClient client) {
 
+    /*pacage*/ Promise.Builder createPromise(final WalkFlowTask task,final WalkClient client) {
+        Promise.Builder promiseBuilder = new Promise.Builder();
         while(true){
-            CaseWrapper wrapper =   caseQueue.poll();
+            final CaseWrapper wrapper =   caseQueue.poll();
             if(wrapper == null) {
                 break;
             }
             if(wrapper.delay > 0 ){
-                try {
-                    Thread.sleep(wrapper.delay);
-                } catch (InterruptedException e) {
-                    LOG.warn("stop by InterruptedException!!");
-                   break;
+                promiseBuilder.delay(wrapper.delay);
+            }
+
+           // final long startTime = System.currentTimeMillis();
+            promiseBuilder.then(new Runnable() {
+                @Override
+                public void run() {
+
+                    LOG.debug("flow[" +getName()+"]: START do case");
+                    wrapper._case.onCreate(client);
                 }
-            }
+            });
 
-            //TODO  ： 交到WalkThreadMananger处理。
-            long startTime = System.currentTimeMillis();
-            LOG.info("flow[" +getName()+"]: start do case");
+            promiseBuilder.then(new Promise.RunFunc() {
+                @Override
+                public void run(Promise promise) {
+                    LOG.debug("flow[" +getName()+"]: on do case");
 
+                    wrapper._case.doCase(client,promise);
+                }
+            },wrapper._case.getTimeout());
 
-            wrapper._case.onCreate(client);
-            TimeoutRunnable runnable = new TimeoutRunnable(wrapper);
-
-            try {
-                task.getWalkService().getHandler().postDelayed(runnable, wrapper._case.getTimeout());
-                wrapper._case.doCase(client, wrapper);
-                wrapper.waitingFinish();
-            }finally {
-                task.getWalkService().getHandler().removeCallbacks(runnable);
-                runnable.dispose();
-                wrapper._case.onDestroy();
-            }
-
-            boolean doCaseOK = wrapper._walkOk;
-            LOG.info("flow[" +getName()+"]: finish do case = " + doCaseOK +", spend time: " + (System.currentTimeMillis()- startTime));
-            if(!doCaseOK){
-                //中间有错误退出
-                break;
-            }
+            promiseBuilder.then(new Runnable() {
+                @Override
+                public void run() {
+                    LOG.info("flow[" +getName()+"]: END do case");
+                    wrapper._case.onDestroy();
+                }
+            });
         }
+
+        return  promiseBuilder;
     }
 
 
 
 
-    /**
-     * 执行完成
-     * @param succes 是否执行成功
-     * @param ex
-     */
-    /*pacage*/protected void onFinished(boolean succes, Throwable ex){
 
-    }
 
-    private static class TimeoutRunnable implements Runnable{
-        private CaseWrapper wrapper;
-        TimeoutRunnable(CaseWrapper p){
-            this.wrapper = p;
-        }
 
-        @Override
-        public void run() {
-            LOG.info("        timeout do case = " + wrapper._case.toString() );
-
-            try {
-                this.wrapper._case.onCancel();
-            }catch (Throwable ex){
-
-            }
-            this.wrapper.reject();
-            dispose();
-        }
-
-        public void dispose(){
-            this.wrapper = null;
-        }
-    }
-
-    private static class CaseWrapper implements WalkPormise {
+    private static class CaseWrapper {
         WalkCase _case;
         long delay;
-
-        Boolean _walkOk = null;
-
-        @Override
-        public void accept() {
-            _walkOk = true;
-        }
-
-        @Override
-        public void reject() {
-            _walkOk = false;
-        }
-
-        public void waitingFinish() {
-            while (_walkOk == null){
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                   LOG.warn(e.getMessage(),e);
-                }
-            }
-        }
     }
 }

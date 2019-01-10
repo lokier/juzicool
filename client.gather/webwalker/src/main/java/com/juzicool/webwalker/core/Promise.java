@@ -27,11 +27,11 @@ public class Promise {
 
     public static class Builder{
 
-        private ArrayList<Func> funcList = new ArrayList<>();
+        private ArrayList<Func> funcList = new ArrayList<>(10);
 
-        private RunFunc rejectFunc;
-        private RunFunc resolveFunc;
-        private RunFunc finalRunc;
+        private ArrayList<RunFunc> rejectFunc = new ArrayList<>(3);
+        private ArrayList<RunFunc> resolveFunc = new ArrayList<>(3);
+        private ArrayList<RunFunc> finalRunc = new ArrayList<>(3);
 
         public Builder(){
 
@@ -70,22 +70,27 @@ public class Promise {
         }
 
         public Builder reject(RunFunc runFunc){
-            rejectFunc = runFunc;
+            rejectFunc.add(runFunc);
             return this;
         }
 
         public Builder resolve(RunFunc runFunc){
-            resolveFunc = runFunc;
+            resolveFunc.add(runFunc);
             return this;
         }
 
         public Promise build(){
             Func[] funcs = funcList.toArray(new Func[funcList.size()]);
-            return new Promise(funcs,resolveFunc,rejectFunc,finalRunc);
+            RunFunc[] resolveFuncs = resolveFunc.toArray(new RunFunc[resolveFunc.size()]);
+            RunFunc[] rejectFuncs = rejectFunc.toArray(new RunFunc[rejectFunc.size()]);
+            RunFunc[] finalRuncs = finalRunc.toArray(new RunFunc[finalRunc.size()]);
+
+
+            return new Promise(funcs,resolveFuncs,rejectFuncs,finalRuncs);
         }
 
         public Builder finall(RunFunc runFunc) {
-            finalRunc = runFunc;
+            finalRunc.add(runFunc);
             return this;
         }
     }
@@ -99,9 +104,9 @@ public class Promise {
 
      Func[] funcList;
      private int funcIndex = 0;
-    RunFunc rejectFunc;
-    RunFunc resloveFunc;
-    RunFunc finalFunc;
+    RunFunc[] rejectFunc;
+    RunFunc[] resloveFunc;
+    RunFunc[] finalFunc;
 
      Object error = null;
      Object success = null;
@@ -111,7 +116,7 @@ public class Promise {
      //boolean hasError = false;
      //boolean activeRejectOrResovle = true;
 
-    private  Promise(Func[] funcs,RunFunc resolve,RunFunc reject,RunFunc finalRun){
+    private  Promise(Func[] funcs,RunFunc[] resolve,RunFunc[] reject,RunFunc[] finalRun){
         funcList = funcs;
         this.rejectFunc = reject;
         this.resloveFunc = resolve;
