@@ -31,6 +31,8 @@ public class Promise {
 
         private RunFunc rejectFunc;
         private RunFunc resolveFunc;
+        private RunFunc finalRunc;
+
         public Builder(){
 
         }
@@ -79,7 +81,12 @@ public class Promise {
 
         public Promise build(){
             Func[] funcs = funcList.toArray(new Func[funcList.size()]);
-            return new Promise(funcs,resolveFunc,rejectFunc);
+            return new Promise(funcs,resolveFunc,rejectFunc,finalRunc);
+        }
+
+        public Builder finall(RunFunc runFunc) {
+            finalRunc = runFunc;
+            return this;
         }
     }
 
@@ -94,26 +101,43 @@ public class Promise {
      private int funcIndex = 0;
     RunFunc rejectFunc;
     RunFunc resloveFunc;
+    RunFunc finalFunc;
 
      Object error = null;
      Object success = null;
      final int id;
      Status status = Status.PENDING;
+     boolean isAcitive = true;
      //boolean hasError = false;
      //boolean activeRejectOrResovle = true;
 
-    private  Promise(Func[] funcs,RunFunc resolve,RunFunc reject){
+    private  Promise(Func[] funcs,RunFunc resolve,RunFunc reject,RunFunc finalRun){
         funcList = funcs;
         this.rejectFunc = reject;
         this.resloveFunc = resolve;
+        this.finalFunc = finalRun;
         id = IdGanerator.incrementAndGet();
         status = Status.PENDING;
     }
 
+    public boolean isActive() {
+        return isAcitive;
+    }
 
     Handler mHandler = null;
     Runnable rejectOrResovlerCall = null;
     Runnable runnableTimeout = null;
+
+    /*package*/ void destroy(){
+        isAcitive = false;
+        rejectFunc = null;
+        resloveFunc = null;
+        finalFunc = null;
+        funcList = null;
+        mHandler = null;
+        rejectOrResovlerCall = null;
+        runnableTimeout = null;
+    }
 
     void prepareAction(Handler handler,Runnable rejectOrResovlerCall,Runnable runnableTimeout ){
         mHandler = handler;

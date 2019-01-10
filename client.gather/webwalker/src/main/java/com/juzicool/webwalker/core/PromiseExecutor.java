@@ -1,9 +1,14 @@
 package com.juzicool.webwalker.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class PromiseExecutor {
+
+    public static Logger LOG = LoggerFactory.getLogger(PromiseExecutor.class);
+
 
     public static void main(String[] args) {
 
@@ -298,9 +303,20 @@ public class PromiseExecutor {
                     }
 
                 }
+
             }catch (Throwable th){
                 th.printStackTrace();
+                LOG.warn(th.getMessage(),th);
                 //TODO log
+            }finally {
+                try{
+                    if (promise.finalFunc != null) {
+                        promise.finalFunc.run(promise);
+                    }
+                }catch (Throwable th){
+                    LOG.warn(th.getMessage(),th);
+                }
+                promise.destroy();
             }
 
         }

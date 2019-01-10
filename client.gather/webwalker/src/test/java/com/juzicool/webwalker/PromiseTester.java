@@ -32,8 +32,9 @@ public class PromiseTester {
         PromiseExecutor executor = new PromiseExecutor();
         executor.startup(handler);
 
+        testfinanlyCaes(executor);
 
-        testResoveCaes(executor);
+       testResoveCaes(executor);
         testTimeout(executor);
 
         testReject1(executor);
@@ -41,6 +42,67 @@ public class PromiseTester {
 
     }
 
+
+    private void testfinanlyCaes( PromiseExecutor executor){
+        final ArrayList rets = new ArrayList();
+        final Obj c1 = new Obj();
+        final Obj c2 = new Obj();
+        final Obj c3 = new Obj();
+        final Obj c4 = new Obj();
+        final Obj c5 = new Obj();
+
+        Promise promise = new Promise.Builder().then(new Runnable() {
+            @Override
+            public void run() {
+                c1.args = new Long(System.currentTimeMillis());
+                rets.add(c1);
+            }
+        }).then(new Promise.RunFunc() {
+            @Override
+            public void run(Promise promise) {
+                c2.args = new Long(System.currentTimeMillis());
+                rets.add(c2);
+                promise.reslove(new Object());
+            }
+        },3000).delay(1000)
+                .reject(new Promise.RunFunc() {
+                    @Override
+                    public void run(Promise promise) {
+                        c3.args = new Long(System.currentTimeMillis());
+                        rets.add(c3);
+                    }
+                }).resolve(new Promise.RunFunc() {
+                    @Override
+                    public void run(Promise promise) {
+                        Object data = promise.getResolveData();
+                        c4.args = new Long(System.currentTimeMillis());
+                        rets.add(c4);
+                    }
+                }).finall( new Promise.RunFunc() {
+            @Override
+            public void run(Promise promise) {
+                c5.args = new Long(System.currentTimeMillis());
+                rets.add(c5);
+            }
+        })
+                .build();
+
+
+        Assert.assertTrue(promise.getStatus() == Promise.Status.PENDING);
+        executor.submit(promise);
+        Assert.assertTrue(promise.getStatus() != Promise.Status.PENDING);
+        wait_(2000);
+        Assert.assertTrue(promise.getStatus() == Promise.Status.RESOLVED);
+        Assert.assertTrue(rets.get(0)==c1);
+        Assert.assertTrue(rets.get(1)==c2);
+        Assert.assertTrue(rets.get(2)==c4);
+        Assert.assertTrue(rets.get(3)==c5);
+
+        long spendTime = (Long)c4.args  - (Long)c2.args;
+        System.out.println("spendTime : " + spendTime);
+
+        Assert.assertTrue(spendTime>= 1000 && spendTime <=1100);
+    }
 
 
     private void testResoveCaes( PromiseExecutor executor){
@@ -62,7 +124,7 @@ public class PromiseTester {
             public void run(Promise promise) {
                 c2.args = new Long(System.currentTimeMillis());
                 rets.add(c2);
-                promise.reslove(new Object());
+                promise.reslove(c5);
             }
         },3000).delay(1000)
          .reject(new Promise.RunFunc() {
@@ -89,6 +151,8 @@ public class PromiseTester {
         Assert.assertTrue(rets.get(0)==c1);
         Assert.assertTrue(rets.get(1)==c2);
         Assert.assertTrue(rets.get(2)==c4);
+        Assert.assertTrue(promise.getResolveData()==c5);
+
         long spendTime = (Long)c4.args  - (Long)c2.args;
         System.out.println("spendTime : " + spendTime);
 

@@ -37,7 +37,7 @@ public class PromiseTester2 {
         ArrayList<PCase> cases = new ArrayList<>();
         try {
             Random r = new Random(System.currentTimeMillis());
-            for(int i = 0; i< 100;i++){
+            for(int i = 0; i< 200;i++){
                 PCase pCase;
                 int v = r.nextInt(4);
                 if(v == 0){
@@ -144,7 +144,7 @@ public class PromiseTester2 {
                 c1.args = new Long(System.currentTimeMillis());
                 rets.add(c1);
             }
-        }).delay(1).then(new Promise.RunFunc() {
+        }).then(new Promise.RunFunc() {
             @Override
             public void run(Promise promise) {
                 c2.args = new Long(System.currentTimeMillis());
@@ -323,7 +323,7 @@ public class PromiseTester2 {
     }
     private static void wait_(Promise promise){
         while(true){
-            if(promise.getStatus()== Promise.Status.RESOLVED || promise.getStatus() == Promise.Status.REJECT){
+            if(!promise.isActive()){
                 break;
             }
             try {

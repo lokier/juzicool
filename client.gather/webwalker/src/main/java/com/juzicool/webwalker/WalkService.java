@@ -3,6 +3,7 @@ package com.juzicool.webwalker;
 
 import com.juzicool.webwalker.core.Handler;
 import com.juzicool.webwalker.core.Looper;
+import com.juzicool.webwalker.core.PromiseExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,16 @@ public class WalkService {
             @Override
             WalkFlow next() {
                 return null;
+            }
+
+            @Override
+            WalkClient createWalkClient() {
+                return null;
+            }
+
+            @Override
+            void releaseWalkClient() {
+
             }
 
             @Override
@@ -70,9 +81,9 @@ public class WalkService {
     private int maxTaskThread = 5;
     private Handler mHandler = null;
     private HashMap<Integer,WalkFlowScheduleRunnable> mSchedulesMap = new HashMap<>();
-    private WalkThreadManager mWalkThreadManager = null;
     private boolean shutdownWhileIdle = false;
     private boolean isShutdown = false;
+    private PromiseExecutor promiseExecutor;
 
     public void shutdownWhileIdle(boolean shutdownWhileIdle) {
         this.shutdownWhileIdle = shutdownWhileIdle;
@@ -184,17 +195,17 @@ public class WalkService {
                             e.printStackTrace();
                         }
                     }
-
+                    promiseExecutor = new PromiseExecutor();
+                    promiseExecutor.startup(mHandler);
                     mHandler.postDelayed(checkStatusTimerRunnable,600);
                 }
             }
         }
-
-        mWalkThreadManager = new WalkThreadManager(this);
     }
 
-    public WalkThreadManager getWalkThreadManager(){
-        return mWalkThreadManager;
+
+    public PromiseExecutor getPromiseExecutor() {
+        return promiseExecutor;
     }
 
     private void shutdown(){

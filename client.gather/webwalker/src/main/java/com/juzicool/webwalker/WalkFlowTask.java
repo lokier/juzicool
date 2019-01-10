@@ -1,5 +1,6 @@
 package com.juzicool.webwalker;
 
+import com.juzicool.webwalker.core.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +22,11 @@ public abstract class WalkFlowTask {
     abstract WalkFlow next();
 
 
+    abstract WalkClient createWalkClient();
+
+    abstract void releaseWalkClient();
+
+
 
     public WalkFlowTask(){
 
@@ -37,22 +43,36 @@ public abstract class WalkFlowTask {
 
     abstract void onStop();
 
-    //abstract void onCancel();
+
+    private Promise mRunningPromise;
 
     WalkService mService;
 
     /*pacage*/ void start(WalkService service) {
         mService = service;
 
-        //在后台线程里面执行。
-        mService.getWalkThreadManager().sumbit(new Runnable() {
-            @Override
-            public void run() {
-                //拿到client和wlakFlow，执行。
+        if(mRunningPromise!=null){
 
+            if(mRunningPromise.isActive()){
+                return;
             }
-        });
+            mRunningPromise = null;
+            return;
+        }
+        //在后台线程里面执行。
+    /*    Promise promise = createPromise();
+        if(promise == null){
+            LOG.info("createPromise == null");
+            return;
+        }*/
+       // mService.getPromiseExecutor().submit();
 
+
+    }
+
+
+    private Promise createPromise(){
+        return null;
     }
 
     private void flow(WalkFlow flow,WalkClient client){
