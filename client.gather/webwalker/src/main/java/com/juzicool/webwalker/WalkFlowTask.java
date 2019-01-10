@@ -13,29 +13,29 @@ public abstract class WalkFlowTask {
 
     public static Logger LOG = LoggerFactory.getLogger(WalkFlowTask.class);
 
-    abstract int getTaskId();
+    abstract public int getTaskId();
 
-    abstract String getTaskName();
+    abstract public String getTaskName();
 
     /**
      * 下一个要处理的WalkFlow；
      * @return  没有的话，返回null
      */
-    abstract WalkFlow next();
+    abstract protected WalkFlow next();
 
 
-    abstract WalkClient createWalkClient();
+    abstract protected WalkClient createWalkClient();
 
-    abstract void releaseWalkClient(WalkClient client);
+    abstract protected void releaseWalkClient(WalkClient client);
 
 
     /**
      * 这里要处理下，保证next()下面有值。
      */
-    abstract void onStart();
+    abstract protected void onStart();
 
 
-    abstract void onStop();
+    abstract protected void onStop();
 
 
     public WalkFlowTask(){

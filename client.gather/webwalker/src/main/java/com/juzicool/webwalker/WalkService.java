@@ -23,38 +23,38 @@ public class WalkService {
         //开启一个WaklTask
         WalkFlowTask task = new WalkFlowTask() {
             @Override
-            int getTaskId() {
+            public int getTaskId() {
                 return 1;
             }
 
             @Override
-            String getTaskName() {
+             public   String getTaskName() {
                 return "WalkService.main_task";
             }
 
             @Override
-            WalkFlow next() {
+            protected WalkFlow next() {
                 return null;
             }
 
             @Override
-            WalkClient createWalkClient() {
+            protected  WalkClient createWalkClient() {
                 return null;
             }
 
             @Override
-            void releaseWalkClient(WalkClient client) {
+            protected  void releaseWalkClient(WalkClient client) {
 
             }
 
             @Override
-            void onStart() {
+            protected void onStart() {
                 DefaultWalkFlow flow = new DefaultWalkFlow();
                 flow.setName("测试flow").addCase(new WalkCase.DumpCase(),100);
             }
 
             @Override
-            void onStop() {
+            protected void onStop() {
 
             }
         };

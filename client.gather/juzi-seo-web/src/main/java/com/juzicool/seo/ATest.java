@@ -10,18 +10,17 @@ public class ATest {
         service.setMaxTaskThread(5); //设置最大的启动task线程个数
         service.prepare(); // 准备工作
 
+        StartPoint startPoint = StartPoint.Bulider.bySeconds(System.currentTimeMillis() + 1000,1000000000);
 
-        //开启一个WaklTask
-        WalkTask task = new  WalkTask();
-        service.startTaskNow(task);  //一个WalkTask就是一个Thread线程。
+        DefaultWalkFlowTask flowTask = new DefaultWalkFlowTask(1);
+        flowTask.setTaskName("ATest-Task");
+        flowTask.addWalkFlow(new ZhifuFlow1());
 
+        WalkFlowSchedule schedule = new WalkFlowSchedule(1,startPoint,flowTask);
+        service.submit(schedule);
 
-
-        //在task上面执行一个WalkFlow
-        ZhifuFlow1 flow = new ZhifuFlow1();
-
-        WalkClient client = WalkClient.build();
-
-        task.sumbit(client,flow);  //执行一个流量操作；
+       // service.shutdownWhileIdle(true);
+       // service.waitUntilShutdown();
+      //  System.out.println("finished service");
     }
 }
