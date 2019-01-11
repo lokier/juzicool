@@ -3,10 +3,10 @@ package com.juzicool.seo.flow;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.juzicool.core.Promise;
 import com.juzicool.webwalker.WalkCase;
 import com.juzicool.webwalker.WalkClient;
 import com.juzicool.webwalker.WalkFlow;
-import com.juzicool.webwalker.core.Promise;
 
 import java.io.IOException;
 

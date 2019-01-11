@@ -1,8 +1,8 @@
 package com.juzicool.webwalker;
-import com.juzicool.webwalker.core.Handler;
-import com.juzicool.webwalker.core.HandlerThread;
-import com.juzicool.webwalker.core.Promise;
-import com.juzicool.webwalker.core.PromiseExecutor;
+import com.juzicool.core.Handler;
+import com.juzicool.core.HandlerThread;
+import com.juzicool.core.Promise;
+import com.juzicool.core.PromiseExecutor;
 import org.junit.Assert;
 import org.junit.Test;
 

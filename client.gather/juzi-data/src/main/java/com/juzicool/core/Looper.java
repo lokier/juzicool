@@ -1,4 +1,4 @@
-package com.juzicool.webwalker.core;
+package com.juzicool.core;
 
 /*
  * Copyright (C) 2006 The Android Open Source Project

@@ -1,4 +1,4 @@
-package com.juzicool.webwalker.core;
+package com.juzicool.core;
 
 public class PromiseException extends Exception {
     public PromiseException() {

@@ -1,8 +1,8 @@
 package com.juzicoo.ipservcie;
 
-import com.juzicoo.ipservcie.core.Handler;
-import com.juzicoo.ipservcie.core.Looper;
 import com.juzicoo.ipservcie.source.www89ipcn;
+import com.juzicool.core.Handler;
+import com.juzicool.core.Looper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Page;

@@ -1,8 +1,7 @@
-package com.juzicool.webwalker.core;
+package com.juzicool.core;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * pending: 初始状态，不是成功或失败状态。

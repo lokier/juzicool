@@ -1,7 +1,7 @@
 package com.juzicool.webwalker;
 
 
-import com.juzicool.webwalker.core.Promise;
+import com.juzicool.core.Promise;
 
 public abstract class WalkCase  {
 

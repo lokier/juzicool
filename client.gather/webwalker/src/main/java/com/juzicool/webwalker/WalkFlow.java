@@ -1,6 +1,6 @@
 package com.juzicool.webwalker;
 
-import com.juzicool.webwalker.core.Promise;
+import com.juzicool.core.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +23,7 @@ public abstract class WalkFlow {
     public abstract String getName();
 
 
-    /*pacage*/ Promise.Builder createPromise(Promise.Builder promiseBuilder,final WalkFlowTask task,final WalkClient client) {
+    /*pacage*/ Promise.Builder createPromise(Promise.Builder promiseBuilder, final WalkFlowTask task, final WalkClient client) {
         while(true){
             final CaseWrapper wrapper =   caseQueue.poll();
             if(wrapper == null) {

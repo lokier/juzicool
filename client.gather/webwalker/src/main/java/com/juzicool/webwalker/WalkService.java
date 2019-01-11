@@ -1,9 +1,9 @@
 package com.juzicool.webwalker;
 
 
-import com.juzicool.webwalker.core.Handler;
-import com.juzicool.webwalker.core.Looper;
-import com.juzicool.webwalker.core.PromiseExecutor;
+import com.juzicool.core.Handler;
+import com.juzicool.core.Looper;
+import com.juzicool.core.PromiseExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

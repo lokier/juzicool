@@ -1,4 +1,4 @@
-package com.juzicoo.ipservcie.core;
+package com.juzicool.core;
 
 
 import java.util.ArrayList;
