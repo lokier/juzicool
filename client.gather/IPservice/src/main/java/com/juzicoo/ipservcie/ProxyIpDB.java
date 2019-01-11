@@ -35,6 +35,10 @@ public class ProxyIpDB {
         jdbcUrl = "jdbc:sqlite:" +file.getAbsolutePath();
     }
 
+    public File getFile(){
+        return mFile;
+    }
+
     public void prepare(){
         // db parameters
         try {

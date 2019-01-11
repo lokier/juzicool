@@ -2,6 +2,13 @@
 #define main()
 <!-- 内容容器 -->
 
+<h3>IpProxy</h3>
+IP_PROXY.DB文件路径: #(ip_proxy_file_path) <br/>
+Proxy个数：#(ipService.getDB().size())<br/>
+
+<br/><br/>
+<h3>WebWalker</h3>
+<br/>
 线程个数: #(walkService.getMaxTaskThread()) <br/>
 正在执行flow个数: #(walkService.getRunningWorkFlowCount()) <br/>
 正在执行线程个数: #(walkService.getRunningThreadCount()) <br/>
@@ -23,7 +30,25 @@
 
     </tr>
 #end
-
 </table>
+
+
+<br/><br/>
+<h3>PromiseExecutor</h3>
+正在执行的promise个数: #(promiseExecutor.getRunningPromise().length)
+
+<table>
+    <tr>
+        <th> 开始时间 </th>
+    </tr>
+    #for(promise : promiseExecutor.getRunningPromise())
+    <tr>
+        <td> #(com.juzicool.seo.util.SeoUtils::getTimeDesc(promise.getStartTime()))</td>
+
+
+    </tr>
+    #end
+</table>
+
 #end
 

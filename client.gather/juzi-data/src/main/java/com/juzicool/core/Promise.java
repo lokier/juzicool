@@ -101,19 +101,24 @@ public class Promise {
 
     private static AtomicInteger IdGanerator = new AtomicInteger(0);
 
+
+
      Func[] funcList;
      private int funcIndex = 0;
-    RunFunc[] rejectFunc;
-    RunFunc[] resloveFunc;
-    RunFunc[] finalFunc;
+     RunFunc[] rejectFunc;
+     RunFunc[] resloveFunc;
+     RunFunc[] finalFunc;
 
      Object error = null;
      Object success = null;
      final int id;
      Status status = Status.PENDING;
      boolean isAcitive = true;
-     //boolean hasError = false;
-     //boolean activeRejectOrResovle = true;
+
+     //long elaseTotalTime = 0L; //消耗总共时间（包含睡眠时间）
+     long elaseRealTime = 0L;  //消耗真实时间（实在在的运行时间）
+     long startTime = 0L;
+     long endTime = 0L;
 
     private  Promise(Func[] funcs,RunFunc[] resolve,RunFunc[] reject,RunFunc[] finalRun){
         funcList = funcs;
@@ -240,9 +245,15 @@ public class Promise {
         return status;
     }
 
+
+    public long getStartTime(){
+        return startTime;
+    }
+
     void errorAndStop(Object error){
        // System.out.println("errorAndStop");
        // hasError = true;
+
         this.error = error;
         status = Status.REJECT;
     }

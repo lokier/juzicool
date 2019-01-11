@@ -1,65 +1,11 @@
 package com.juzicool.core;
 
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class PromiseExecutor {
-
-
-    public static void main(String[] args) {
-
-        HandlerThread thread = new HandlerThread();
-
-        thread.start();
-
-        try {
-            Thread.sleep(300);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        Handler handler = new Handler(thread.getLooper());
-
-        Promise promise = new Promise.Builder().then(new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        }).then(new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        }).delay(10000).reject(new Promise.RunFunc() {
-            @Override
-            public void run(Promise promise) {
-
-                Object error = promise.getRejectError();
-
-            }
-        }).resolve(new Promise.RunFunc() {
-            @Override
-            public void run(Promise promise) {
-                Object data = promise.getResolveData();
-
-            }
-        })
-         .build();
-
-
-        PromiseExecutor executor = new PromiseExecutor();
-        executor.startup(handler);
-
-        executor.submit(promise);
-
-
-        //空闲时关闭。
-        //executor.shutdownWhileIdle(true);
-
-        //等待关闭
-
-    }
 
     private Handler mHander = null;
    // private boolean shutdownWhileIdle = false;
@@ -67,10 +13,21 @@ public class PromiseExecutor {
     private int maxThreadSize = 5;
     Queue<PromiseThead> threadList = new LinkedList<>();
 
+    private ArrayList<Promise> mRunningPromise = new ArrayList<>(50);
+
+    private PromiseListener promiseListener;
 
     public void startup(Handler handler) {
         mHander = new Handler(handler.getLooper());
        // shutdownWhileIdle = false;
+    }
+
+    public PromiseListener getPromiseListener() {
+        return promiseListener;
+    }
+
+    public void setPromiseListener(PromiseListener promiseListener) {
+        this.promiseListener = promiseListener;
     }
 
     public void setMaxThreadSize(int maxThreadSize) {
@@ -94,15 +51,32 @@ public class PromiseExecutor {
         return mHander == null;
     }
 
+    public Promise[] getRunningPromise(){
+        return mRunningPromise.toArray(new Promise[mRunningPromise.size()]);
+    }
 
-
-/*    public void shutdownWhileIdle(boolean shutdownWhileIdle) {
-
-        this.shutdownWhileIdle = shutdownWhileIdle;
-
-
-    }*/
-
+    /**
+     * 在looper线程
+     * @param promise
+     */
+    void onPromiseStart(Promise promise){
+        PromiseListener ls = promiseListener;
+        mRunningPromise.add(promise);
+        if(ls!= null){
+            ls.onStart(promise);
+        }
+    }
+    /**
+     * 在looper线程
+     * @param promise
+     */
+    void onPromiseFinished(Promise promise){
+        PromiseListener ls = promiseListener;
+        mRunningPromise.remove(promise);
+        if(ls!= null){
+            ls.onEnd(promise);
+        }
+    }
 
     public Promise submit(Runnable runnable){
         Promise promise =  new Promise.Builder(runnable).build();
@@ -215,9 +189,24 @@ public class PromiseExecutor {
                     continue;
                 }
 
+                final Promise _promise = promise;
+
+
+                //判断时候首次执行
+                if(promise.startTime == 0L){
+                    promise.startTime = System.currentTimeMillis();
+                    mHander.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            onPromiseStart(_promise);
+                        }
+                    });
+                }
+
+                //long startElapseRealTime = System.currentTimeMillis();
+
 
                 Promise.Func func =  promise.nextFunc();
-
 
                 //还有case要执行，
                 boolean monitorTimout = false;
@@ -234,17 +223,15 @@ public class PromiseExecutor {
                             delayPromise(promise, delayTime);
                         } else if (!checkTimeOut) {
                             func.doFunc(promise);
-                            nextPromise = promise;
+                            nextPromise = promise;   //下一次优选执行。
                         } else {
                             //需要监听是否timeout
                             //TODO
                             monitorTimout = true;
-                            final Promise _promise = promise;
 
                             Runnable timeoutRunnable =  new Runnable() {
                                 @Override
                                 public void run() {
-
                                     _promise.timeout();
                                 }
                             };
@@ -262,16 +249,17 @@ public class PromiseExecutor {
                     }catch (Throwable th){
                         if(!monitorTimout){
                             promise.errorAndStop(th);
-                            //下一次优选执行。
-                            nextPromise = promise;
+
                         }else{
                             promise.reject(th);
                         }
-
+                        //下一次优选执行。
+                        nextPromise = promise;
                     }
                 }else{
                     //执行成功。
                     promise.status = Promise.Status.RESOLVED;
+                    //下一次优选执行。
                     nextPromise = promise;
                 }
             }
@@ -288,7 +276,7 @@ public class PromiseExecutor {
             });
         }
 
-        void finnlayPromise(Promise promise) {
+        void finnlayPromise(final Promise promise) {
             Handler h = mHander;
             if (h == null) {
                 return;
@@ -315,8 +303,17 @@ public class PromiseExecutor {
                 }
             }
 
-            promise.destroy();
 
+
+            promise.destroy();
+            //标记结束时间
+            promise.endTime = System.currentTimeMillis();
+            mHander.post(new Runnable() {
+                @Override
+                public void run() {
+                    onPromiseFinished(promise);
+                }
+            });
         }
 
         private void runWithoutExcpetion(Promise.RunFunc runFunc, Promise promise){

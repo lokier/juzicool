@@ -32,4 +32,8 @@ public class SeoUtils {
 
         return  DateFormatUtils.format(nextTime,"yyyy-MM-dd HH:mm:ss");
     }
+
+    public static String getTimeDesc(long time){
+        return  DateFormatUtils.format(time,"yyyy-MM-dd HH:mm:ss");
+    }
 }

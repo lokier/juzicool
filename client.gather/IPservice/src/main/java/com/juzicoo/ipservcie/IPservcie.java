@@ -28,7 +28,6 @@ public class IPservcie {
     public static void main(String[] args) {
        IPservcie iPservcie = new IPservcie(new File("ipservide.db"));
 
-
        iPservcie.setIPTester(new IPTester.DefaultIPTester(iPservcie,new String[]{"https://www.juzimi.com/ju/469610"}));
 
        iPservcie.addIpSource(new www89ipcn());
@@ -123,12 +122,16 @@ public class IPservcie {
         db.prepare();
     }
 
+    public File getFile(){
+        return db.getFile();
+    }
+
     public IPPool createPool(int maxPoolSize,int minPoolSize,float minRate){
         prepare();
         return new IPPoolImpl(this,maxPoolSize,minPoolSize,minRate);
     }
 
-    ProxyIpDB getDB(){
+    public ProxyIpDB getDB(){
         return db;
     }
 
