@@ -16,82 +16,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Promise {
 
+
     public  enum Status{
         PENDING,
         RUNNING,
         RESOLVED,
         REJECT;
-    }
-
-
-    public static class Builder{
-
-        private ArrayList<Func> funcList = new ArrayList<>(10);
-
-        private ArrayList<RunFunc> rejectFunc = new ArrayList<>(3);
-        private ArrayList<RunFunc> resolveFunc = new ArrayList<>(3);
-        private ArrayList<RunFunc> finalRunc = new ArrayList<>(3);
-
-        public Builder(){
-
-        }
-
-        public Builder(Runnable runnable){
-            this.then(runnable);
-        }
-
-        public Builder then(Runnable runnable){
-            Func func = new Func();
-            func.needCheckTimeout = false;
-            func.delayFunc = 0L;
-            func.runnable = runnable;
-            funcList.add(func);
-            return this;
-        }
-
-        public Builder then(RunFunc runnable, long timeoutMillions){
-            Func func = new Func();
-            func.needCheckTimeout = true;
-            func.timeout = timeoutMillions;
-            func.runFunc = runnable;
-            funcList.add(func);
-            return this;
-        }
-
-        public Builder delay(long timeMillions) {
-            Func func = new Func();
-            func.needCheckTimeout = false;
-            if(timeMillions > 0){
-                func.delayFunc = timeMillions;
-            }
-            funcList.add(func);
-            return this;
-        }
-
-        public Builder reject(RunFunc runFunc){
-            rejectFunc.add(runFunc);
-            return this;
-        }
-
-        public Builder resolve(RunFunc runFunc){
-            resolveFunc.add(runFunc);
-            return this;
-        }
-
-        public Promise build(){
-            Func[] funcs = funcList.toArray(new Func[funcList.size()]);
-            RunFunc[] resolveFuncs = resolveFunc.toArray(new RunFunc[resolveFunc.size()]);
-            RunFunc[] rejectFuncs = rejectFunc.toArray(new RunFunc[rejectFunc.size()]);
-            RunFunc[] finalRuncs = finalRunc.toArray(new RunFunc[finalRunc.size()]);
-
-
-            return new Promise(funcs,resolveFuncs,rejectFuncs,finalRuncs);
-        }
-
-        public Builder finall(RunFunc runFunc) {
-            finalRunc.add(runFunc);
-            return this;
-        }
     }
 
     public interface RunFunc{
@@ -100,8 +30,6 @@ public class Promise {
 
 
     private static AtomicInteger IdGanerator = new AtomicInteger(0);
-
-
 
      Func[] funcList;
      private int funcIndex = 0;
@@ -119,15 +47,49 @@ public class Promise {
      long elaseRealTime = 0L;  //消耗真实时间（实在在的运行时间）
      long startTime = 0L;
      long endTime = 0L;
+     private Builder builder = new Builder();
 
-    private  Promise(Func[] funcs,RunFunc[] resolve,RunFunc[] reject,RunFunc[] finalRun){
-        funcList = funcs;
-        this.rejectFunc = reject;
-        this.resloveFunc = resolve;
-        this.finalFunc = finalRun;
-        id = IdGanerator.incrementAndGet();
-        status = Status.PENDING;
+     public Promise(){
+         id = IdGanerator.incrementAndGet();
+     }
+
+    public Promise then(Runnable runnable){
+        builder.then(runnable);
+        return this;
     }
+
+    public Promise then(RunFunc runnable, long timeoutMillions){
+        builder.then(runnable,timeoutMillions);
+        return this;
+    }
+
+    public Promise delay(long timeMillions) {
+        builder.delay(timeMillions);
+        return this;
+    }
+
+    public Promise reject(RunFunc runFunc){
+         builder.reject(runFunc);
+        return this;
+    }
+
+    public Promise resolve(RunFunc runFunc){
+        builder.resolve(runFunc);
+        return this;
+    }
+
+    public Promise finall(RunFunc runFunc) {
+        builder.finall(runFunc);
+        return this;
+    }
+
+    /*pcakge*/synchronized void setRunningStatus(){
+        builder.set(this);
+        status = Status.RUNNING;
+        builder =null;
+    }
+
+
 
     public boolean isActive() {
         return isAcitive;
@@ -245,6 +207,17 @@ public class Promise {
         return status;
     }
 
+    public void waitToFinished() {
+
+        while (isAcitive){
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
 
     public long getStartTime(){
         return startTime;
@@ -268,15 +241,7 @@ public class Promise {
         return null;
     }
 
-    private static class TimeountRunable implements Runnable{
 
-        Handler h;
-        Promise promise;
-
-        public void run(){
-
-        }
-    }
 
     /*pacage*/ static class Func{
          Runnable runnable;
@@ -293,6 +258,85 @@ public class Promise {
                 runFunc.run(promise);
             }
 
+        }
+    }
+
+    public static class Builder{
+
+        private ArrayList<Func> funcList = new ArrayList<>(10);
+
+        private ArrayList<RunFunc> rejectFunc = new ArrayList<>(3);
+        private ArrayList<RunFunc> resolveFunc = new ArrayList<>(3);
+        private ArrayList<RunFunc> finalRunc = new ArrayList<>(3);
+
+        public Builder(){
+
+        }
+
+        public Builder(Runnable runnable){
+            this.then(runnable);
+        }
+
+        public Builder then(Runnable runnable){
+            Func func = new Func();
+            func.needCheckTimeout = false;
+            func.delayFunc = 0L;
+            func.runnable = runnable;
+            funcList.add(func);
+            return this;
+        }
+
+        public Builder then(RunFunc runnable, long timeoutMillions){
+            Func func = new Func();
+            func.needCheckTimeout = true;
+            func.timeout = timeoutMillions;
+            func.runFunc = runnable;
+            funcList.add(func);
+            return this;
+        }
+
+        public Builder delay(long timeMillions) {
+            Func func = new Func();
+            func.needCheckTimeout = false;
+            if(timeMillions > 0){
+                func.delayFunc = timeMillions;
+            }
+            funcList.add(func);
+            return this;
+        }
+
+        public Builder reject(RunFunc runFunc){
+            rejectFunc.add(runFunc);
+            return this;
+        }
+
+        public Builder resolve(RunFunc runFunc){
+            resolveFunc.add(runFunc);
+            return this;
+        }
+
+        public Builder finall(RunFunc runFunc) {
+            finalRunc.add(runFunc);
+            return this;
+        }
+
+        private void set(Promise promise){
+            Func[] funcs = funcList.toArray(new Func[funcList.size()]);
+            RunFunc[] resolveFuncs = resolveFunc.toArray(new RunFunc[resolveFunc.size()]);
+            RunFunc[] rejectFuncs = rejectFunc.toArray(new RunFunc[rejectFunc.size()]);
+            RunFunc[] finalRuncs = finalRunc.toArray(new RunFunc[finalRunc.size()]);
+
+            promise.funcList = funcs;
+            promise.rejectFunc = rejectFuncs;
+            promise.resloveFunc = resolveFuncs;
+            promise.finalFunc = finalRuncs;
+           // promise.set(funcs,resolveFuncs,rejectFuncs,finalRuncs);
+        }
+
+        public Promise build(){
+            Promise promise = new Promise();
+            set(promise);
+            return promise;
         }
     }
 

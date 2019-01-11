@@ -1,6 +1,8 @@
 package com.juzicool.core;
 
 
+import jdk.internal.org.objectweb.asm.Handle;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -18,8 +20,32 @@ public class PromiseExecutor {
     private PromiseListener promiseListener;
 
     public void startup(Handler handler) {
-        mHander = new Handler(handler.getLooper());
+        if(handler == null){
+            if(mHander == null) {
+                new Thread() {
+                    public void run() {
+                        Looper.prepare();
+                        mHander = new Handler();
+                        Looper.loop();
+                    }
+                }.start();
+                while(mHander == null){
+                    try {
+                        Thread.sleep(20);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        }else {
+            mHander = new Handler(handler.getLooper());
+        }
        // shutdownWhileIdle = false;
+    }
+
+    public Handler getHandler(){
+        return mHander;
     }
 
     public PromiseListener getPromiseListener() {
@@ -49,6 +75,14 @@ public class PromiseExecutor {
 
     public boolean isShutdown(){
         return mHander == null;
+    }
+
+    /**
+     * 返回待处理的promise个数
+     * @return
+     */
+    public int getPenddingPromiseSize(){
+        return promises.size();
     }
 
     public Promise[] getRunningPromise(){
@@ -91,7 +125,7 @@ public class PromiseExecutor {
             if(promise.getStatus() != Promise.Status.PENDING){
                 throw new IllegalArgumentException(" error promise status:" + promise.getStatus());
             }
-            promise.status = Promise.Status.RUNNING;
+            promise.setRunningStatus();
         }
 
         mHander.post(new Runnable() {

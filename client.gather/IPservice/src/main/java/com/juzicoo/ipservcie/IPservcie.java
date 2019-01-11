@@ -3,6 +3,8 @@ package com.juzicoo.ipservcie;
 import com.juzicoo.ipservcie.source.www89ipcn;
 import com.juzicool.core.Handler;
 import com.juzicool.core.Looper;
+import com.juzicool.core.Promise;
+import com.juzicool.core.PromiseExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.codecraft.webmagic.Page;
@@ -16,7 +18,6 @@ import us.codecraft.webmagic.processor.PageProcessor;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,6 +28,8 @@ public class IPservcie {
 
     public static void main(String[] args) {
        IPservcie iPservcie = new IPservcie(new File("ipservide.db"));
+
+       iPservcie.prepare();
 
        iPservcie.setIPTester(new IPTester.DefaultIPTester(iPservcie,new String[]{"https://www.juzimi.com/ju/469610"}));
 
@@ -82,14 +85,17 @@ public class IPservcie {
     private boolean isPreared = false;
 
     public void prepare(){
-        if(!isPreared) {
-            synchronized (this){
-                if(!isPreared){
-                    getHandler();
-                    isPreared = true;
-                }
-            }
+        this.prepare(this.executor);
+    }
 
+    public void prepare(PromiseExecutor executor){
+        if(!isPreared) {
+            if(executor == null){
+                executor = new PromiseExecutor();
+                executor.startup(null);
+            }
+            this.executor = executor;
+            isPreared = true;
         }
     }
 
@@ -108,17 +114,12 @@ public class IPservcie {
     private ArrayList<IpSource> ipSourceList = new ArrayList();
     private IPTester mIPTester = null;
     private CollectIpRunnale mCollectRunnable = new CollectIpRunnale();
+    //private Handler mHander;
+    private PromiseExecutor executor = null;// new PromiseExecutor();
 
-   // private Looper mLooper;
-    private Handler mHander;
 
     public IPservcie(File file){
-        this(file,null);
-    }
-
-    public IPservcie(File file,Handler handler){
         db = new ProxyIpDB(file);
-        mHander = handler;
         db.prepare();
     }
 
@@ -135,26 +136,9 @@ public class IPservcie {
         return db;
     }
 
-    public synchronized Handler getHandler(){
-      if(mHander == null) {
-          new Thread() {
-              public void run() {
-                  Looper.prepare();
-                  mHander = new Handler();
-                  Looper.loop();
-              }
-          }.start();
+    public  Handler getHandler(){
 
-          while(mHander == null){
-              try {
-                  Thread.sleep(50);
-              } catch (InterruptedException e) {
-                  e.printStackTrace();
-              }
-          }
-
-      }
-        return mHander;
+        return executor.getHandler();
     }
 
     public IPTester getIPTester() {
@@ -361,7 +345,7 @@ public class IPservcie {
 
 
         @Override
-        public  void submit(String ip, int port) {
+        public  void submit(final String ip,final int port) {
 
             if(mCahceList.containsKey(ip)){
                 return;
@@ -369,13 +353,20 @@ public class IPservcie {
             System.out.println("[start test ip:]"+ ip);
             mCounter.incrementAndGet();
             long start = System.currentTimeMillis();
-            boolean isOk =  getIPTester().checkProxyIp(ip,port);
+            Promise promise =  getIPTester().checkProxyIp(ip,port);
             System.out.println("[end test ip:]"+ ip +" ,port" + port +", spendTime: " + (System.currentTimeMillis() - start) +", 还剩下：" + mCounter.decrementAndGet());
 
-            if(isOk){
-                ProxyIp proxy = new ProxyIp(ip,port);
-                addValidProxy(proxy);
+            if(promise!=null){
+                promise.resolve(new Promise.RunFunc() {
+                    @Override
+                    public void run(Promise promise) {
+                        ProxyIp proxy = new ProxyIp(ip,port);
+                        addValidProxy(proxy);
+                    }
+                });
+                executor.submit(promise);
             }
+
 
         }
 

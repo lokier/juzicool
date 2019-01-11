@@ -50,6 +50,7 @@ public class JuzimiSpider {
         //初始化IP代理组件
         System.out.println("初始化IPservcie。。。");
         IPservcie iPservcie = new IPservcie(ipProxyFile);
+        iPservcie.prepare();
         iPservcie.setIPTester(new IPTester.DefaultIPTester(iPservcie,new String[]{"https://www.juzimi.com/ju/469610"}));
         iPservcie.setCollectInterval(1f); //至少每隔1小時要收集新的ip。
         iPservcie.addIpSource(new www89ipcn());

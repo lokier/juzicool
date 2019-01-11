@@ -35,7 +35,9 @@ Proxy个数：#(ipService.getDB().size())<br/>
 
 <br/><br/>
 <h3>PromiseExecutor</h3>
-正在执行的promise个数: #(promiseExecutor.getRunningPromise().length)
+等待处理个数: #(promiseExecutor.getPenddingPromiseSize())
+正在执行个数: #(promiseExecutor.getRunningPromise().length)
+
 
 <table>
     <tr>

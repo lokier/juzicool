@@ -1,6 +1,7 @@
 package com.juzicoo.ipservcie;
 
-import com.juzicoo.ipservcie.source.www89ipcn;
+import com.juzicool.core.Promise;
+import com.juzicool.core.PromiseExecutor;
 
 import java.io.File;
 import java.util.*;
@@ -21,6 +22,9 @@ class IPPoolImpl implements IPPool {
 
             }
         },2000);
+
+        final PromiseExecutor executor = new PromiseExecutor();
+        executor.startup(iPservcie.getHandler());
         new Thread(){
 
             @Override
@@ -32,8 +36,11 @@ class IPPoolImpl implements IPPool {
                 long start = System.currentTimeMillis();
                 System.out.println("start : " + start);
 
-                boolean ok = iPservcie.getIPTester().checkProxyIp("119.101.113.141",9999);
-                System.out.println("end : "  +System.currentTimeMillis() +", spend:"+(System.currentTimeMillis() - start) +", ok = " + ok );
+                Promise p = iPservcie.getIPTester().checkProxyIp("119.101.113.141",9999);
+                executor.submit(p);
+                p.waitToFinished();
+                boolean isOk = p.getStatus() == Promise.Status.RESOLVED;
+                System.out.println("end : "  +System.currentTimeMillis() +", spend:"+(System.currentTimeMillis() - start) +", ok = " + isOk );
             }
         }.start();
 
