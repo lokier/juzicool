@@ -22,6 +22,7 @@ import com.jfinal.kit.Prop;
 import com.jfinal.kit.PropKit;
 import com.jfinal.template.Engine;
 import com.juzicool.seo.plugin.AppPlugin;
+import com.juzicool.seo.plugin.IPServicePlugin;
 import com.juzicool.seo.plugin.WebwalkPlugin;
 import com.juzicool.seo.web.IndexController;
 
@@ -96,8 +97,9 @@ public class JFinalMainConfig extends JFinalConfig {
     public void configPlugin(Plugins me) {
 		me.add(new AppPlugin());
 		me.add(new WebwalkPlugin());
-	   // me.add(new Cron4jPlugin(p));
-    }
+		me.add(new IPServicePlugin());
+
+	}
     
     public void configInterceptor(Interceptors me) {
 	   // me.add(new LoginSessionInterceptor());

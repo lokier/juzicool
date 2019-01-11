@@ -114,7 +114,12 @@ public class IPservcie {
     private Handler mHander;
 
     public IPservcie(File file){
+        this(file,null);
+    }
+
+    public IPservcie(File file,Handler handler){
         db = new ProxyIpDB(file);
+        mHander = handler;
         db.prepare();
     }
 
