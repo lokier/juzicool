@@ -15,8 +15,8 @@ public class IPServicePlugin implements IPlugin {
     @Override
     public boolean start() {
         File file = new File(AppPlugin.me.getAppDir(),"ip_proxiy.db");
-        me = new IPservcie(file,WebwalkPlugin.me.getHandler());
-        me.prepare();
+        me = new IPservcie(file);
+        me.prepare(Services.walkService.getPromiseExecutor());
         Services.iPservcie = me;
         return true;
     }

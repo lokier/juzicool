@@ -65,7 +65,7 @@ public interface IPTester {
                  return null;
              }
 
-             Promise.Builder builder = new Promise.Builder();
+             Promise builder = new Promise();
 
              for(String reqUrl : mUrls){
                  final CloseableHttpClient client = createClient();
@@ -128,7 +128,7 @@ public interface IPTester {
                      }
                  });
              }
-             return  builder.build();
+             return  builder;
 
          }
      }

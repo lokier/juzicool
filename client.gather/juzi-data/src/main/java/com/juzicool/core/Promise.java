@@ -261,7 +261,7 @@ public class Promise {
         }
     }
 
-    public static class Builder{
+    private static class Builder{
 
         private ArrayList<Func> funcList = new ArrayList<>(10);
 

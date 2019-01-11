@@ -113,7 +113,7 @@ public class PromiseExecutor {
     }
 
     public Promise submit(Runnable runnable){
-        Promise promise =  new Promise.Builder(runnable).build();
+        Promise promise =  new Promise().then(runnable);
         submit(promise);
         return promise;
     }

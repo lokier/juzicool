@@ -152,7 +152,7 @@ public abstract class WalkFlowTask {
         final WalkClient walkClient = createWalkClient();
 
         LOG.info("dispatch  walkFlow: " + walkFlow.getName());
-        Promise.Builder builder = new Promise.Builder();
+        Promise builder = new Promise();
 
 
         // flow star:
@@ -188,7 +188,7 @@ public abstract class WalkFlowTask {
             }
         });
 
-        return builder.build();
+        return builder;
     }
 
 

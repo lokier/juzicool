@@ -23,7 +23,7 @@ public abstract class WalkFlow {
     public abstract String getName();
 
 
-    /*pacage*/ Promise.Builder createPromise(Promise.Builder promiseBuilder, final WalkFlowTask task, final WalkClient client) {
+    /*pacage*/ Promise createPromise(Promise promiseBuilder, final WalkFlowTask task, final WalkClient client) {
         while(true){
             final CaseWrapper wrapper =   caseQueue.poll();
             if(wrapper == null) {

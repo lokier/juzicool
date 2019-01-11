@@ -44,8 +44,8 @@ public class PromiseTester {
     }
 
     private void testEmpytCase(PromiseExecutor executor){
-        Promise.Builder promiseBuilder = new Promise.Builder();
-        Promise promise = promiseBuilder.build();
+        Promise promiseBuilder = new Promise();
+        Promise promise = promiseBuilder;
         Assert.assertTrue(promise.getStatus() == Promise.Status.PENDING);
         Assert.assertTrue(promise.isActive());
         executor.submit(promise);
@@ -53,7 +53,7 @@ public class PromiseTester {
         Assert.assertTrue(promise.getStatus() == Promise.Status.RESOLVED);
         Assert.assertTrue(promise.isActive() == false);
 
-        promiseBuilder = new Promise.Builder();
+        promiseBuilder = new Promise();
 
         final Obj o1 = new Obj();
         final Obj o2 = new Obj();
@@ -76,7 +76,7 @@ public class PromiseTester {
             }
         });
 
-         promise = promiseBuilder.build();
+         promise = promiseBuilder;
         Assert.assertTrue(promise.getStatus() == Promise.Status.PENDING);
         Assert.assertTrue(promise.isActive());
         executor.submit(promise);
@@ -97,7 +97,7 @@ public class PromiseTester {
         final Obj c4 = new Obj();
         final Obj c5 = new Obj();
 
-        Promise promise = new Promise.Builder().then(new Runnable() {
+        Promise promise = new Promise().then(new Runnable() {
             @Override
             public void run() {
                 c1.args = new Long(System.currentTimeMillis());
@@ -131,7 +131,7 @@ public class PromiseTester {
                 rets.add(c5);
             }
         })
-                .build();
+               ;
 
 
         Assert.assertTrue(promise.getStatus() == Promise.Status.PENDING);
@@ -160,7 +160,7 @@ public class PromiseTester {
         final Obj c5 = new Obj();
         final Obj finalResolveObj = new Obj();
 
-        Promise promise = new Promise.Builder().then(new Runnable() {
+        Promise promise = new Promise().then(new Runnable() {
             @Override
             public void run() {
                 c1.args = new Long(System.currentTimeMillis());
@@ -189,7 +189,7 @@ public class PromiseTester {
                 promise.accept(finalResolveObj);
 
             }
-        }) .build();
+        });
 
 
         Assert.assertTrue(promise.getStatus() == Promise.Status.PENDING);
@@ -217,7 +217,7 @@ public class PromiseTester {
         final Obj c4 = new Obj();
         final Obj c5 = new Obj();
 
-        Promise promise = new Promise.Builder().then(new Runnable() {
+        Promise promise = new Promise().then(new Runnable() {
             @Override
             public void run() {
                 c1.args = new Long(System.currentTimeMillis());
@@ -246,7 +246,7 @@ public class PromiseTester {
                         c4.args = new Long(System.currentTimeMillis());
                         rets.add(c4);
                     }
-                }) .build();
+                });
 
 
         Assert.assertTrue(promise.getStatus() == Promise.Status.PENDING);
@@ -272,7 +272,7 @@ public class PromiseTester {
         final Obj c4 = new Obj();
         final Obj c5 = new Obj();
 
-        Promise promise = new Promise.Builder().then(new Runnable() {
+        Promise promise = new Promise().then(new Runnable() {
             @Override
             public void run() {
                 c1.args = new Long(System.currentTimeMillis());
@@ -301,7 +301,7 @@ public class PromiseTester {
                         c4.args = new Long(System.currentTimeMillis());
                         rets.add(c4);
                     }
-                }) .build();
+                });
 
 
         Assert.assertTrue(promise.getStatus() == Promise.Status.PENDING);
@@ -325,7 +325,7 @@ public class PromiseTester {
         final Obj c4 = new Obj();
         final Obj c5 = new Obj();
 
-        Promise promise = new Promise.Builder().then(new Runnable() {
+        Promise promise = new Promise().then(new Runnable() {
             @Override
             public void run() {
                 c1.args = new Long(System.currentTimeMillis());
@@ -356,7 +356,7 @@ public class PromiseTester {
                         c4.args = new Long(System.currentTimeMillis());
                         rets.add(c4);
                     }
-                }) .build();
+                }) ;//.build();
 
 
         Assert.assertTrue(promise.getStatus() == Promise.Status.PENDING);

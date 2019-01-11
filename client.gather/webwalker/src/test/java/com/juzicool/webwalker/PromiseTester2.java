@@ -76,7 +76,7 @@ public class PromiseTester2 {
         final Obj c4 = new Obj();
         final Obj c5 = new Obj();
 
-        Promise promise = new Promise.Builder().then(new Runnable() {
+        Promise promise = new Promise().then(new Runnable() {
             @Override
             public void run() {
                 c1.args = new Long(System.currentTimeMillis());
@@ -103,7 +103,7 @@ public class PromiseTester2 {
                 c4.args = new Long(System.currentTimeMillis());
                 rets.add(c4);
             }
-        }) .build();
+        });// .build();
 
 
 
@@ -138,7 +138,7 @@ public class PromiseTester2 {
         final Obj c4 = new Obj();
         final Obj c5 = new Obj();
 
-        final  Promise promise = new Promise.Builder().then(new Runnable() {
+        Promise promise = new Promise().then(new Runnable() {
             @Override
             public void run() {
                 c1.args = new Long(System.currentTimeMillis());
@@ -167,7 +167,7 @@ public class PromiseTester2 {
                         c4.args = new Long(System.currentTimeMillis());
                         rets.add(c4);
                     }
-                }) .build();
+                });// .build();
 
 
 
@@ -200,7 +200,7 @@ public class PromiseTester2 {
         final Obj c4 = new Obj();
         final Obj c5 = new Obj();
 
-       final Promise promise = new Promise.Builder().then(new Runnable() {
+        Promise promise = new Promise().then(new Runnable() {
             @Override
             public void run() {
                 c1.args = new Long(System.currentTimeMillis());
@@ -229,7 +229,7 @@ public class PromiseTester2 {
                         c4.args = new Long(System.currentTimeMillis());
                         rets.add(c4);
                     }
-                }) .build();
+                });// .build();
 
 
         PCase pCase = new PCase();
@@ -259,7 +259,7 @@ public class PromiseTester2 {
         final Obj c4 = new Obj();
         final Obj c5 = new Obj();
 
-        final Promise promise = new Promise.Builder().then(new Runnable() {
+        Promise promise = new Promise().then(new Runnable() {
             @Override
             public void run() {
                 c1.args = new Long(System.currentTimeMillis());
@@ -290,7 +290,7 @@ public class PromiseTester2 {
                         c4.args = new Long(System.currentTimeMillis());
                         rets.add(c4);
                     }
-                }) .build();
+                });// .build();
 
 
 
