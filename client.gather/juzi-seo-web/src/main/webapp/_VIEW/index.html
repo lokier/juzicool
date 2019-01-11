@@ -2,7 +2,11 @@
 #define main()
 <!-- 内容容器 -->
 
-线程个数: #(walkService.getMaxTaskThread())
+线程个数: #(walkService.getMaxTaskThread()) <br/>
+正在执行flow个数: #(walkService.getRunningWorkFlowCount()) <br/>
+正在执行线程个数: #(walkService.getRunningThreadCount()) <br/>
+
+
 <table>
     <tr>
         <th> 计划ID</th>

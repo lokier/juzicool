@@ -61,12 +61,47 @@ public class WalkService {
 
     }
 
+    /**
+     * 设置最大的线程数据。
+     * @param size
+     */
     public void setMaxTaskThread(int size) {
         this.maxTaskThread = size;
     }
 
     public int getMaxTaskThread() {
         return maxTaskThread;
+    }
+
+
+    /**
+     * 返回并处处理的WalkFlow限制个数。
+     */
+    /**pacake*/ int getRunningFlowLimit(){
+        return (int)(maxTaskThread * 2.5f);
+    }
+
+    /***
+     * 返回正在执行的WalkFlow个数
+     * @return
+     */
+    public int getRunningWorkFlowCount(){
+        int runningCount = 0;
+        Collection<WalkFlowScheduleRunnable> runns =  mSchedulesMap.values();
+       // ArrayList<WalkFlowSchedule> rets = new ArrayList<>(runns.size());
+        for(WalkFlowScheduleRunnable r: runns){
+           // rets.add(r.schedule);
+            runningCount += r.schedule.getWalkFlowTask().getRunningCount();
+        }
+        return runningCount;
+    }
+
+    /**
+     * 返回正在执行的线程个数。
+     * @return
+     */
+    public int getRunningThreadCount(){
+        return promiseExecutor.getCurrentThreadSize();
     }
 
     private void exitSchedule(WalkFlowScheduleRunnable runnable){

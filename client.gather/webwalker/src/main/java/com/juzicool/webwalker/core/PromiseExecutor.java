@@ -149,6 +149,10 @@ public class PromiseExecutor {
         }
     }
 
+    public int getCurrentThreadSize(){
+        return threadList.size();
+    }
+
     private  void onThreadFinishend(PromiseThead thead){
         synchronized (this) {
             threadList.remove(thead);

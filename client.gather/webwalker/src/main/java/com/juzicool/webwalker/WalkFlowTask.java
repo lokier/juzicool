@@ -5,6 +5,8 @@ import com.juzicool.webwalker.core.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 
 
 public abstract class WalkFlowTask {
@@ -21,7 +23,6 @@ public abstract class WalkFlowTask {
      * @return  没有的话，返回null
      */
     abstract protected WalkFlow next();
-
 
     abstract protected WalkClient createWalkClient();
 
@@ -45,13 +46,22 @@ public abstract class WalkFlowTask {
     }
 
     public boolean isRunning(){
-        Promise promise = mRunningPromise;
-        return promise!=null && promise.isActive();
+        //Promise promise = mRunningPromise;
+        ArrayList<Promise> ps = new ArrayList<>(mRunningPromise);
+        for(Promise p: ps){
+            if(p.isActive()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int getRunningCount() {
+        return mRunningPromise.size();
     }
 
 
-
-    private Promise mRunningPromise;
+    private LinkedList<Promise> mRunningPromise = new LinkedList<>();
 
     WalkService mService;
 
@@ -77,7 +87,13 @@ public abstract class WalkFlowTask {
                     @Override
                     public void run() {
                         //开始执行task
-                        dispathNextWalkFlowPromise();
+                        int size = mService.getRunningFlowLimit() - mService.getRunningWorkFlowCount();
+                        if(size < 0){
+                            size = 0;
+                        }
+                        for(int i= 0; i < size;i++){
+                            dispathNextWalkFlowPromise(false);
+                        }
                     }
                 });
             }
@@ -110,39 +126,28 @@ public abstract class WalkFlowTask {
     /**
      * must run in Looper线程；
      */
-    private void dispathNextWalkFlowPromise(){
+    private void dispathNextWalkFlowPromise(boolean checkStop){
         if(Looper.myLooper() == null){
             throw new RuntimeException("must run in looper thread");
         }
 
-        if(isRunning()){
-            return;
-        }
         //在后台线程里面执行。
-        Promise promise = createPromise();
-        if(promise == null){
+        final WalkFlow walkFlow = next();
+        if(walkFlow == null){
             LOG.debug("createPromise null, is Stop");
-            stop();
+            if(checkStop){
+                stop();
+            }
             return ;
         }
-
-        mRunningPromise = promise;
+        Promise promise = createPromise(walkFlow);
+        mRunningPromise.add(promise);
         mService.getPromiseExecutor().submit(promise);
 
     }
 
 
-
-
-    private Promise createPromise( ){
-
-
-        final WalkFlow walkFlow = next();
-
-        if(walkFlow == null){
-            LOG.debug("createPromise falil:  walkFlow is null");
-            return null;
-        }
+    private Promise createPromise(WalkFlow walkFlow ){
 
         final WalkClient walkClient = createWalkClient();
 
@@ -165,18 +170,18 @@ public abstract class WalkFlowTask {
         //flow finish
         builder.finall(new Promise.RunFunc() {
             @Override
-            public void run(Promise promise) {
+            public void run(final Promise promise) {
 
                 final boolean hasError = promise.getStatus() == Promise.Status.REJECT;
                 mService.getHandler().post(new Runnable() {
                     @Override
                     public void run() {
                         releaseWalkClient(walkClient);
-                        mRunningPromise = null;
+                        mRunningPromise.remove(promise);
                         if(mService.walkFlowListener!=null){
                             mService.walkFlowListener.onFinishFlow(WalkFlowTask.this,walkFlow,walkClient,hasError);
                         }
-                        dispathNextWalkFlowPromise();
+                        dispathNextWalkFlowPromise(true);
                     }
                 });
 
