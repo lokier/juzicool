@@ -29,12 +29,15 @@ public abstract class WalkFlowTask {
 
 
     /**
-     * 这里要处理下，保证next()下面有值。
+     * 这里执行完之后，保证next()下面有值。会在后台线程执行。
      */
-    abstract protected void onStart();
+    abstract protected void onStartInBackgound();
 
 
-    abstract protected void onStop();
+    /**
+     * 这里执行完之后，会在后台线程执行。
+     */
+    abstract protected void onStopInBackground();
 
 
     public WalkFlowTask(){
@@ -64,17 +67,44 @@ public abstract class WalkFlowTask {
             mService.walkFlowListener.onStartTask(this);
         }
 
-        onStart();
+        mService.getPromiseExecutor().submit(new Runnable() {
+            @Override
+            public void run() {
+                //在后台线程执行。
+                onStartInBackgound();
 
-        dispathNextWalkFlowPromise();
+                mService.getHandler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        //开始执行task
+                        dispathNextWalkFlowPromise();
+                    }
+                });
+            }
+        });
+
+
     }
 
     /*pacage*/ void stop() {
-        if(mService.walkFlowListener!= null){
-            mService.walkFlowListener.onFinishTask(this);
-        }
-        onStop();
-        mService = null;
+
+        mService.getPromiseExecutor().submit(new Runnable() {
+            @Override
+            public void run() {
+                //在后台线程执行。
+                onStopInBackground();
+                mService.getHandler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(mService.walkFlowListener!= null){
+                            mService.walkFlowListener.onFinishTask(WalkFlowTask.this);
+                        }
+                        mService = null;
+                    }
+                });
+            }
+        });
+
     }
 
     /**

@@ -53,12 +53,15 @@ public class DefaultWalkFlowTask extends WalkFlowTask{
     }
 
     @Override
-    protected void onStart() {
+    protected void onStartInBackgound() {
         walkFlowsQueue = new LinkedList<>(walkFlows);
+
     }
 
     @Override
-    protected void onStop() {
+    protected void onStopInBackground() {
         walkFlowsQueue = null;
+
     }
+
 }
