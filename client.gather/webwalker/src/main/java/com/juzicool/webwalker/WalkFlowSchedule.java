@@ -28,6 +28,9 @@ public class WalkFlowSchedule {
         return startPoint.nextStartTime();
     }
 
+    public Date nextRunDate(){
+        return new Date(startPoint.nextStartTime());
+    }
 
     public int getScheduleId() {
         return scheduleId;

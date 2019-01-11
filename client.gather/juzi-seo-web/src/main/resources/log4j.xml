@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+    <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yy-MM-dd HH:mm:ss,SSS} %-5p %c(%F:%L) ## %m%n" />
+        </layout>
+    </appender>
+
+    <appender name="fileAppenderInfo" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="./juzi-seo-web.log" />
+        <param name="DatePattern" value=".yyyy-MM-dd" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[%d{HH:mm:ss:SSS}] [%p] - %l - %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="DEBUG" />
+            <param name="LevelMax" value="ERROR" />
+        </filter>
+    </appender>
+
+    <logger name="org.springframework" additivity="false">
+        <level value="warn" />
+        <appender-ref ref="stdout" />
+    </logger>
+
+    <logger name="net.sf.ehcache" additivity="false">
+        <level value="warn" />
+        <appender-ref ref="stdout" />
+    </logger>
+
+    <logger name="com.juzicool.ipservcie" additivity="false">
+        <!--指定类的日志级别，会影响指定类日志发出信息的成功与否-->
+        <level value = "debug" />
+        <appender-ref ref="fileAppenderInfo" />
+    </logger>
+
+    <logger name="com.juzicool.webwalker" additivity="false">
+        <!--指定类的日志级别，会影响指定类日志发出信息的成功与否-->
+        <level value = "debug" />
+        <appender-ref ref="fileAppenderInfo" />
+    </logger>
+
+<!--    <logger name="us.codecraft.webmagic.downloader" additivity="false">
+        &lt;!&ndash;指定类的日志级别，会影响指定类日志发出信息的成功与否&ndash;&gt;
+        <level value = "info" />
+        <appender-ref ref="fileAppenderInfo" />
+    </logger>-->
+
+
+    <root>
+        <level value="info" />
+        <appender-ref ref="stdout" />
+    </root>
+
+</log4j:configuration>

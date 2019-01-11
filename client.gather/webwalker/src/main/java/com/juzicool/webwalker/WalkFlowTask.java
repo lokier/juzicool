@@ -1,6 +1,5 @@
 package com.juzicool.webwalker;
 
-import com.juzicool.webwalker.core.Handler;
 import com.juzicool.webwalker.core.Looper;
 import com.juzicool.webwalker.core.Promise;
 import org.slf4j.Logger;
@@ -61,12 +60,19 @@ public abstract class WalkFlowTask {
             return;
         }
 
+        if(mService.walkFlowListener!= null){
+            mService.walkFlowListener.onStartTask(this);
+        }
+
         onStart();
 
         dispathNextWalkFlowPromise();
     }
 
     /*pacage*/ void stop() {
+        if(mService.walkFlowListener!= null){
+            mService.walkFlowListener.onFinishTask(this);
+        }
         onStop();
         mService = null;
     }
@@ -98,7 +104,7 @@ public abstract class WalkFlowTask {
 
 
 
-    private Promise createPromise(){
+    private Promise createPromise( ){
 
 
         final WalkFlow walkFlow = next();
@@ -111,17 +117,35 @@ public abstract class WalkFlowTask {
         final WalkClient walkClient = createWalkClient();
 
         LOG.info("dispatch  walkFlow: " + walkFlow.getName());
+        Promise.Builder builder = new Promise.Builder();
 
-        Promise.Builder builder = walkFlow.createPromise(this,walkClient);
 
+        // flow star:
+        builder.then(new Runnable() {
+            @Override
+            public void run() {
+                if(mService.walkFlowListener!=null){
+                    mService.walkFlowListener.onStartFlow(WalkFlowTask.this,walkFlow,walkClient);
+                }
+            }
+        });
+
+        walkFlow.createPromise(builder,this,walkClient);
+
+        //flow finish
         builder.finall(new Promise.RunFunc() {
             @Override
             public void run(Promise promise) {
+
+                final boolean hasError = promise.getStatus() == Promise.Status.REJECT;
                 mService.getHandler().post(new Runnable() {
                     @Override
                     public void run() {
                         releaseWalkClient(walkClient);
                         mRunningPromise = null;
+                        if(mService.walkFlowListener!=null){
+                            mService.walkFlowListener.onFinishFlow(WalkFlowTask.this,walkFlow,walkClient,hasError);
+                        }
                         dispathNextWalkFlowPromise();
                     }
                 });

@@ -8,69 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 public class WalkService {
     public static Logger LOG = LoggerFactory.getLogger(WalkFlowTask.class);
-
-    public static void main(String[] args) {
-
-        WalkService service = new WalkService();
-        service.setMaxTaskThread(5); //设置最大的启动task线程个数
-        service.prepare(); // 准备工作
-
-
-        //开启一个WaklTask
-        WalkFlowTask task = new WalkFlowTask() {
-            @Override
-            public int getTaskId() {
-                return 1;
-            }
-
-            @Override
-             public   String getTaskName() {
-                return "WalkService.main_task";
-            }
-
-            @Override
-            protected WalkFlow next() {
-                return null;
-            }
-
-            @Override
-            protected  WalkClient createWalkClient() {
-                return null;
-            }
-
-            @Override
-            protected  void releaseWalkClient(WalkClient client) {
-
-            }
-
-            @Override
-            protected void onStart() {
-                DefaultWalkFlow flow = new DefaultWalkFlow();
-                flow.setName("测试flow").addCase(new WalkCase.DumpCase(),100);
-            }
-
-            @Override
-            protected void onStop() {
-
-            }
-        };
-
-       // service.startTaskNow(task);  //一个WalkTask就是调度工作任务。
-
-
-        //在task上面执行一个WalkFlow
-
-        WalkClient client = WalkClient.build();
-
-        service.shutdownWhileIdle(true);
-        service.waitUntilShutdown();
-        System.out.println("finished service");
-
-    }
 
 
     private static final long UPDATE_SECHEDULE_TIMER = 5000; //
@@ -78,42 +21,37 @@ public class WalkService {
     private int maxTaskThread = 5;
     private Handler mHandler = null;
     private HashMap<Integer,WalkFlowScheduleRunnable> mSchedulesMap = new HashMap<>();
-    private boolean shutdownWhileIdle = false;
-    private boolean isShutdown = false;
+    //private boolean isShutdown = false;
     private PromiseExecutor promiseExecutor;
+     WalkFlowListener walkFlowListener;
 
-    public void shutdownWhileIdle(boolean shutdownWhileIdle) {
-        this.shutdownWhileIdle = shutdownWhileIdle;
+
+    public WalkFlowListener getWalkFlowListener() {
+        return walkFlowListener;
     }
 
-    public void waitUntilShutdown(){
-
-        while (!isShutdown){
-            try {
-                Thread.sleep(1500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
+    public void setWalkFlowListener(WalkFlowListener walkFlowListener) {
+        this.walkFlowListener = walkFlowListener;
     }
 
     public void submit(final WalkFlowSchedule schedule){
         getHandler().post(new Runnable() {
             @Override
             public void run() {
-                if(isShutdown){
-                    return;
-                }
 
-                WalkFlowScheduleRunnable runnable = mSchedulesMap.get(new Integer(schedule.getScheduleId()));
+                Integer sId = new Integer(schedule.getScheduleId());
+
+                WalkFlowScheduleRunnable runnable = mSchedulesMap.get(sId);
 
                 if(runnable!= null){
                     //已经存在任务，删除；
                     getHandler().removeCallbacks(runnable);
                     //mSchedulesMap.remove(schedule.id)
                 }
+
                 runnable = new WalkFlowScheduleRunnable(schedule);
+                mSchedulesMap.put(sId,runnable);
+
                 schedule(runnable);
 
 
@@ -127,6 +65,10 @@ public class WalkService {
         this.maxTaskThread = size;
     }
 
+    public int getMaxTaskThread() {
+        return maxTaskThread;
+    }
+
     private void exitSchedule(WalkFlowScheduleRunnable runnable){
         //退出计划任务执行
         LOG.info("退出计划执行:" + runnable.schedule.toString());
@@ -136,9 +78,7 @@ public class WalkService {
 
 
     private void schedule(WalkFlowScheduleRunnable runnable){
-        if(isShutdown){
-            return;
-        }
+
         //添加到计划任务里面；
         long runningTime = runnable.nextRunningTime();
         if(LOG.isDebugEnabled()){
@@ -161,6 +101,15 @@ public class WalkService {
 
     }
 
+    public List<WalkFlowSchedule> getWalkFlowScheduleList(){
+        Collection<WalkFlowScheduleRunnable> runns =  mSchedulesMap.values();
+        ArrayList<WalkFlowSchedule> rets = new ArrayList<>(runns.size());
+        for(WalkFlowScheduleRunnable r: runns){
+            rets.add(r.schedule);
+        }
+        return rets;
+    }
+
 
 
     public Handler getHandler(){
@@ -171,9 +120,6 @@ public class WalkService {
     }
 
     public void prepare() {
-        if(isShutdown){
-            throw  new IllegalStateException("the service has desctroy!!!");
-        }
         if(mHandler == null) {
             synchronized (this) {
                 if(mHandler == null) {
@@ -205,17 +151,6 @@ public class WalkService {
         return promiseExecutor;
     }
 
-    private void shutdown(){
-        //删除所有的计划任务
-        for(WalkFlowScheduleRunnable schedule: mSchedulesMap.values()){
-            getHandler().removeCallbacks(schedule);
-        }
-        mSchedulesMap.clear();
-        getHandler().removeCallbacks(checkStatusTimerRunnable);
-        getHandler().getLooper().quit();
-        mHandler = null;
-        isShutdown = true;
-    }
 
     /**
      * 定时检查当前服务状态
@@ -257,9 +192,7 @@ public class WalkService {
                 }
             }
 
-            if(isIdle && shutdownWhileIdle){
-                shutdown();
-            }else{
+            if(!isIdle ){
                 getHandler().postDelayed(this,UPDATE_SECHEDULE_TIMER);
             }
 

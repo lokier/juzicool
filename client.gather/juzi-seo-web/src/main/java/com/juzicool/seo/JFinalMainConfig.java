@@ -20,8 +20,9 @@ import com.jfinal.core.JFinal;
 import com.jfinal.json.MixedJsonFactory;
 import com.jfinal.kit.Prop;
 import com.jfinal.kit.PropKit;
-import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.template.Engine;
+import com.juzicool.seo.plugin.AppPlugin;
+import com.juzicool.seo.plugin.WebwalkPlugin;
 import com.juzicool.seo.web.IndexController;
 
 
@@ -91,16 +92,10 @@ public class JFinalMainConfig extends JFinalConfig {
 	//	me.addSharedFunction("/_view/_admin/common/__admin_layout.html");
 	//	me.addSharedFunction("/_view/_admin/common/_admin_paginate.html");
 	}
-    
-    /**
-     * 抽取成独立的方法，便于 _Generator 中重用该方法，减少代码冗余
-     */
-	public static DruidPlugin getDruidPlugin() {
-		return new DruidPlugin(p.get("jdbcUrl"), p.get("user"), p.get("password").trim());
-	}
 	
     public void configPlugin(Plugins me) {
-
+		me.add(new AppPlugin());
+		me.add(new WebwalkPlugin());
 	   // me.add(new Cron4jPlugin(p));
     }
     

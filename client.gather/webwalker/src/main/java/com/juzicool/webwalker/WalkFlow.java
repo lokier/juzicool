@@ -4,7 +4,6 @@ import com.juzicool.webwalker.core.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -24,8 +23,7 @@ public abstract class WalkFlow {
     public abstract String getName();
 
 
-    /*pacage*/ Promise.Builder createPromise(final WalkFlowTask task,final WalkClient client) {
-        Promise.Builder promiseBuilder = new Promise.Builder();
+    /*pacage*/ Promise.Builder createPromise(Promise.Builder promiseBuilder,final WalkFlowTask task,final WalkClient client) {
         while(true){
             final CaseWrapper wrapper =   caseQueue.poll();
             if(wrapper == null) {
@@ -36,12 +34,26 @@ public abstract class WalkFlow {
             }
 
            // final long startTime = System.currentTimeMillis();
+
+            final WalkCase _case = wrapper._case;
+
             promiseBuilder.then(new Runnable() {
                 @Override
                 public void run() {
-
                     LOG.debug("flow[" +getName()+"]: START do case");
                     wrapper._case.onCreate(client);
+
+                    //fire case start event;
+                    task.mService.getHandler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            WalkService service = task.mService;
+                            WalkFlow flow = WalkFlow.this;
+                            if(service!= null && service.walkFlowListener!=null){
+                                service.walkFlowListener.onStartCase(task,flow,client,_case);
+                            }
+                        }
+                    });
                 }
             });
 
@@ -49,7 +61,6 @@ public abstract class WalkFlow {
                 @Override
                 public void run(Promise promise) {
                     LOG.debug("flow[" +getName()+"]: on do case");
-
                     wrapper._case.doCase(client,promise);
                 }
             },wrapper._case.getTimeout());
@@ -58,6 +69,17 @@ public abstract class WalkFlow {
                 @Override
                 public void run() {
                     LOG.info("flow[" +getName()+"]: END do case");
+                    task.mService.getHandler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            WalkService service = task.mService;
+                            WalkFlow flow = WalkFlow.this;
+                            if(service!= null && service.walkFlowListener!=null){
+                                service.walkFlowListener.onFinishCase(task,flow,client,_case);
+                            }
+                        }
+                    });
+
                     wrapper._case.onDestroy();
                 }
             });
@@ -65,11 +87,6 @@ public abstract class WalkFlow {
 
         return  promiseBuilder;
     }
-
-
-
-
-
 
 
     private static class CaseWrapper {

@@ -1,6 +1,25 @@
 #@layout()
 #define main()
 <!-- 内容容器 -->
-<h1>很简单的一个网页</h1>
+
+线程个数: #(walkService.getMaxTaskThread())
+<table>
+    <tr>
+        <th> 计划ID</th>
+        <th> 下一个执行时间点</th>
+        <th> 任务名称</th>
+        <th>running</th>
+    </tr>
+#for(schedule : walkService.getWalkFlowScheduleList())
+    <tr>
+        <td> #(schedule.getScheduleId())</td>
+        <td> #(com.juzicool.seo.util.SeoUtils::getNextTimeDesc(schedule.nextRunTime()))</td>
+        <td> #(schedule.getWalkFlowTask().getTaskName())</td>
+        <td> #(schedule.getWalkFlowTask().isRunning())</td>
+
+    </tr>
+#end
+
+</table>
 #end
 
