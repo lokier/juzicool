@@ -57,8 +57,9 @@ public class PromiseExecutor {
 
     public void setMaxThreadSize(int maxThreadSize) {
         this.maxThreadSize = maxThreadSize;
-        if(mHander!= null){
-            mHander.post(new Runnable() {
+        Handler h = mHander;
+        if(h!= null){
+            h.post(new Runnable() {
                 @Override
                 public void run() {
                     dispatch();
@@ -176,10 +177,10 @@ public class PromiseExecutor {
 
     private void dispatch(){
         synchronized (this) {
-            int caseSize = promises.size();
-            int threadSize = threadList.size();
+            int caseSize = promises.size(); //待处理
+            int threadSize = threadList.size();  //当前运行线程个数
             int idleThreadSize = maxThreadSize - threadSize;
-            if (idleThreadSize > 0) {
+            if (idleThreadSize > 0 && caseSize >0) {
                 int createTheadSize = Math.min(idleThreadSize, caseSize);
                 for(int i = 0;i < createTheadSize;i++){
                     PromiseThead thead = new PromiseThead();
