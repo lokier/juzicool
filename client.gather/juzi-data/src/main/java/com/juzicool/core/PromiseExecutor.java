@@ -165,9 +165,9 @@ public class PromiseExecutor {
         synchronized (PromiseExecutor.this){
             //优先继续执行
             if(priority){
-                promises.addLast(promise);
-            }else{
                 promises.addFirst(promise);
+            }else{
+                promises.addLast(promise);
             }
         }
         dispatch();

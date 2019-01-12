@@ -2,7 +2,6 @@ package com.juzicoo.ipservcie;
 
 import com.juzicoo.ipservcie.source.www89ipcn;
 import com.juzicool.core.Handler;
-import com.juzicool.core.Looper;
 import com.juzicool.core.Promise;
 import com.juzicool.core.PromiseExecutor;
 import org.slf4j.Logger;
@@ -354,14 +353,32 @@ public class IPservcie {
             if(mCahceList.containsKey(ip)){
                 return;
             }
-            System.out.println("[start test ip:]"+ ip);
-            mCounter.incrementAndGet();
-            long start = System.currentTimeMillis();
             Promise promise =  getIPTester().checkProxyIp(ip,port);
-            System.out.println("[end test ip:]"+ ip +" ,port" + port +", spendTime: " + (System.currentTimeMillis() - start) +", 还剩下：" + mCounter.decrementAndGet());
 
             if(promise!=null){
-                promise.resolve(new Promise.RunFunc() {
+
+        /*        final ArrayList<Long> rets = new ArrayList<>();
+
+                promise.first(new Runnable() {
+                    @Override
+                    public void run() {
+                        mCounter.incrementAndGet();
+
+                        System.out.println("[start test ip:]"+ ip);
+                        rets.add(System.currentTimeMillis());
+                    }
+                });
+
+                promise.finalFunc(new Promise.RunFunc() {
+                    @Override
+                    public void run(Promise promise) {
+                        long start = rets.get(0);
+                        System.out.println("[end test ip:]"+ ip +" ,port" + port +", spendTime: " + (System.currentTimeMillis() - start) +", 还剩下：" + mCounter.decrementAndGet());
+                    }
+                });*/
+
+
+                promise.resolveFunc(new Promise.RunFunc() {
                     @Override
                     public void run(Promise promise) {
                         ProxyIp proxy = new ProxyIp(ip,port);

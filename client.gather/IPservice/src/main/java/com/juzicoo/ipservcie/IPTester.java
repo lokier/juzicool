@@ -4,17 +4,14 @@ import com.juzicool.core.Promise;
 import com.juzicool.core.PromiseException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.HttpContext;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public interface IPTester {
 
@@ -87,15 +84,21 @@ public interface IPTester {
                          httpGet.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.26 Safari/537.36 Core/1.63.6801.400 QQBrowser/10.3.2928.400");
                          httpGet.setConfig(config);
                          try {
-
+                             long startTime = System.currentTimeMillis();
                              final HttpResponse response = client.execute(httpGet);
                              int statuCode = response.getStatusLine().getStatusCode();
-                             if (statuCode == 200)
-                                 promise.reject(null);
-                             else
-                                 promise.accept(null);
-                         }catch (Exception ex){
+
+                             if(System.currentTimeMillis() - startTime < timeoutMillion) {
+                                 if (statuCode == 200){
+                                     promise.accept(null);
+                                     return;
+                                 }
+
+                             }
+
                              promise.reject(null);
+                         }catch (Exception ex){
+                             promise.rejectFunc(null);
                          }
                      }
                  },timeoutMillion);
@@ -116,7 +119,7 @@ public interface IPTester {
                      }
                  };
 
-                 builder.then(closeRunnable).reject(new Promise.RunFunc() {
+                 builder.then(closeRunnable).rejectFunc(new Promise.RunFunc() {
                      @Override
                      public void run(Promise promise) {
                          if(promise.getRejectError() instanceof PromiseException){

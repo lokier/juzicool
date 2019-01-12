@@ -47,7 +47,7 @@ public class ZhifuFlow1 extends WalkFlow {
                 pormise.accept(null);
 
             } catch (IOException e) {
-                pormise.reject(null);
+                pormise.rejectFunc(null);
                 return;
             }
 

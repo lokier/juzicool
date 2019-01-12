@@ -168,7 +168,7 @@ public abstract class WalkFlowTask {
         walkFlow.createPromise(builder,this,walkClient);
 
         //flow finish
-        builder.finall(new Promise.RunFunc() {
+        builder.finalFunc(new Promise.RunFunc() {
             @Override
             public void run(final Promise promise) {
 

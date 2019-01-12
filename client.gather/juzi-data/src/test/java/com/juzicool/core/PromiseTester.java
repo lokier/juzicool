@@ -64,7 +64,7 @@ public class PromiseTester {
         promise.then(new Promise.RunFunc() {
             @Override
             public void run(Promise promise) {
-                //promise.resolve()
+                //promise.resolveFunc()
                 rets.add(o1.set(new Long(System.currentTimeMillis())));
                 System.out.println("r0:" + o1.args.toString());
 
@@ -97,14 +97,14 @@ public class PromiseTester {
                 System.out.println("r2:" +o4.args.toString());
 
             }
-        }).resolve(new Promise.RunFunc() {
+        }).resolveFunc(new Promise.RunFunc() {
             @Override
             public void run(Promise promise) {
                 rets.add(o5.set(new Long(System.currentTimeMillis())));
                 System.out.println("r3");
 
             }
-        }).reject(new Promise.RunFunc() {
+        }).rejectFunc(new Promise.RunFunc() {
             @Override
             public void run(Promise promise) {
                 rets.add(o6.set(new Long(System.currentTimeMillis())));
@@ -165,7 +165,7 @@ public class PromiseTester {
         final Obj o3 = new Obj();
         final ArrayList rets = new ArrayList();
 
-        promiseBuilder.resolve(new Promise.RunFunc() {
+        promiseBuilder.resolveFunc(new Promise.RunFunc() {
             @Override
             public void run(Promise promise) {
                 o1.args = new Long(System.currentTimeMillis());
@@ -173,7 +173,7 @@ public class PromiseTester {
             }
         });
 
-        promiseBuilder.finall(new Promise.RunFunc() {
+        promiseBuilder.finalFunc(new Promise.RunFunc() {
             @Override
             public void run(Promise promise) {
                 o2.args = new Long(System.currentTimeMillis());
@@ -216,20 +216,20 @@ public class PromiseTester {
                 promise.accept(new Object());
             }
         },3000).delay(1000)
-                .reject(new Promise.RunFunc() {
+                .rejectFunc(new Promise.RunFunc() {
                     @Override
                     public void run(Promise promise) {
                         c3.args = new Long(System.currentTimeMillis());
                         rets.add(c3);
                     }
-                }).resolve(new Promise.RunFunc() {
+                }).resolveFunc(new Promise.RunFunc() {
                     @Override
                     public void run(Promise promise) {
                         Object data = promise.getResolveData();
                         c4.args = new Long(System.currentTimeMillis());
                         rets.add(c4);
                     }
-                }).finall( new Promise.RunFunc() {
+                }).finalFunc(new Promise.RunFunc() {
             @Override
             public void run(Promise promise) {
                 c5.args = new Long(System.currentTimeMillis());
@@ -279,13 +279,13 @@ public class PromiseTester {
                 promise.accept(c5);
             }
         },3000).delay(1000)
-         .reject(new Promise.RunFunc() {
+         .rejectFunc(new Promise.RunFunc() {
             @Override
             public void run(Promise promise) {
                 c3.args = new Long(System.currentTimeMillis());
                 rets.add(c3);
             }
-        }).resolve(new Promise.RunFunc() {
+        }).resolveFunc(new Promise.RunFunc() {
             @Override
             public void run(Promise promise) {
                 Object data = promise.getResolveData();
@@ -337,14 +337,14 @@ public class PromiseTester {
             }
         },2000)
                 .delay(900)
-                .reject(new Promise.RunFunc() {
+                .rejectFunc(new Promise.RunFunc() {
                     @Override
                     public void run(Promise promise) {
                         c3.args = new Long(System.currentTimeMillis());
                         rets.add(c3);
 
                     }
-                }).resolve(new Promise.RunFunc() {
+                }).resolveFunc(new Promise.RunFunc() {
                     @Override
                     public void run(Promise promise) {
                         Object data = promise.getResolveData();
@@ -392,14 +392,14 @@ public class PromiseTester {
             }
         },2000)
                 .delay(900)
-                .reject(new Promise.RunFunc() {
+                .rejectFunc(new Promise.RunFunc() {
                     @Override
                     public void run(Promise promise) {
                         c3.args = new Long(System.currentTimeMillis());
                         rets.add(c3);
 
                     }
-                }).resolve(new Promise.RunFunc() {
+                }).resolveFunc(new Promise.RunFunc() {
                     @Override
                     public void run(Promise promise) {
                         Object data = promise.getResolveData();
@@ -443,18 +443,18 @@ public class PromiseTester {
                 rets.add(c2);
 
                 throw new RuntimeException();
-               // promise.reject(new Object());
+               // promise.rejectFunc(new Object());
             }
         },2000)
                 .delay(900)
-                .reject(new Promise.RunFunc() {
+                .rejectFunc(new Promise.RunFunc() {
                     @Override
                     public void run(Promise promise) {
                         c3.args = new Long(System.currentTimeMillis());
                         rets.add(c3);
 
                     }
-                }).resolve(new Promise.RunFunc() {
+                }).resolveFunc(new Promise.RunFunc() {
                     @Override
                     public void run(Promise promise) {
                         Object data = promise.getResolveData();

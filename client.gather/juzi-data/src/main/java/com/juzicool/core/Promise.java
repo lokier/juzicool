@@ -35,7 +35,7 @@ public class Promise {
 /*    public interface Commit{
         void accept(Object success);
 
-        void reject(Object fail);
+        void rejectFunc(Object fail);
     }*/
 
 
@@ -63,6 +63,11 @@ public class Promise {
          id = IdGanerator.incrementAndGet();
      }
 
+    public Promise first(Runnable runnable){
+        builder.then(runnable,false);
+        return this;
+    }
+
     public Promise then(Runnable runnable){
         builder.then(runnable);
         return this;
@@ -78,17 +83,22 @@ public class Promise {
         return this;
     }
 
-    public Promise reject(RunFunc runFunc){
+    /**
+     * 处理
+     * @param runFunc
+     * @return
+     */
+    public Promise rejectFunc(RunFunc runFunc){
          builder.reject(runFunc);
         return this;
     }
 
-    public Promise resolve(RunFunc runFunc){
+    public Promise resolveFunc(RunFunc runFunc){
         builder.resolve(runFunc);
         return this;
     }
 
-    public Promise finall(RunFunc runFunc) {
+    public Promise finalFunc(RunFunc runFunc) {
         builder.finall(runFunc);
         return this;
     }
@@ -271,13 +281,22 @@ public class Promise {
             this.then(runnable);
         }
 
-        public Builder then(Runnable runnable){
+        public Builder then(Runnable runnable,boolean isAppend){
             Func func = new Func();
             func.needCheckTimeout = false;
             func.delayFunc = 0L;
             func.runnable = runnable;
-            funcList.add(func);
+            if(isAppend){
+                funcList.add(func);
+            }else{
+                funcList.add(0,func);
+            }
+
             return this;
+        }
+
+        public Builder then(Runnable runnable){
+            return then(runnable,true);
         }
 
         public Builder then(RunFunc runnable, long timeoutMillions){
