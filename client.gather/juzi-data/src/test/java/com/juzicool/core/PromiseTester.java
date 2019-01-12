@@ -8,6 +8,11 @@ public class PromiseTester {
 
     private static class Obj{
         Object args = null;
+
+        Obj set(Object args){
+            this.args = args;
+            return Obj.this;
+        }
     }
 
     @Test
@@ -28,6 +33,7 @@ public class PromiseTester {
         PromiseExecutor executor = new PromiseExecutor();
         executor.startup(handler);
 
+        testOKEcCase(executor);
         testEmpytCase(executor);
         testfinanlyCaes(executor);
 
@@ -36,6 +42,109 @@ public class PromiseTester {
 
         testReject1(executor);
         testReject2(executor);
+
+        Assert.assertTrue(executor.getPenddingPromiseSize()==0);
+        Assert.assertTrue(executor.getRunningPromise().length==0);
+
+
+    }
+
+
+    private void testOKEcCase(PromiseExecutor executor){
+
+        final Promise promise = new Promise();
+        final Obj o1 = new Obj();
+        final Obj o2 = new Obj();
+        final Obj o3 = new Obj();
+        final Obj o4 = new Obj();
+        final Obj o5 = new Obj();
+        final Obj o6 = new Obj();
+
+        final ArrayList rets = new ArrayList();
+        promise.then(new Promise.RunFunc() {
+            @Override
+            public void run(Promise promise) {
+                //promise.resolve()
+                rets.add(o1.set(new Long(System.currentTimeMillis())));
+                System.out.println("r0:" + o1.args.toString());
+
+                promise.accept(o1);
+
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                rets.add(o2.set(new Long(System.currentTimeMillis())));
+                System.out.println("r0-1");
+
+                promise.reject(null);
+                try {
+                    Thread.sleep(800);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                rets.add(o3.set(new Long(System.currentTimeMillis())));
+                promise.accept(o1);
+                System.out.println("r1");
+
+            }
+        },5000).delay(1500).then(new Runnable() {
+            @Override
+            public void run() {
+                rets.add(o4.set(new Long(System.currentTimeMillis())));
+                System.out.println("r2:" +o4.args.toString());
+
+            }
+        }).resolve(new Promise.RunFunc() {
+            @Override
+            public void run(Promise promise) {
+                rets.add(o5.set(new Long(System.currentTimeMillis())));
+                System.out.println("r3");
+
+            }
+        }).reject(new Promise.RunFunc() {
+            @Override
+            public void run(Promise promise) {
+                rets.add(o6.set(new Long(System.currentTimeMillis())));
+
+            }
+        });
+
+        PCase pCase = new PCase();
+        pCase.promise = promise;
+        pCase.assertRunnable = new Runnable() {
+            @Override
+            public void run() {
+                promise.waitToFinished();
+
+                Assert.assertTrue(promise.getStatus() == Promise.Status.RESOLVED);
+                System.out.println("szie : " + rets.size());
+
+                long spendTime1 = (Long)o4.args  - (Long)o1.args;
+                System.out.println("spendTime : " + spendTime1);
+                long spendTime2 = (Long)o5.args  - (Long)o4.args;
+
+                Assert.assertTrue(spendTime1>= 1500);
+
+                Assert.assertTrue(rets.size() == 5);
+                Assert.assertTrue(rets.get(0) ==o1);
+                Assert.assertTrue(rets.get(1) ==o2);
+                Assert.assertTrue(rets.get(2) ==o3);
+                Assert.assertTrue(rets.get(3) ==o4);
+                Assert.assertTrue(rets.get(4) ==o5);
+
+
+                //Assert.assertTrue(spendTime2>= 0 && spendTime2 <=100);
+
+                // Assert.assertTrue(rets.size() == 4);
+            }
+        };
+
+
+        executor.submit(promise);
+        pCase.assertRunnable.run();
 
     }
 

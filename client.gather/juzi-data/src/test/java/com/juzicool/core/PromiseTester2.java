@@ -9,6 +9,11 @@ public class PromiseTester2 {
 
     private static class Obj{
         Object args = null;
+
+        Obj set(Object args){
+            this.args = args;
+            return this;
+        }
     }
 
     @Test
@@ -28,14 +33,14 @@ public class PromiseTester2 {
 
         PromiseExecutor executor = new PromiseExecutor();
         executor.startup(handler);
-        executor.setMaxThreadSize(3);
+        executor.setMaxThreadSize(20);
 
         ArrayList<PCase> cases = new ArrayList<>();
         try {
             Random r = new Random(System.currentTimeMillis());
             for(int i = 0; i< 200;i++){
                 PCase pCase;
-                int v = r.nextInt(4);
+                int v = r.nextInt(5);
                 if(v == 0){
                     pCase = testResoveCaes(executor);
                 }else if(v==1){
@@ -43,6 +48,9 @@ public class PromiseTester2 {
 
                 }else if(v==2){
                     pCase = testReject1(executor);
+
+                }else if(v==4){
+                    pCase = testOKEcCase(executor);
 
                 }else{
                     pCase = testReject2(executor);
@@ -60,9 +68,98 @@ public class PromiseTester2 {
             pCase.assertRunnable.run();
         }
 
+        Assert.assertTrue(executor.getPenddingPromiseSize()==0);
+        Assert.assertTrue(executor.getRunningPromise().length==0);
 
 
     }
+
+
+    private PCase testOKEcCase(PromiseExecutor executor){
+
+        final Promise promise = new Promise();
+        final Obj o1 = new Obj();
+        final Obj o2 = new Obj();
+        final Obj o3 = new Obj();
+        final Obj o4 = new Obj();
+        final Obj o5 = new Obj();
+        final Obj o6 = new Obj();
+
+        final ArrayList rets = new ArrayList();
+        promise.then(new Promise.RunFunc() {
+            @Override
+            public void run(Promise promise) {
+                //promise.resolve()
+                rets.add(o1.set(new Long(System.currentTimeMillis())));
+                promise.accept(o1);
+
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                rets.add(o2.set(new Long(System.currentTimeMillis())));
+                promise.reject(null);
+                try {
+                    Thread.sleep(800);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                rets.add(o3.set(new Long(System.currentTimeMillis())));
+                promise.accept(o1);
+            }
+        },5000).delay(1500).then(new Runnable() {
+            @Override
+            public void run() {
+                rets.add(o4.set(new Long(System.currentTimeMillis())));
+
+            }
+        }).resolve(new Promise.RunFunc() {
+            @Override
+            public void run(Promise promise) {
+                rets.add(o5.set(new Long(System.currentTimeMillis())));
+
+            }
+        }).reject(new Promise.RunFunc() {
+            @Override
+            public void run(Promise promise) {
+                rets.add(o6.set(new Long(System.currentTimeMillis())));
+
+            }
+        });
+
+        PCase pCase = new PCase();
+        pCase.promise = promise;
+        pCase.assertRunnable = new Runnable() {
+            @Override
+            public void run() {
+                promise.waitToFinished();
+
+                Assert.assertTrue(promise.getStatus() == Promise.Status.RESOLVED);
+                Assert.assertTrue(rets.size() == 5);
+                Assert.assertTrue(rets.get(0) ==o1);
+                Assert.assertTrue(rets.get(1) ==o2);
+                Assert.assertTrue(rets.get(2) ==o3);
+                Assert.assertTrue(rets.get(3) ==o4);
+                Assert.assertTrue(rets.get(4) ==o5);
+
+                long spendTime1 = (Long)o4.args  - (Long)o1.args;
+                System.out.println("spendTime : " + spendTime1);
+                long spendTime2 = (Long)o5.args  - (Long)o4.args;
+
+                Assert.assertTrue(spendTime1>= 1500);
+                //Assert.assertTrue(spendTime2>= 0 && spendTime2 <=100);
+
+                // Assert.assertTrue(rets.size() == 4);
+            }
+        };
+
+
+      return pCase;
+
+    }
+
 
     private PCase testResoveCaes( PromiseExecutor executor){
         final ArrayList rets = new ArrayList();
@@ -335,13 +432,5 @@ public class PromiseTester2 {
         }
     }
 
-    private class PCase {
-
-        Promise promise;
-
-        Runnable assertRunnable;
-
-
-    }
 
 }

@@ -25,8 +25,18 @@ public class Promise {
     }
 
     public interface RunFunc{
+        /***
+         * 注意：方法不要try{}Throwable对象，可以 try Exception.
+         * @param promise
+         */
         void run(Promise promise);
     }
+
+/*    public interface Commit{
+        void accept(Object success);
+
+        void reject(Object fail);
+    }*/
 
 
     private static AtomicInteger IdGanerator = new AtomicInteger(0);
@@ -95,9 +105,6 @@ public class Promise {
         return isAcitive;
     }
 
-    Handler mHandler = null;
-    Runnable rejectOrResovlerCall = null;
-    Runnable runnableTimeout = null;
 
     /*package*/ void destroy(){
         isAcitive = false;
@@ -105,90 +112,77 @@ public class Promise {
         resloveFunc = null;
         finalFunc = null;
         funcList = null;
-        mHandler = null;
-        rejectOrResovlerCall = null;
-        runnableTimeout = null;
+       // mHandler = null;
+       // rejectOrResovlerCall = null;
+       // runnableTimeout = null;
     }
 
-    void prepareAction(Handler handler,Runnable rejectOrResovlerCall,Runnable runnableTimeout ){
-        mHandler = handler;
-        this.rejectOrResovlerCall = rejectOrResovlerCall;
-        this.runnableTimeout = runnableTimeout;
-    }
+    PromiseExecutor.PromiseCommiter commiter = null;
 
     /*pacage*/  synchronized void timeout() {
-        if(mHandler == null){
-            return;
+
+        PromiseExecutor.PromiseCommiter pCommiter = null;
+        synchronized (this){
+            pCommiter = this.commiter;
+            this.commiter = null;
         }
-        Handler h = mHandler;
-        mHandler = null;
-        h.post(new Runnable() {
-            @Override
-            public void run() {
-                if(rejectOrResovlerCall != null){
+
+        if(pCommiter!=null){
+            pCommiter.commit(new Runnable() {
+                @Override
+                public void run() {
                     errorAndStop(new PromiseException("time out"));
-                    rejectOrResovlerCall.run();
                 }
-                if(runnableTimeout != null){
-                    h.removeCallbacks(runnableTimeout);
-                    runnableTimeout = null;
-                }
-            }
-        });
+            });
+        }
 
         return ;
 
     }
 
     public synchronized void reject(Object error){
-        if(mHandler == null){
-            return;
+        PromiseExecutor.PromiseCommiter pCommiter = null;
+        synchronized (this){
+            pCommiter = this.commiter;
+            this.commiter = null;
         }
-        final Handler h = mHandler;
-        mHandler = null;
-        h.post(new Runnable() {
-            @Override
-            public void run() {
-                if(rejectOrResovlerCall != null){
+
+        if(pCommiter!= null){
+            pCommiter.commit(new Runnable() {
+                @Override
+                public void run() {
                     errorAndStop(error);
-                    rejectOrResovlerCall.run();
-                    rejectOrResovlerCall = null;
                 }
-                if(runnableTimeout != null){
-                    h.removeCallbacks(runnableTimeout);
-                    runnableTimeout = null;
-                }
-            }
-        });
+            });
+        }
+
 
         return ;
     }
 
     /**
-     * 传递给下一个值，最终
+     * 传递给下一个值。 执行方法之后，马上停止。
+     *
      * @param data
      */
     public final synchronized void accept(final Object data){
-        if(mHandler == null){
-            return;
-        }
-        final Handler h = mHandler;
-        mHandler = null;
-        h.post(new Runnable() {
-            @Override
-            public void run() {
-                if(rejectOrResovlerCall != null){
-                    success = data;
 
-                   // status = Status.RESOLVED;
-                    rejectOrResovlerCall.run();
+        PromiseExecutor.PromiseCommiter pCommiter = null;
+        synchronized (this){
+            pCommiter = this.commiter;
+            this.commiter = null;
+        }
+
+        if(pCommiter!= null){
+            pCommiter.commit(new Runnable() {
+                @Override
+                public void run() {
+                    success = data;
                 }
-                if(runnableTimeout != null){
-                    h.removeCallbacks(runnableTimeout);
-                    runnableTimeout = null;
-                }
-            }
-        });
+            });
+        }
+
+
         return ;
     }
 

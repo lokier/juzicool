@@ -1,5 +1,7 @@
 package com.juzicool.core;
 
+import jdk.internal.org.objectweb.asm.Handle;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -252,8 +254,7 @@ public class PromiseExecutor {
                             func.doFunc(promise);
                             nextPromise = promise;   //下一次优选执行。
                         } else {
-                            //需要监听是否timeout
-                            //TODO
+
                             monitorTimout = true;
 
                             Runnable timeoutRunnable =  new Runnable() {
@@ -262,26 +263,30 @@ public class PromiseExecutor {
                                     _promise.timeout();
                                 }
                             };
-                            mHander.postDelayed(timeoutRunnable,func.timeout);
-                            promise.prepareAction(mHander, new Runnable() {
+
+                            Runnable afterCommitRunnable =  new Runnable() {
                                 @Override
                                 public void run() {
                                     //放在promise继续执行。
+                                    _promise.commiter = null;
                                     enqueue(_promise,true);
                                 }
-                            },timeoutRunnable);
+                            };
+
+                            promise.commiter = new PromiseCommiter();
+                            promise.commiter.start(mHander,func.timeout,timeoutRunnable,afterCommitRunnable);
                             func.doFunc(promise);
 
                         }
                     }catch (Throwable th){
                         if(!monitorTimout){
                             promise.errorAndStop(th);
-
+                            //下一次优选执行。
+                            nextPromise = promise;
                         }else{
                             promise.reject(th);
                         }
-                        //下一次优选执行。
-                        nextPromise = promise;
+
                     }
                 }else{
                     //执行成功。
@@ -372,7 +377,49 @@ public class PromiseExecutor {
 
     }
 
-    /*pacage*/ static class RunningMonitor {
+    /*pacage*/ static class PromiseCommiter {
+
+        Handler handler;
+        private  boolean isActive = true;
+        private Runnable theTimeoutRunnable = null;
+        private Runnable afterCommitRunnble = null;
+
+        void start(Handler h,long timeout,final Runnable timeoutRunnable,Runnable afterCommitRunnble){
+            handler = h;
+           if(timeoutRunnable == null) {
+               throw  new NullPointerException();
+           }
+            theTimeoutRunnable = timeoutRunnable;
+            this.afterCommitRunnble = afterCommitRunnble;
+            h.postDelayed(timeoutRunnable,timeout);
+        }
+
+         void commit(final Runnable result){
+             Handler h = handler;
+            if(isActive && h!=null){
+                h.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Handler h = handler;
+                        if(isActive&& h!= null){
+                             h.removeCallbacks(theTimeoutRunnable);
+                            isActive = false;
+                            handler = null;
+                            theTimeoutRunnable = null;
+                            if(result!= null){
+                                result.run();
+                            }
+                            if(afterCommitRunnble!=null){
+                                afterCommitRunnble.run();
+                            }
+                            afterCommitRunnble = null;
+                        }
+                    }
+                });
+            }
+
+        }
+
 
 
     }
