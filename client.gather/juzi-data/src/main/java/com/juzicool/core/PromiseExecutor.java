@@ -1,8 +1,5 @@
 package com.juzicool.core;
 
-
-import jdk.internal.org.objectweb.asm.Handle;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -68,10 +65,6 @@ public class PromiseExecutor {
         }
     }
 
-
-    public int getRunningThreadSize(){
-        return threadList.size();
-    }
 
     public boolean isShutdown(){
         return mHander == null;
@@ -376,6 +369,10 @@ public class PromiseExecutor {
             },delay);
 
         }
+
+    }
+
+    /*pacage*/ static class RunningMonitor {
 
 
     }

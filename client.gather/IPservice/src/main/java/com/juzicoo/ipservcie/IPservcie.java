@@ -141,6 +141,10 @@ public class IPservcie {
         return executor.getHandler();
     }
 
+    public PromiseExecutor getPromiseExecutor(){
+        return executor;
+    }
+
     public IPTester getIPTester() {
         if(mIPTester == null){
             mIPTester = new IPTester.DefaultIPTester(this,new String[]{"https://www.baidu.com"});
@@ -201,7 +205,7 @@ public class IPservcie {
          waitWhileCollectFinished();
      }
 
-     private  void waitWhileCollectFinished(){
+     public  void waitWhileCollectFinished(){
          try {
              while (true){
                  synchronized (this){
@@ -216,7 +220,7 @@ public class IPservcie {
          }
      }
 
-     private boolean isCollectFinish(){
+     public boolean isCollectFinish(){
         return mCollectRunnable == null || mCollectRunnable.isFinish;
      }
 

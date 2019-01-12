@@ -6,6 +6,17 @@
 IP_PROXY.DB文件路径: #(ip_proxy_file_path) <br/>
 Proxy个数：#(ipService.getDB().size())<br/>
 
+#if(ipService.isCollectFinish())
+<form action="ipservice?start=true" method="get">
+    <input type="submit" value="采集IP" />
+</form>
+#else
+<form action="ipservice?start=false" method="get">
+
+    <input type="submit" value="停止采集IP" />
+</form>
+#end
+
 <br/><br/>
 <h3>WebWalker</h3>
 <br/>

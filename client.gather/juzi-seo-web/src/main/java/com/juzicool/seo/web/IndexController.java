@@ -10,6 +10,26 @@ import com.juzicool.webwalker.WalkService;
 
 public class IndexController extends BaseController {
 
+
+    public void ipservice(){
+       boolean start =  getParaToBoolean("start",true);
+
+        IPservcie ipService = Services.iPservcie;
+
+        if(start){
+            if(ipService.isCollectFinish()){
+                ipService.requestCollect();
+            }
+        }else{
+            if(!ipService.isCollectFinish()){
+
+            }
+        }
+
+
+        redirect("/index");
+    }
+
     public void index(){
 
         WalkService walkService = Services.walkService;
