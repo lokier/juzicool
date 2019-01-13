@@ -60,6 +60,16 @@ public abstract class WalkFlowTask {
         return mRunningPromise.size();
     }
 
+    private String processText;
+
+
+    public String getProcessText() {
+        return processText;
+    }
+
+    public void setProcessText(String processText) {
+        this.processText = processText;
+    }
 
     private LinkedList<Promise> mRunningPromise = new LinkedList<>();
 

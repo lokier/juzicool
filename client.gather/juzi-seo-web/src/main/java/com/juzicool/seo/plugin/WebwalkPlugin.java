@@ -7,6 +7,8 @@ import com.juzicool.seo.flow.ZhifuFlow1;
 import com.juzicool.seo.flow.ZhifuFlowTask;
 import com.juzicool.webwalker.*;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 public class WebwalkPlugin implements IPlugin {
 
@@ -43,17 +45,24 @@ public class WebwalkPlugin implements IPlugin {
         WalkFlowSchedule schedule = new WalkFlowSchedule(1,startPoint,task);
         service.submit(schedule);
 
+       // final AtomicInteger tot = new AtomicInteger();
 
         service.setWalkFlowListener(new WalkFlowListener() {
+
+            private int totalFlowCount = 0;
+            private int totalFlowSuccess = 0;
+
             @Override
             public void onStartTask(WalkFlowTask task) {
+                totalFlowCount = 0;
+                totalFlowSuccess =0;
                 System.out.println("onStartTask:" + task.getTaskName()+","+task.getTaskId());
             }
 
             @Override
             public void onStartFlow(WalkFlowTask task, WalkFlow flow, WalkClient client) {
                 System.out.println("onStartFlow:" + task.getTaskName()+","+task.getTaskId());
-
+                totalFlowCount++;
             }
 
             @Override
@@ -66,6 +75,12 @@ public class WebwalkPlugin implements IPlugin {
             @Override
             public void onFinishFlow(WalkFlowTask task, WalkFlow flow, WalkClient client, boolean hasError) {
                 System.out.println("onFinishFlow:" + task.getTaskName()+","+task.getTaskId());
+
+                if(!hasError){
+                    totalFlowSuccess++;
+                }
+
+                task.setProcessText(String.format("已處理%d個flow，成功%d個",totalFlowCount,totalFlowSuccess));
 
             }
 

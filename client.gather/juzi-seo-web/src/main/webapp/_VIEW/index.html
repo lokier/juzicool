@@ -31,6 +31,9 @@ Proxy个数：#(ipService.getDB().size())<br/>
         <th> 下一个执行时间点</th>
         <th> 任务名称</th>
         <th>running</th>
+        <th>進度描述</th>
+
+
     </tr>
 #for(schedule : walkService.getWalkFlowScheduleList())
     <tr>
@@ -38,6 +41,9 @@ Proxy个数：#(ipService.getDB().size())<br/>
         <td> #(com.juzicool.seo.util.SeoUtils::getNextTimeDesc(schedule.nextRunTime()))</td>
         <td> #(schedule.getWalkFlowTask().getTaskName())</td>
         <td> #(schedule.getWalkFlowTask().isRunning())</td>
+        <td> #(schedule.getWalkFlowTask().getProcessText())</td>
+
+
 
     </tr>
 #end
