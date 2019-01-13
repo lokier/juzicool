@@ -52,11 +52,15 @@ Proxy个数：#(ipService.getDB().size())<br/>
 
 <table>
     <tr>
+        <th> ID </th>
         <th> 开始时间 </th>
+        <th> 处理描述 </th>
     </tr>
     #for(promise : promiseExecutor.getRunningPromise())
     <tr>
+        <td> #(promise.getId())</td>
         <td> #(com.juzicool.seo.util.SeoUtils::getTimeDesc(promise.getStartTime()))</td>
+        <td> #(promise.getProcessText())</td>
 
 
     </tr>

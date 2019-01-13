@@ -24,7 +24,7 @@ public abstract class WalkFlowTask {
      */
     abstract protected WalkFlow next();
 
-    abstract protected WalkClient createWalkClient();
+    abstract protected WalkClient createWalkClient(WalkFlow flow);
 
     abstract protected void releaseWalkClient(WalkClient client);
 
@@ -92,7 +92,7 @@ public abstract class WalkFlowTask {
                             size = 0;
                         }
                         for(int i= 0; i < size;i++){
-                            dispathNextWalkFlowPromise(false);
+                            dispathNextWalkFlowPromise();
                         }
                     }
                 });
@@ -102,31 +102,11 @@ public abstract class WalkFlowTask {
 
     }
 
-    /*pacage*/ void stop() {
-
-        mService.getPromiseExecutor().submit(new Runnable() {
-            @Override
-            public void run() {
-                //在后台线程执行。
-                onStopInBackground();
-                mService.getHandler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(mService.walkFlowListener!= null){
-                            mService.walkFlowListener.onFinishTask(WalkFlowTask.this);
-                        }
-                        mService = null;
-                    }
-                });
-            }
-        });
-
-    }
 
     /**
      * must run in Looper线程；
      */
-    private void dispathNextWalkFlowPromise(boolean checkStop){
+    private boolean dispathNextWalkFlowPromise(){
         if(Looper.myLooper() == null){
             throw new RuntimeException("must run in looper thread");
         }
@@ -134,22 +114,19 @@ public abstract class WalkFlowTask {
         //在后台线程里面执行。
         final WalkFlow walkFlow = next();
         if(walkFlow == null){
-            LOG.debug("createPromise null, is Stop");
-            if(checkStop){
-                stop();
-            }
-            return ;
+            LOG.debug("createPromise null, not any more");
+            return false;
         }
         Promise promise = createPromise(walkFlow);
         mRunningPromise.add(promise);
         mService.getPromiseExecutor().submit(promise);
-
+        return true;
     }
 
 
     private Promise createPromise(WalkFlow walkFlow ){
 
-        final WalkClient walkClient = createWalkClient();
+        final WalkClient walkClient = createWalkClient(walkFlow);
 
         LOG.info("dispatch  walkFlow: " + walkFlow.getName());
         Promise builder = new Promise();
@@ -177,11 +154,32 @@ public abstract class WalkFlowTask {
                     @Override
                     public void run() {
                         releaseWalkClient(walkClient);
+                       // int oldSize =
                         mRunningPromise.remove(promise);
                         if(mService.walkFlowListener!=null){
                             mService.walkFlowListener.onFinishFlow(WalkFlowTask.this,walkFlow,walkClient,hasError);
                         }
-                        dispathNextWalkFlowPromise(true);
+                        boolean hasNew = dispathNextWalkFlowPromise();
+
+                        //整個task 停止
+                        if(!hasNew && mRunningPromise.size() == 0){
+                            mService.getPromiseExecutor().submit(new Runnable() {
+                                @Override
+                                public void run() {
+                                    //在后台线程执行。
+                                    onStopInBackground();
+                                }
+                            });
+                            mService.getHandler().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if(mService.walkFlowListener!= null){
+                                        mService.walkFlowListener.onFinishTask(WalkFlowTask.this);
+                                    }
+                                    mService = null;
+                                }
+                            });
+                        }
                     }
                 });
 

@@ -57,11 +57,25 @@ public class Promise {
      long elaseRealTime = 0L;  //消耗真实时间（实在在的运行时间）
      long startTime = 0L;
      long endTime = 0L;
+     private String processText = "";
+
      private Builder builder = new Builder();
 
      public Promise(){
          id = IdGanerator.incrementAndGet();
      }
+
+    public String getProcessText() {
+        return processText;
+    }
+
+    public void setProcessText(String processText) {
+        this.processText = processText;
+    }
+
+    public int getId() {
+        return id;
+    }
 
     public Promise first(Runnable runnable){
         builder.then(runnable,false);
@@ -114,6 +128,7 @@ public class Promise {
     public boolean isActive() {
         return isAcitive;
     }
+
 
 
     /*package*/ void destroy(){

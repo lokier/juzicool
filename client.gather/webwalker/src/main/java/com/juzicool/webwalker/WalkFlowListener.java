@@ -9,9 +9,7 @@ public interface WalkFlowListener {
 
     void onStartFlow(WalkFlowTask task,WalkFlow flow,WalkClient client);
 
-    void onStartCase(WalkFlowTask task,WalkFlow flow,WalkClient client,  WalkCase _case);
-
-    void onFinishCase(WalkFlowTask task,WalkFlow flow,WalkClient client,WalkCase _case);
+    void onDoCase(WalkFlowTask task,WalkFlow flow,WalkClient client, WalkCase _case);
 
     void onFinishFlow(WalkFlowTask task,WalkFlow flow,WalkClient client,boolean hasError);
 

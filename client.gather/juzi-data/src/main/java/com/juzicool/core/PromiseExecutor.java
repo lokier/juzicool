@@ -1,7 +1,5 @@
 package com.juzicool.core;
 
-import jdk.internal.org.objectweb.asm.Handle;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -310,10 +308,6 @@ public class PromiseExecutor {
         }
 
         void finnlayPromise(final Promise promise) {
-            Handler h = mHander;
-            if (h == null) {
-                return;
-            }
 
             if (promise.status == Promise.Status.REJECT) {
                 if (promise.rejectFunc != null) {
@@ -335,8 +329,6 @@ public class PromiseExecutor {
                     runWithoutExcpetion(runFunc, promise);
                 }
             }
-
-
 
             promise.destroy();
             //标记结束时间

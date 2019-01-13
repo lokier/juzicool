@@ -43,7 +43,7 @@ public class DefaultWalkFlowTask extends WalkFlowTask{
     }
 
     @Override
-    protected WalkClient createWalkClient() {
+    protected WalkClient createWalkClient(WalkFlow flow) {
         return WalkClient.build();
     }
 

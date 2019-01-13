@@ -17,20 +17,6 @@ public abstract class WalkCase  {
 
 
     /**
-     * 创建
-     */
-    protected void onCreate(WalkClient client){
-        mClient = client;
-    }
-
-    /**
-     * 销毁
-     */
-    protected void onDestroy(){
-        mClient = null;
-    }
-
-    /**
      * 中途取消执行。
      */
     protected void onCancel(){
@@ -58,16 +44,7 @@ public abstract class WalkCase  {
         public void onCancel() {
 
         }
-
-        @Override
-        public void onCreate(WalkClient client) {
-
-        }
-
-        @Override
-        public void onDestroy() {
-
-        }
+        
 
 
     }

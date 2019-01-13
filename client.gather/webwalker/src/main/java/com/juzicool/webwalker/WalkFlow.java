@@ -4,6 +4,8 @@ import com.juzicool.core.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -11,6 +13,8 @@ public abstract class WalkFlow {
     public static Logger LOG = LoggerFactory.getLogger(WalkFlow.class);
 
     Queue<CaseWrapper> caseQueue = new LinkedList<>();
+
+    final public HashMap<String,Object> args = new HashMap();
 
     protected WalkFlow addCase(WalkCase _case, long delay) {
         CaseWrapper wrapper = new CaseWrapper();
@@ -37,52 +41,24 @@ public abstract class WalkFlow {
 
             final WalkCase _case = wrapper._case;
 
-            promiseBuilder.then(new Runnable() {
-                @Override
-                public void run() {
-                    LOG.debug("flow[" +getName()+"]: START do case");
-                    wrapper._case.onCreate(client);
-
-                    //fire case start event;
-                    task.mService.getHandler().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            WalkService service = task.mService;
-                            WalkFlow flow = WalkFlow.this;
-                            if(service!= null && service.walkFlowListener!=null){
-                                service.walkFlowListener.onStartCase(task,flow,client,_case);
-                            }
-                        }
-                    });
-                }
-            });
-
             promiseBuilder.then(new Promise.RunFunc() {
                 @Override
                 public void run(Promise promise) {
                     LOG.debug("flow[" +getName()+"]: on do case");
-                    wrapper._case.doCase(client,promise);
-                }
-            },wrapper._case.getTimeout());
-
-            promiseBuilder.then(new Runnable() {
-                @Override
-                public void run() {
-                    LOG.info("flow[" +getName()+"]: END do case");
                     task.mService.getHandler().post(new Runnable() {
                         @Override
                         public void run() {
                             WalkService service = task.mService;
                             WalkFlow flow = WalkFlow.this;
                             if(service!= null && service.walkFlowListener!=null){
-                                service.walkFlowListener.onFinishCase(task,flow,client,_case);
+                                service.walkFlowListener.onDoCase(task,flow,client,_case);
                             }
                         }
                     });
-
-                    wrapper._case.onDestroy();
+                    wrapper._case.doCase(client,promise);
                 }
-            });
+            },wrapper._case.getTimeout());
+
         }
 
         return  promiseBuilder;

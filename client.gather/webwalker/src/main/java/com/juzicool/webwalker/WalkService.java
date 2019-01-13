@@ -67,6 +67,9 @@ public class WalkService {
      */
     public void setMaxTaskThread(int size) {
         this.maxTaskThread = size;
+        if(promiseExecutor!=null){
+            promiseExecutor.setMaxThreadSize(size);
+        }
     }
 
     public int getMaxTaskThread() {
@@ -174,6 +177,7 @@ public class WalkService {
                         }
                     }
                     promiseExecutor = new PromiseExecutor();
+                    promiseExecutor.setMaxThreadSize(maxTaskThread);
                     promiseExecutor.startup(mHandler);
                     mHandler.postDelayed(checkStatusTimerRunnable,600);
                 }

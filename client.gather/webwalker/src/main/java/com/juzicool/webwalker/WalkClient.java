@@ -45,6 +45,10 @@ public class WalkClient {
         return mWebClient;
     }
 
+    public void setWebClient(WebClient client){
+        mWebClient = client;
+    }
+
     public void despose(){
 
     }

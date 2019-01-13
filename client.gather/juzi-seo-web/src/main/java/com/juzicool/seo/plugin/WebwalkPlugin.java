@@ -4,6 +4,7 @@ import com.jfinal.plugin.IPlugin;
 import com.juzicool.seo.AppConstant;
 import com.juzicool.seo.Services;
 import com.juzicool.seo.flow.ZhifuFlow1;
+import com.juzicool.seo.flow.ZhifuFlowTask;
 import com.juzicool.webwalker.*;
 
 
@@ -16,7 +17,7 @@ public class WebwalkPlugin implements IPlugin {
     public boolean start() {
         me = new WalkService();
 
-        Integer maxThreadSize = AppPlugin.me.getConfigDB().KV().get(AppConstant.Config.MAX_THREAD_NUMB,10);
+        Integer maxThreadSize = AppPlugin.me.getConfigDB().KV().get(AppConstant.Config.MAX_THREAD_NUMB,20);
 
         me.setMaxTaskThread(maxThreadSize);
         me.prepare(); // 准备工作
@@ -31,13 +32,15 @@ public class WebwalkPlugin implements IPlugin {
     }
 
     private void prepareTask(WalkService service){
-        StartPoint startPoint = StartPoint.Bulider.bySeconds(System.currentTimeMillis() + 30*1000,20*60 * 1000);
+        StartPoint startPoint = StartPoint.Bulider.bySeconds(System.currentTimeMillis() + 10*1000,20*60 * 1000);
 
-        DefaultWalkFlowTask flowTask = new DefaultWalkFlowTask(1);
+       /* DefaultWalkFlowTask flowTask = new DefaultWalkFlowTask(1);
         flowTask.setTaskName("ATest-Task");
-        flowTask.addWalkFlow(new ZhifuFlow1());
+        flowTask.addWalkFlow(new ZhifuFlow1());*/
 
-        WalkFlowSchedule schedule = new WalkFlowSchedule(1,startPoint,flowTask);
+        ZhifuFlowTask task = new ZhifuFlowTask();
+
+        WalkFlowSchedule schedule = new WalkFlowSchedule(1,startPoint,task);
         service.submit(schedule);
 
 
@@ -54,16 +57,11 @@ public class WebwalkPlugin implements IPlugin {
             }
 
             @Override
-            public void onStartCase(WalkFlowTask task, WalkFlow flow, WalkClient client, WalkCase _case) {
-                System.out.println("onStartCase:" + task.getTaskName()+","+task.getTaskId());
+            public void onDoCase(WalkFlowTask task, WalkFlow flow, WalkClient client, WalkCase _case) {
+                System.out.println("onDoCase:" + task.getTaskName()+","+task.getTaskId());
 
             }
 
-            @Override
-            public void onFinishCase(WalkFlowTask task, WalkFlow flow, WalkClient client, WalkCase _case) {
-                System.out.println("onFinishCase:" + task.getTaskName()+","+task.getTaskId());
-
-            }
 
             @Override
             public void onFinishFlow(WalkFlowTask task, WalkFlow flow, WalkClient client, boolean hasError) {
