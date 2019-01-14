@@ -3,8 +3,8 @@
 	src:url('../fonts/icomoon.eot?npzd73');
 	src:url('../fonts/icomoon.eot?#iefixnpzd73') format('embedded-opentype'),
 		url('../fonts/icomoon.woff?npzd73') format('woff'),
-		url('../fonts/icomoon.ttf?npzd73') format('truetype'),
-		url('../fonts/icomoon.svg?npzd73#icomoon') format('svg');
+		url('../fonts/icomoon.ttf?npzd73') format('truetype');
+		/*url('../fonts/icomoon.svg?npzd73#icomoon') format('svg');*/
 	font-weight: normal;
 	font-style: normal;
 }
