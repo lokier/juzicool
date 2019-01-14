@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.juzicool'
-version '1.0-SNAPSHOT'
+version '1.0.1-beta'
 
 sourceCompatibility = 1.8
 
@@ -51,7 +51,7 @@ gretty {
     // 端口默认8080
     // serlvetContainer 支持 jetty7/8/9，tomcat7/8
     // contextPath 设置根路径，默认为项目名称
-    httpPort = 8088
+    httpPort = 8082
     //serlvetContainer = 'jetty9'
     contextPath = '/'
 }
