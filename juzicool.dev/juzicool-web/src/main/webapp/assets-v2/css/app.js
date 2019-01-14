@@ -1,6 +1,6 @@
 
 var document_title=document.title;$(document).ready(function()
-{$("form[action='']").attr('action',window.location.href);$('img#captcha').attr('src',G_BASE_URL+'/account/captcha/');$('.autosize').autosize();$('.aw-top-nav .navbar-toggle').click(function()
+{$("form[action='']").attr('action',window.location.href);$('.autosize').autosize();$('.aw-top-nav .navbar-toggle').click(function()
 {if($(this).parents('.aw-top-nav').find('.navbar-collapse').hasClass('active'))
 {$(this).parents('.aw-top-nav').find('.navbar-collapse').removeClass('active');}
 else
