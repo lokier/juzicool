@@ -1,13 +1,18 @@
 package com.juzicool.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ *
+ *
  * pending: 初始状态，不是成功或失败状态。
  * running;运行状态，
  * Resolved: 意味着操作成功完成。
  * rejected: 意味着操作失败。
+ *
+ *   Promise是一个异步处理的对象。运行完之后就不应该持有任何资源，状态以及中间结果应该回调方法里面处理。
  *
  * 一旦状态改变，就不会再变，任何时候都可以得到这个结果。Promise 对象的状态改变，
  * 只有两种可能：从 Pending 变为 Resolved 和从 Pending 变为 Rejected。
@@ -157,6 +162,10 @@ public class Promise {
         resloveFunc = null;
         finalFunc = null;
         funcList = null;
+        //intentMap = null;
+        builder = null;
+        success = null;
+        error = null;
        // mHandler = null;
        // rejectOrResovlerCall = null;
        // runnableTimeout = null;
@@ -232,12 +241,18 @@ public class Promise {
     }
 
 
-
-
+    /**
+     * 只有在运行状态才有值
+     * @return
+     */
     public final Object getResolveData(){
         return success;
     }
 
+    /**
+     * 只有在运行状态才有值
+     * @return
+     */
     public final Object getRejectError(){
         return error;
     }

@@ -1,12 +1,8 @@
 package com.juzicool.seo.flow;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
-import com.gargoylesoftware.htmlunit.ProxyConfig;
-import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.*;
 import com.juzicoo.ipservcie.IPPool;
 import com.juzicoo.ipservcie.ProxyIp;
-import com.juzicool.seo.Services;
 import com.juzicool.webwalker.WalkClient;
 import com.juzicool.webwalker.WalkFlow;
 import com.juzicool.webwalker.WalkFlowTask;
@@ -45,6 +41,8 @@ public class ZhifuFlowTask extends WalkFlowTask {
         return null;
     }
 
+    private Cache htmlCache = new Cache();
+
     @Override
     protected WalkClient createWalkClient(WalkFlow flow) {
         ProxyIp proxyIp = (ProxyIp) flow.args.get("IpProxy");
@@ -61,6 +59,9 @@ public class ZhifuFlowTask extends WalkFlowTask {
         client.getOptions().setDoNotTrackEnabled(false);
         client.setAjaxController(new NicelyResynchronizingAjaxController());// 设置Ajax异步
         client.waitForBackgroundJavaScript(20000);
+
+
+        client.setCache(htmlCache);
 
         ProxyConfig proxyConfig = client.getOptions().getProxyConfig();
         proxyConfig.setProxyHost(proxyIp.getHost());

@@ -146,6 +146,8 @@ public abstract class WalkFlowTask {
         builder.then(new Runnable() {
             @Override
             public void run() {
+                LOG.debug("flow[" +getTaskName()+"]: start flow task");
+
                 if(mService.walkFlowListener!=null){
                     mService.walkFlowListener.onStartFlow(WalkFlowTask.this,walkFlow,walkClient);
                 }
@@ -178,8 +180,19 @@ public abstract class WalkFlowTask {
                     @Override
                     public void run() {
                         releaseWalkClient(walkClient);
-                       // int oldSize =
+
+                        if(LOG.isDebugEnabled()){
+                            LOG.debug("flow[" +getTaskName()+"]: finalFunc: running promise size : " + mRunningPromise.size());
+
+                        }
+
+                        // int oldSize =
                         mRunningPromise.remove(promise);
+
+                        if(LOG.isDebugEnabled()) {
+                            LOG.debug("flow[" + getTaskName() + "]: finalFunc: after running promise size : " + mRunningPromise.size());
+                        }
+
                         if(mService.walkFlowListener!=null){
                             mService.walkFlowListener.onFinishFlow(WalkFlowTask.this,walkFlow,walkClient,hasError);
                         }
@@ -188,6 +201,9 @@ public abstract class WalkFlowTask {
 
                         //整個task 停止
                         if(!hasNew && mRunningPromise.size() == 0){
+
+                            LOG.debug("flow[" +getTaskName()+"]: stop flow task");
+
                             mService.getPromiseExecutor().submit(new Runnable() {
                                 @Override
                                 public void run() {
