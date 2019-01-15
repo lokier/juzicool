@@ -1,12 +1,12 @@
 package com.juzicool.seo.flow;
 
+import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.juzicool.core.Promise;
 import com.juzicool.webwalker.WalkCase;
 import com.juzicool.webwalker.WalkClient;
-import java.io.IOException;
 
 public class ZhifuFlow1 extends BaseFlow {
 
@@ -35,8 +35,16 @@ public class ZhifuFlow1 extends BaseFlow {
             try {
                 pormise.sendProcessText(30,"开始访问知乎网站");
                 final HtmlPage page =  client.getPage("https://zhuanlan.zhihu.com/p/54059741");
+                pormise.sendProcessText(30,"打开知乎网站成功！！");
 
-                HtmlAnchor anchor =  page.getAnchorByText("句子酷：女人 男人");
+                HtmlAnchor anchor;
+                try {
+                    anchor = page.getAnchorByText("句子酷：女人 男人");
+                }catch (ElementNotFoundException ex){
+
+                    pormise.reject("不能找到外链入口：\n" + page.asText());
+                    return;
+                }
                 pormise.sendProcessText(30,"开始打开句子酷网站");
                 HtmlPage nextPage =  anchor.click();
 
@@ -50,14 +58,11 @@ public class ZhifuFlow1 extends BaseFlow {
                     return;
                 }else{
                     pormise.sendProcessText(30,"流量失败");
-
                     System.out.println("text ： " + text);
                 }
 
-            } catch (IOException e) {
-               // e.printStackTrace();
-                pormise.sendProcessText(30,"流量失败，有异常");
-                pormise.reject(null);
+            } catch (Exception e) {
+                pormise.reject(e);
                 return;
             }
 

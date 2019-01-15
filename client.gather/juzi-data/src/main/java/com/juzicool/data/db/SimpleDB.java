@@ -26,7 +26,7 @@ public class SimpleDB {
         });
         System.out.println("after batch push , list size : " + db.List().size());
 
-        System.out.println("after batch push , item 4 = (7)  : " + db.list.getPage(0,10).get(4));
+        System.out.println("after batch push , item 4 = (7)  : " + db.list.getPage(0,10,false).get(4));
 
         try {
             Thread.sleep(3);
@@ -42,11 +42,11 @@ public class SimpleDB {
                 new Integer(17),
         });
         System.out.println("after batch push , list size : " + db.List().size());
-        System.out.println("after batch push , item 5 = (13)  : " + db.list.getPage(5,10).get(0));
+        System.out.println("after batch push , item 5 = (13)  : " + db.list.getPage(5,10,false).get(0));
 
         db.List().delete(null,new Date(timeMillis2));
         System.out.println("after batch push , list size (5) : " + db.List().size());
-        System.out.println("after batch push , item 4 = (17)  : " + db.list.getPage(0,7).get(4));
+        System.out.println("after batch push , item 4 = (17)  : " + db.list.getPage(0,7,false).get(4));
 
 
 
@@ -823,6 +823,38 @@ public class SimpleDB {
                     "data=" + data +
                     '}';
         }
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public T getData() {
+            return data;
+        }
+
+        public void setData(T data) {
+            this.data = data;
+        }
+
+        public long getCreateDate() {
+            return createDate;
+        }
+
+        public void setCreateDate(long createDate) {
+            this.createDate = createDate;
+        }
+
+        public long getModifyDate() {
+            return modifyDate;
+        }
+
+        public void setModifyDate(long modifyDate) {
+            this.modifyDate = modifyDate;
+        }
     }
 
 
@@ -1030,8 +1062,10 @@ public class SimpleDB {
             }
         }
 
-        public java.util.List<ListData<T>> getPage(int offset,int size){
-            String sql = "SELECT *  FROM " + LIST_TABLE + " order by " + F_CREATE_DATE+ " asc LIMIT  " +size+ "   OFFSET " + offset;
+        public java.util.List<ListData<T>> getPage(int offset,int size,boolean desc){
+
+            String orderCondition = desc ? " desc ": " asc ";
+            String sql = "SELECT *  FROM " + LIST_TABLE + " order by " + F_CREATE_DATE+orderCondition +" LIMIT  " +size+ "   OFFSET " + offset;
             Statement stmt = null;
             ResultSet rs = null;
             try {

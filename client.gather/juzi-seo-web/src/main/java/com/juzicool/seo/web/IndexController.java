@@ -3,9 +3,14 @@ package com.juzicool.seo.web;
 
 import com.juzicoo.ipservcie.IPservcie;
 import com.juzicool.core.PromiseExecutor;
+import com.juzicool.data.db.SimpleDB;
 import com.juzicool.seo.Services;
+import com.juzicool.seo.db.WorkFlowTaskDB;
+import com.juzicool.seo.model.WorkFlowLog;
 import com.juzicool.webwalker.WalkFlowSchedule;
 import com.juzicool.webwalker.WalkService;
+
+import java.util.List;
 
 
 public class IndexController extends BaseController {
@@ -46,5 +51,21 @@ public class IndexController extends BaseController {
         //Services.iPservcie.
 
         render("index.html");
+    }
+
+    public void walkTask(){
+        int taskID =  getParaToInt("id",-1);
+        if(taskID == -1){
+            renderError(404);
+            return;
+        }
+
+
+        WorkFlowTaskDB db = WorkFlowTaskDB.get(taskID);
+
+        List<SimpleDB.ListData<WorkFlowLog>> logList = db.getLatests();
+
+        setAttr("logList",logList);
+        render("walktask.html");
     }
 }

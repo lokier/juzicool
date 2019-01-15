@@ -1,5 +1,6 @@
 package com.juzicool.seo.flow;
 
+import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -76,13 +77,27 @@ public class InterRandomCase {
 
            // page.
 
-            pormise.setProcessText("在句子酷：输入关键词搜索");
-            HtmlInput input = page.getHtmlElementById("aw-search-query");
+            pormise.sendProcessText(30,"在句子酷：开始输入关键词搜索");
+            HtmlInput input = null;
+
+
+            try {
+                input = page.getHtmlElementById("aw-search-query");
+            }catch (ElementNotFoundException ex){
+
+            }
+
+
             if(input!= null) {
                 input.setTextContent(nextSearchText());
 
 
-                HtmlElement  element =  page.getHtmlElementById("global_search_btns");
+                HtmlElement  element =  null;
+                try {
+                    element = page.getHtmlElementById("global_search_btns");
+                }catch (ElementNotFoundException ex){
+
+                }
                 if(element == null){
                     element =   page.getFirstByXPath("span[class='main-search-btn']");
                 }
@@ -90,22 +105,22 @@ public class InterRandomCase {
 
                 if(element!= null){
                     try {
-                        pormise.setProcessText("在句子酷：输入关键词搜索");
+                        pormise.sendProcessText(30,"在句子酷：输入关键词搜索");
 
                         HtmlPage nextPage =  element.click();
-
                         pormise.accept(null);
+                        return;
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-                pormise.setProcessText("在句子酷找不到提交按钮");
-
+                pormise.sendProcessText(30,"在句子酷找不到提交按钮");
+                pormise.accept(null);
                 return;
             }
-            pormise.setProcessText("在句子酷无法输入关键词搜索");
+            pormise.sendProcessText(30,"在句子酷无法输入关键词搜索");
 
-            pormise.reject(null);
+            pormise.accept("");
 
 
         }

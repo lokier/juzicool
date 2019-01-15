@@ -1,5 +1,6 @@
 package com.juzicool.seo.plugin;
 
+import com.gargoylesoftware.htmlunit.ProxyConfig;
 import com.juzicool.seo.Services;
 import com.juzicool.seo.db.WorkFlowTaskDB;
 import com.juzicool.seo.model.WorkFlowLog;
@@ -33,13 +34,17 @@ public class WakFlowHander implements WalkFlowListener {
     public void onStartFlow(WalkFlowTask task, WalkFlow flow, WalkClient client) {
         System.out.println("onStartFlow:" + task.getTaskName()+","+task.getTaskId());
         totalFlowCount++;
-        StringBuffer sb = new StringBuffer( String.format("[%s]开始flow......\n", currentTimeDesc()));
+        ProxyConfig config = client.getWebClient().getOptions().getProxyConfig();
+        StringBuffer sb = new StringBuffer( String.format("[%s]开始flow【%s】(%s:%d)......\n", currentTimeDesc(),flow.getName(),config.getProxyHost(),config.getProxyPort()));
         walkFlowLogMap.put(flow,sb);
     }
 
     @Override
     public void onDoCase(WalkFlowTask task, WalkFlow flow, WalkClient client, WalkCase _case) {
         System.out.println("onDoCase:" + task.getTaskName()+","+task.getTaskId());
+        StringBuffer sb = walkFlowLogMap.get(flow);
+
+        sb.append(String.format("[%s]onDoCase \n", currentTimeDesc()));
 
     }
 
@@ -60,8 +65,7 @@ public class WakFlowHander implements WalkFlowListener {
             totalFlowSuccess++;
         }
 
-        walkFlowLogMap.remove(flow);
-        final StringBuffer sb = walkFlowLogMap.get(flow);
+        final StringBuffer sb = walkFlowLogMap.remove(flow);
         sb.append(String.format("[%s]结束flow......\n", currentTimeDesc()));
         final Integer taskId = task.getTaskId();
         final WorkFlowLog log = new WorkFlowLog();

@@ -7,6 +7,7 @@ import com.juzicool.seo.model.WorkFlowLog;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 
 public class WorkFlowTaskDB {
 
@@ -43,6 +44,10 @@ public class WorkFlowTaskDB {
 
     public void insert(WorkFlowLog log){
         db.List().insert(new Serializable[]{log});
+    }
+
+    public List<SimpleDB.ListData<WorkFlowLog>> getLatests(){
+        return db.List().getPage(0,20,true);
     }
 
 }

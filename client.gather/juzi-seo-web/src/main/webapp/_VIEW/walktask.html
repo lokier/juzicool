@@ -1,0 +1,24 @@
+#@layout()
+#define main()
+<!-- 内容容器 -->
+
+<table>
+    <tr>
+        <th> 日志</th>
+
+    </tr>
+#for(log : logList)
+    <tr>
+        <td>
+            #(com.juzicool.seo.util.HtmlUtils::toHtml(log.data.detailLog))
+        </td>
+
+
+
+    </tr>
+#end
+</table>
+
+
+#end
+

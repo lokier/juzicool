@@ -32,6 +32,7 @@ Proxy个数：#(ipService.getDB().size())<br/>
         <th> 任务名称</th>
         <th>running</th>
         <th>進度描述</th>
+        <th></th>
 
 
     </tr>
@@ -39,9 +40,10 @@ Proxy个数：#(ipService.getDB().size())<br/>
     <tr>
         <td> #(schedule.getScheduleId())</td>
         <td> #(com.juzicool.seo.util.SeoUtils::getNextTimeDesc(schedule.nextRunTime()))</td>
-        <td> #(schedule.getWalkFlowTask().getTaskName())</td>
+        <td>#(schedule.getWalkFlowTask().getTaskName())</td>
         <td> #(schedule.getWalkFlowTask().isRunning())</td>
         <td> #(schedule.getWalkFlowTask().getProcessText())</td>
+        <td><a href="/walkTask?id=#(schedule.getWalkFlowTask().getTaskId())" target="_blank" >查看</a></td>
 
 
 
@@ -60,13 +62,11 @@ Proxy个数：#(ipService.getDB().size())<br/>
     <tr>
         <th> ID </th>
         <th> 开始时间 </th>
-        <th> 处理描述 </th>
     </tr>
     #for(promise : promiseExecutor.getRunningPromise())
     <tr>
         <td> #(promise.getId())</td>
         <td> #(com.juzicool.seo.util.SeoUtils::getTimeDesc(promise.getStartTime()))</td>
-        <td> #(promise.getProcessText())</td>
 
 
     </tr>

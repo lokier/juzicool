@@ -3,6 +3,7 @@ package com.juzicool.seo.plugin;
 import com.jfinal.plugin.IPlugin;
 import com.juzicool.seo.AppConstant;
 import com.juzicool.seo.Services;
+import com.juzicool.seo.flow.RandomFlowTask;
 import com.juzicool.seo.flow.ZhifuFlowTask;
 import com.juzicool.webwalker.*;
 
@@ -35,7 +36,9 @@ public class WebwalkPlugin implements IPlugin {
 
         ZhifuFlowTask task = new ZhifuFlowTask();
 
-        WalkFlowSchedule schedule = new WalkFlowSchedule(1,startPoint,task);
+        RandomFlowTask rTask = new RandomFlowTask();
+
+        WalkFlowSchedule schedule = new WalkFlowSchedule(1,startPoint,rTask);
         service.submit(schedule);
 
 

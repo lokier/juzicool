@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -60,6 +59,18 @@ public abstract class WalkFlow {
             },wrapper._case.getTimeout());
 
         }
+
+        promiseBuilder.rejectFunc(new Promise.RunFunc() {
+            @Override
+            public void run(Promise promise) {
+                Object error = promise.getRejectError();
+                String errorText = "null";
+                if(error!= null){
+                    errorText = error.toString();
+                }
+                promise.sendProcessText(100,"处理proise失败：" + errorText);
+            }
+        });
 
         return  promiseBuilder;
     }
