@@ -11,6 +11,8 @@ public interface WalkFlowListener {
 
     void onDoCase(WalkFlowTask task,WalkFlow flow,WalkClient client, WalkCase _case);
 
+    void onFlowProgerssChanged(WalkFlowTask task,WalkFlow flow,int progress,String progressText);
+
     void onFinishFlow(WalkFlowTask task,WalkFlow flow,WalkClient client,boolean hasError);
 
     void onFinishTask(WalkFlowTask task);

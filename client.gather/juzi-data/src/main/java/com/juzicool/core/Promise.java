@@ -32,6 +32,11 @@ public class Promise {
         void run(Promise promise);
     }
 
+    public interface ProcessFunc{
+
+        void onProcessChanged(int progress, String progressText);
+    }
+
 /*    public interface Commit{
         void accept(Object success);
 
@@ -46,6 +51,7 @@ public class Promise {
      RunFunc[] rejectFunc;
      RunFunc[] resloveFunc;
      RunFunc[] finalFunc;
+     ProcessFunc[] processFuncs;
 
      Object error = null;
      Object success = null;
@@ -57,20 +63,29 @@ public class Promise {
      long elaseRealTime = 0L;  //消耗真实时间（实在在的运行时间）
      long startTime = 0L;
      long endTime = 0L;
-     private String processText = "";
 
      private Builder builder = new Builder();
 
-     public Promise(){
+    public Promise(){
          id = IdGanerator.incrementAndGet();
      }
 
-    public String getProcessText() {
+  /*  public String getProcessText() {
         return processText;
-    }
+    }*/
 
-    public void setProcessText(String processText) {
-        this.processText = processText;
+    /***
+     * 发送运行状态信息。（只有在运行状态，调用改方法才有效）
+     * @param progerss  0-100，进度条
+     * @param processText  当前进度信息。
+     */
+    public void sendProcessText(int progerss,String processText) {
+        ProcessFunc[] ps = this.processFuncs;
+        if(ps!= null){
+            for(ProcessFunc p: ps){
+                p.onProcessChanged(progerss,processText);
+            }
+        }
     }
 
     public int getId() {
@@ -89,6 +104,11 @@ public class Promise {
 
     public Promise then(RunFunc runnable, long timeoutMillions){
         builder.then(runnable,timeoutMillions);
+        return this;
+    }
+
+    public Promise processFunc(ProcessFunc func){
+        builder.then(func);
         return this;
     }
 
@@ -287,6 +307,7 @@ public class Promise {
         private ArrayList<RunFunc> rejectFunc = new ArrayList<>(3);
         private ArrayList<RunFunc> resolveFunc = new ArrayList<>(3);
         private ArrayList<RunFunc> finalRunc = new ArrayList<>(3);
+        private ArrayList<ProcessFunc> processFuncs = new ArrayList<>(3);
 
         public Builder(){
 
@@ -307,6 +328,11 @@ public class Promise {
                 funcList.add(0,func);
             }
 
+            return this;
+        }
+
+        public Builder then(ProcessFunc func){
+            processFuncs.add(func);
             return this;
         }
 
@@ -358,6 +384,7 @@ public class Promise {
             promise.rejectFunc = rejectFuncs;
             promise.resloveFunc = resolveFuncs;
             promise.finalFunc = finalRuncs;
+            promise.processFuncs = this.processFuncs.toArray(new ProcessFunc[processFuncs.size()]);
            // promise.set(funcs,resolveFuncs,rejectFuncs,finalRuncs);
         }
 

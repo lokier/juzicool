@@ -152,12 +152,26 @@ public abstract class WalkFlowTask {
             }
         });
 
+
         walkFlow.createPromise(builder,this,walkClient);
+
+
+        //处理进程。
+        builder.processFunc(new Promise.ProcessFunc() {
+            @Override
+            public void onProcessChanged(int progress, String progressText) {
+                WalkService service = mService;
+                if(service!= null&& service.walkFlowListener!=null){
+                    service.walkFlowListener.onFlowProgerssChanged(WalkFlowTask.this,walkFlow,progress,progressText);
+                }
+            }
+        });
 
         //flow finish
         builder.finalFunc(new Promise.RunFunc() {
             @Override
             public void run(final Promise promise) {
+
 
                 final boolean hasError = promise.getStatus() == Promise.Status.REJECT;
                 mService.getHandler().post(new Runnable() {
@@ -169,6 +183,7 @@ public abstract class WalkFlowTask {
                         if(mService.walkFlowListener!=null){
                             mService.walkFlowListener.onFinishFlow(WalkFlowTask.this,walkFlow,walkClient,hasError);
                         }
+
                         boolean hasNew = dispathNextWalkFlowPromise();
 
                         //整個task 停止

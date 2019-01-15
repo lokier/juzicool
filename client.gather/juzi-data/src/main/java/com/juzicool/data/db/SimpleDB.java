@@ -3,6 +3,7 @@ package com.juzicool.data.db;
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class SimpleDB {
@@ -12,10 +13,49 @@ public class SimpleDB {
 
         SimpleDB db = new SimpleDB();
         db.openFile(sqlFile);
+
+        System.out.println("simple LIST ===========================");
+
+        long timeMillis1 = System.currentTimeMillis();
+        db.List().insert(new Serializable[]{
+                new Integer(3),
+                new Integer(4),
+                new Integer(5),
+                new Integer(6),
+                new Integer(7),
+        });
+        System.out.println("after batch push , list size : " + db.List().size());
+
+        System.out.println("after batch push , item 4 = (7)  : " + db.list.getPage(0,10).get(4));
+
+        try {
+            Thread.sleep(3);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        long timeMillis2 = System.currentTimeMillis();
+        db.List().insert(new Serializable[]{
+                new Integer(13),
+                new Integer(14),
+                new Integer(15),
+                new Integer(16),
+                new Integer(17),
+        });
+        System.out.println("after batch push , list size : " + db.List().size());
+        System.out.println("after batch push , item 5 = (13)  : " + db.list.getPage(5,10).get(0));
+
+        db.List().delete(null,new Date(timeMillis2));
+        System.out.println("after batch push , list size (5) : " + db.List().size());
+        System.out.println("after batch push , item 4 = (17)  : " + db.list.getPage(0,7).get(4));
+
+
+
+
+        System.out.println("simple KV ===========================");
+
         db.KV().put("name","sser");
         db.KV().put("name2",234);
         db.KV().put("name2",234);
-        System.out.println("simple KV ===========================");
 
         System.out.println("name = : " +  db.KV().get("name","error!!!"));
         System.out.println("name2 = : " +  db.KV().get("name2",new Integer(-1)));
@@ -93,6 +133,9 @@ public class SimpleDB {
         System.out.println("after poll(100) , queue size : " + db.Queue().size());
 
 
+
+
+
         db.close();
     }
 
@@ -100,6 +143,7 @@ public class SimpleDB {
     private  String jdbcUrl;
     private KV mKv;
     private Queue mQueue;
+    private List list;
     private Connection mConnection = null;
 
     private ArrayList<Queue> extraQueues = new ArrayList();
@@ -113,6 +157,7 @@ public class SimpleDB {
         jdbcUrl = "jdbc:sqlite:" +file.getAbsolutePath();
         try {
             mQueue =new Queue("simple_db_queue",createConnection());
+            list = new List("simple_db_list",createConnection());
             mKv = new KV(createConnection());
            // mKv.prepare();
         } catch (SQLException e) {
@@ -128,6 +173,10 @@ public class SimpleDB {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List List(){
+        return list;
     }
 
     public Queue Queue(){
@@ -282,7 +331,7 @@ public class SimpleDB {
             }
         }
 
-        public synchronized void put(List<String> keys, Serializable value){
+        public synchronized void put(java.util.List<String> keys, Serializable value){
             String sql = "INSERT or replace INTO "+TABLE_NAME+"("+KEY+", "+VALUE+") VALUES(?,?)";
             PreparedStatement pstmt = null;
             Connection conn = mConnection;
@@ -353,7 +402,7 @@ public class SimpleDB {
             }
         }
 
-        public void remove(List<String> keys){
+        public void remove(java.util.List<String> keys){
             String sql = "delete  from " + TABLE_NAME +" where " + KEY +" = ? ";
             PreparedStatement pstmt = null;
             Connection conn = mConnection;
@@ -509,7 +558,7 @@ public class SimpleDB {
             push(data.key,data.priority,data.data);
         }
 
-        public void push(List<SimpleDB.QueueData> list){
+        public void push(java.util.List<SimpleDB.QueueData> list){
             String sql = "INSERT or replace INTO "+QUEUE_TABLE+"("+QUEUE_KEY+", "+PRIORITY+", " +DATA+") VALUES(?,?,?)";
             PreparedStatement pstmt = null;
             Connection conn = mConnection;
@@ -618,19 +667,19 @@ public class SimpleDB {
             return getPeekOrRemove(true);
         }
 
-        public List<QueueData> poll(int size){
+        public java.util.List<QueueData> poll(int size){
             return getPeekOrRemove(true,size);
         }
 
         private synchronized SimpleDB.QueueData getPeekOrRemove(boolean removePeek){
-            List<QueueData> ret = getPeekOrRemove(removePeek,1);
+            java.util.List<QueueData> ret = getPeekOrRemove(removePeek,1);
             if (ret != null && ret.size() > 0) {
                 return ret.get(0);
             }
             return null;
         }
 
-        private synchronized List<QueueData> getPeekOrRemove(boolean removePeek, int size){
+        private synchronized java.util.List<QueueData> getPeekOrRemove(boolean removePeek, int size){
             String sql = "SELECT *  FROM " + QUEUE_TABLE +" ORDER BY "+PRIORITY+" desc limit " +size;
             Statement stmt = null;
             ResultSet rs = null;
@@ -759,6 +808,312 @@ public class SimpleDB {
             e.printStackTrace();
         }
         return bytes;
+    }
+
+    public static class ListData<T extends Serializable> {
+
+        public int id;
+        public T data;
+        public long createDate;
+        public long modifyDate;
+
+        @Override
+        public String toString() {
+            return "ListData{" +
+                    "data=" + data +
+                    '}';
+        }
+    }
+
+
+
+    public static class List<T extends Serializable> {
+
+        private final String F_DATA = "data";
+        private final String F_CREATE_DATE = "createDate";
+        private final String F_MODIFY_DATE = "modifyDate";
+        private final String F_ID = "id";
+
+        private final String LIST_TABLE;
+        private Connection mConnection;
+
+        private List(String tableName, Connection connection) {
+            LIST_TABLE = tableName;
+            mConnection = connection;
+            String sql = "CREATE TABLE IF NOT EXISTS " + LIST_TABLE + " ("
+                    + F_ID + "  integer  PRIMARY KEY AUTOINCREMENT,\n"
+                    + F_DATA + " BLOB,"
+                    + F_MODIFY_DATE + " long ," + F_CREATE_DATE + " long);";
+            try {
+                Statement stmt = mConnection.createStatement();
+                stmt.execute(sql);
+                stmt.closeOnCompletion();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        public void insert(T[] list){
+            String sql = "INSERT or replace INTO "+LIST_TABLE+"("+F_DATA+", " +F_MODIFY_DATE+", " +F_CREATE_DATE+") VALUES(?,?,?)";
+            PreparedStatement pstmt = null;
+            Connection conn = mConnection;
+            try {
+                conn.setAutoCommit(false);
+                pstmt = conn.prepareStatement(sql);
+
+                //ListData[] retLis = new ListData[list.length];
+                for(Serializable data : list){
+                    long time =System.currentTimeMillis();
+                    pstmt.setBytes(1, objectToByte(data));
+                    pstmt.setLong(2, time);
+                    pstmt.setLong(3, time);
+                    pstmt.addBatch();
+                }
+                pstmt.executeBatch();
+                conn.commit();
+
+            } catch (SQLException e) {
+                try {
+                    conn.rollback();
+                }catch (Exception ex){
+
+                }
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (pstmt != null) {
+                        pstmt.close();
+                    }
+                }catch (Exception ex){
+
+                }
+                try {
+                    conn.setAutoCommit(true);
+
+                }catch (Exception ex){
+
+                }
+
+            }
+            return;
+        }
+
+
+        public void update(ListData<T>[] datas){
+            String sql = "update  "+LIST_TABLE+" set "+F_DATA+" = ?,"+F_MODIFY_DATE+"=? where "+F_ID+" = ?";
+            PreparedStatement pstmt = null;
+            Connection conn = mConnection;
+            try {
+                conn.setAutoCommit(false);
+                pstmt = conn.prepareStatement(sql);
+                for(ListData data : datas) {
+                    pstmt.setBytes(1, objectToByte(data.data));
+                    pstmt.setLong(2,System.currentTimeMillis());
+                    pstmt.setInt(3, data.id);
+
+                    pstmt.addBatch();
+                }
+
+                pstmt.executeBatch();
+                conn.commit();
+
+            } catch (SQLException e) {
+                try {
+                    conn.rollback();
+                }catch (Exception ex){
+
+                }
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (pstmt != null) {
+                        pstmt.close();
+                    }
+                }catch (Exception ex){
+
+                }
+                try {
+                    conn.setAutoCommit(true);
+                }catch (Exception ex){
+
+                }
+            }
+        }
+
+
+        /**
+         * 删除之前的记录
+         * @param beforeModify
+         * @param beforeCreate
+         */
+        public void delete(Date beforeModify, Date beforeCreate) {
+
+            if(beforeCreate == null && beforeModify == null){
+                throw new RuntimeException();
+            }
+
+            String condition = "";
+            boolean needAnd = false;
+            if(beforeCreate!= null){
+                condition = F_CREATE_DATE + " < " + beforeCreate.getTime();
+                needAnd = true;
+            }
+
+            if(beforeModify != null) {
+                if(needAnd){
+                    condition += " and";
+                }
+
+                condition += " " + F_MODIFY_DATE +" < " + beforeModify.getTime();
+
+            }
+
+            String sql = "delete from " + LIST_TABLE + " where " + condition;
+
+            deleteBySql(sql);
+
+        }
+
+        public void delete(int[] ids) {
+
+            if(ids == null || ids.length == 0){
+                return;
+            }
+
+            String sql = "delete from "+LIST_TABLE+" where "+F_ID+" in (";
+
+            StringBuffer sb = new StringBuffer(sql);
+            sb.append(ids[0]);
+            for(int i=1;i<ids.length;i++) {
+                sb.append(","+ids[i]);
+            }
+            sb.append(")");
+
+            sql = sb.toString();
+
+            deleteBySql(sql);
+        }
+
+        private void deleteBySql(String sql){
+            Statement pstmt = null;
+            try {
+                Connection conn = mConnection;
+                pstmt = conn.createStatement();
+                pstmt.execute(sql);
+                //pstmt = conn.prepareStatement(sql);
+                // pstmt.executeUpdate();
+                // conn.commit();
+            } catch (SQLException e) {
+                Connection conn = mConnection;
+
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+
+                }
+                throw  new RuntimeException(e);
+            }finally {
+                Connection conn = mConnection;
+                try {
+                    conn.setAutoCommit(true);
+                } catch (SQLException e) {
+
+                }
+                try {
+                    if (pstmt != null) {
+                        pstmt.close();
+                    }
+                }catch (Exception ex){
+
+                }
+
+            }
+        }
+
+        public java.util.List<ListData<T>> getPage(int offset,int size){
+            String sql = "SELECT *  FROM " + LIST_TABLE + " order by " + F_CREATE_DATE+ " asc LIMIT  " +size+ "   OFFSET " + offset;
+            Statement stmt = null;
+            ResultSet rs = null;
+            try {
+                Connection conn = mConnection;
+                stmt= conn.createStatement();
+                rs = stmt.executeQuery(sql);
+                ArrayList<ListData<T>> list = new ArrayList<>();
+                // List<String> hostsList = new ArrayList<>();
+                while (rs.next()) {
+                    ListData item = new ListData();
+                    Serializable data = byteToObject(rs.getBytes(F_DATA));
+
+                    item.data = data;
+                    item.createDate = rs.getLong(F_CREATE_DATE);
+                    item.modifyDate = rs.getLong(F_MODIFY_DATE);
+                    item.id = rs.getInt(F_ID);
+
+                    list.add(item);
+                }
+
+                if(list.isEmpty()){
+                    return null;
+                }
+
+                return list;
+            } catch (Exception e) {
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (rs != null) {
+                        rs.close();
+                    }
+                }catch (Exception ex){
+
+                }
+                try {
+                    if (stmt != null) {
+                        stmt.close();
+                    }
+                }catch (Exception ex){
+
+                }
+
+            }
+           // return;
+        }
+
+        public synchronized int size(){
+            String sql = "SELECT COUNT("+F_ID+") FROM "+ LIST_TABLE;
+            Statement stmt = null;
+            ResultSet rs = null;
+            try {
+                Connection conn = mConnection;
+                stmt= conn.createStatement();
+                rs = stmt.executeQuery(sql);
+                // loop through the result set
+                if (rs.next()) {
+
+                    return rs.getInt(1);
+                }
+
+            } catch (Exception e) {
+                throw  new RuntimeException(e);
+            }finally {
+                try {
+                    if (rs != null) {
+                        rs.close();
+                    }
+                }catch (Exception ex){
+
+                }
+                try {
+                    if (stmt != null) {
+                        stmt.close();
+                    }
+                }catch (Exception ex){
+                }
+
+            }
+            return 0;
+        }
+
     }
 
 }

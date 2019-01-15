@@ -34,30 +34,30 @@ public class ZhifuFlow1 extends WalkFlow {
 
             WebClient client = wclient.getWebClient();
             try {
-                pormise.setProcessText("开始访问知乎网站");
+                pormise.sendProcessText(30,"开始访问知乎网站");
                 final HtmlPage page =  client.getPage("https://zhuanlan.zhihu.com/p/54059741");
 
                 HtmlAnchor anchor =  page.getAnchorByText("句子酷：女人 男人");
-                pormise.setProcessText("开始打开句子酷网站");
+                pormise.sendProcessText(30,"开始打开句子酷网站");
                 HtmlPage nextPage =  anchor.click();
 
                 String text =  nextPage.asText();
 
                 if(text.contains("句子酷")){
                     System.err.println("accept!!!!!!!!");
-                    pormise.setProcessText("流量完成");
+                    pormise.sendProcessText(30,"流量完成");
 
                     pormise.accept(null);
                     return;
                 }else{
-                    pormise.setProcessText("流量失败");
+                    pormise.sendProcessText(30,"流量失败");
 
                     System.out.println("text ： " + text);
                 }
 
             } catch (IOException e) {
                // e.printStackTrace();
-                pormise.setProcessText("流量失败，有异常");
+                pormise.sendProcessText(30,"流量失败，有异常");
                 pormise.reject(null);
                 return;
             }

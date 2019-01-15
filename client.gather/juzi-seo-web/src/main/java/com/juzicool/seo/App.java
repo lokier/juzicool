@@ -1,7 +1,7 @@
 package com.juzicool.seo;
 
 import com.jfinal.kit.PathKit;
-import com.juzicool.seo.db.SimpleDB;
+import com.juzicool.data.db.SimpleDB;
 
 import java.io.File;
 
@@ -19,6 +19,14 @@ public class App {
             appDir.mkdirs();
         }
         return appDir;
+    }
+
+    public File getAppSubDir(String subDirName){
+        File subDir = new File(getAppDir(),subDirName);
+        if(!subDir.isDirectory() || !subDir.exists()){
+            subDir.mkdirs();
+        }
+        return subDir;
     }
 
     public SimpleDB getConfigDB(){
