@@ -6,14 +6,13 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.juzicool.core.Promise;
 import com.juzicool.webwalker.WalkCase;
 import com.juzicool.webwalker.WalkClient;
-import com.juzicool.webwalker.WalkFlow;
-
 import java.io.IOException;
 
-public class ZhifuFlow1 extends WalkFlow {
+public class ZhifuFlow1 extends BaseFlow {
 
     public ZhifuFlow1(){
         addCase(new ClickLink(),0);
+        super.addInterLinkCase(); // 添加内部link链接
     }
 
     @Override
@@ -47,7 +46,7 @@ public class ZhifuFlow1 extends WalkFlow {
                     System.err.println("accept!!!!!!!!");
                     pormise.setProcessText("流量完成");
 
-                    pormise.accept(null);
+                    pormise.accept(nextPage);
                     return;
                 }else{
                     pormise.setProcessText("流量失败");

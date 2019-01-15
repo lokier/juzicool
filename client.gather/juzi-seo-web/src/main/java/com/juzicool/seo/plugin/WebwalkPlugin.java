@@ -3,11 +3,8 @@ package com.juzicool.seo.plugin;
 import com.jfinal.plugin.IPlugin;
 import com.juzicool.seo.AppConstant;
 import com.juzicool.seo.Services;
-import com.juzicool.seo.flow.ZhifuFlow1;
 import com.juzicool.seo.flow.ZhifuFlowTask;
 import com.juzicool.webwalker.*;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class WebwalkPlugin implements IPlugin {
@@ -35,10 +32,6 @@ public class WebwalkPlugin implements IPlugin {
 
     private void prepareTask(WalkService service){
         StartPoint startPoint = StartPoint.Bulider.bySeconds(System.currentTimeMillis() + 10*1000,20*60 * 1000);
-
-       /* DefaultWalkFlowTask flowTask = new DefaultWalkFlowTask(1);
-        flowTask.setTaskName("ATest-Task");
-        flowTask.addWalkFlow(new ZhifuFlow1());*/
 
         ZhifuFlowTask task = new ZhifuFlowTask();
 

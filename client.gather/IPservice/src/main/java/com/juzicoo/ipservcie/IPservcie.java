@@ -1,6 +1,7 @@
 package com.juzicoo.ipservcie;
 
 import com.juzicoo.ipservcie.source.www89ipcn;
+import com.juzicoo.ipservcie.source.wwwkuaidailicom;
 import com.juzicool.core.Handler;
 import com.juzicool.core.Promise;
 import com.juzicool.core.PromiseExecutor;
@@ -32,7 +33,8 @@ public class IPservcie {
 
        iPservcie.setIPTester(new IPTester.DefaultIPTester(iPservcie,new String[]{"https://www.juzimi.com/ju/469610"}));
 
-       iPservcie.addIpSource(new www89ipcn());
+       iPservcie.addIpSource(new wwwkuaidailicom());
+       //iPservcie.addIpSource(new www89ipcn());
 
        final IPPool pool =  iPservcie.createPool(20,10,0.6f);
 
@@ -81,7 +83,14 @@ public class IPservcie {
 
     }
 
+    public static void loadSystemSources(IPservcie iPservcie){
+        iPservcie.addIpSource(new wwwkuaidailicom());
+        iPservcie.addIpSource(new www89ipcn());
+    }
+
     private boolean isPreared = false;
+
+
 
     public void prepare(){
         this.prepare(this.executor);

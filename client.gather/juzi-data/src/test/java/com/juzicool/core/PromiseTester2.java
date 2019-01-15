@@ -192,7 +192,7 @@ public class PromiseTester2 {
         }).resolveFunc(new Promise.RunFunc() {
             @Override
             public void run(Promise promise) {
-                Object data = promise.getResolveData();
+               // Object data = promise.getResolveData();
                 c4.args = new Long(System.currentTimeMillis());
                 rets.add(c4);
             }
@@ -256,7 +256,7 @@ public class PromiseTester2 {
                 }).resolveFunc(new Promise.RunFunc() {
                     @Override
                     public void run(Promise promise) {
-                        Object data = promise.getResolveData();
+                       // Object data = promise.getResolveData();
                         c4.args = new Long(System.currentTimeMillis());
                         rets.add(c4);
                     }
@@ -318,7 +318,7 @@ public class PromiseTester2 {
                 }).resolveFunc(new Promise.RunFunc() {
                     @Override
                     public void run(Promise promise) {
-                        Object data = promise.getResolveData();
+                        //Object data = promise.getResolveData();
                         c4.args = new Long(System.currentTimeMillis());
                         rets.add(c4);
                     }
@@ -379,7 +379,7 @@ public class PromiseTester2 {
                 }).resolveFunc(new Promise.RunFunc() {
                     @Override
                     public void run(Promise promise) {
-                        Object data = promise.getResolveData();
+                       // Object data = promise.getResolveData();
                         c4.args = new Long(System.currentTimeMillis());
                         rets.add(c4);
                     }

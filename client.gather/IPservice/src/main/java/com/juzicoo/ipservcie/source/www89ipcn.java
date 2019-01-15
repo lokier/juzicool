@@ -18,7 +18,7 @@ public class www89ipcn implements IpSource {
 
     public www89ipcn(){
         HashSet<String> ret = new HashSet<>();
-        int pageSize = 12;
+        int pageSize = 6;
         for(int i = 1; i<=pageSize;i++){
             ret.add("http://www.89ip.cn/index_"+i+".html");
         }

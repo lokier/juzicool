@@ -5,6 +5,9 @@ import com.juzicoo.ipservcie.IPTester;
 import com.juzicoo.ipservcie.IPservcie;
 import com.juzicoo.ipservcie.source.www89ipcn;
 import com.juzicool.seo.Services;
+import com.juzicool.seo.flow.ZhifuFlowTask;
+import com.juzicool.webwalker.StartPoint;
+import com.juzicool.webwalker.WalkFlowSchedule;
 
 import java.io.File;
 
@@ -52,8 +55,15 @@ public class IPServicePlugin implements IPlugin {
     }
 
     private static void init(IPservcie iPservcie){
-        iPservcie.setIPTester(new IPTester.DefaultIPTester(iPservcie,new String[]{"https://www.juzimi.com/ju/469610"}));
-        iPservcie.addIpSource(new www89ipcn());
+        iPservcie.setIPTester(new IPTester.DefaultIPTester(iPservcie,new String[]{"https://www.zhihu.com"}));
+
+        IPservcie.loadSystemSources(iPservcie);
+
+        //每隔1個小時更新一次
+        StartPoint startPoint = StartPoint.Bulider.bySeconds(System.currentTimeMillis() + 10*1000,1 * 60*60 * 1000);
+        IPServiceUpdateTask updateTask = new IPServiceUpdateTask();
+
+       // Services.walkService.submit(new WalkFlowSchedule(9999999,startPoint,updateTask));
     }
 
 
