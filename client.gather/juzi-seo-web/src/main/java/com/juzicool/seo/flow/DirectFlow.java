@@ -54,9 +54,14 @@ public class DirectFlow extends BaseFlow {
                 String url = URLS[r.nextInt(URLS.length)];
                 pormise.sendProcessText(10,"开始打开直链入口：" + url);
 
-                final HtmlPage page =  client.getPage(url);
+                Object obj =  client.getPage(url);
 
-               pormise.accept("打开直链入口成功");
+                if(obj instanceof  HtmlPage){
+                    pormise.sendProcessText(10,"打开直链入口成功");
+                    pormise.accept(obj);
+                    return;
+                }
+                pormise.reject("未知打开内容：" + obj.toString());
 
 
             } catch (Exception e) {

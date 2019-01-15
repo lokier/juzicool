@@ -108,7 +108,7 @@ public class InterRandomCase {
                         pormise.sendProcessText(30,"在句子酷：输入关键词搜索");
 
                         HtmlPage nextPage =  element.click();
-                        pormise.accept(null);
+                        pormise.accept("成功完成内部链");
                         return;
                     } catch (IOException e) {
                         e.printStackTrace();
