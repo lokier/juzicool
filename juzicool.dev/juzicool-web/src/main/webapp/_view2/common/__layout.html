@@ -10,62 +10,24 @@
 <meta name="description" content="#(seoDescr ?? '句子库是一个句子搜索引擎和句子类别收录与展示网站。用户可以通过关键词直接找到自己想要看到的句子；并且分类出目前最热门的句子分类供用户查看和使用；用户可以评论和发表对这个句子的鉴赏；同时,用户可以发表自己喜欢的句子')" />
 <title>#(seoTitle ?? "句子酷|查找你想要的句子")</title>
 
-<link href="favicon.ico?v=20180831" rel="shortcut icon" type="image/x-icon">
-<script type="text/javascript">
-	var _74409ADBCF76C2D32BF7E1E2F64D113D="";
-	var G_POST_HASH=_74409ADBCF76C2D32BF7E1E2F64D113D;
-	var G_INDEX_SCRIPT = "?/";
-	var G_SITE_NAME = "JuziCool";
-	var G_BASE_URL = "/";
-	var G_STATIC_URL = "/static";
-	var G_UPLOAD_URL = "/uploads";
-	var G_USER_ID = "";
-	var G_USER_NAME = "";
-	var G_UPLOAD_ENABLE = "N";
-	var G_UNREAD_NOTIFICATION = 0;
-	var G_NOTIFICATION_INTERVAL = 100000;
-	var G_CAN_CREATE_TOPIC = "";
-	var G_ADVANCED_EDITOR_ENABLE = "Y";
-	var FILE_TYPES = "jpg,jpeg,png,gif,zip,doc,docx,rar,pdf,psd";
-	var G_DRAFT_ENABLED = "";
+	<link rel="stylesheet" type="text/css" href="/assets-v2/css/bootstrap.css">
+	<link href="./assets-v2/css/common.css" rel="stylesheet" type="text/css">
+	<link href="./assets-v2/css/shoutu.css" rel="stylesheet" type="text/css">
 
-	</script>
-
-<link rel="stylesheet" type="text/css" href="/assets-v2/css/bootstrap.css">
-<link rel="stylesheet" type="text/css" href="/assets-v2/css/icon.css">
-<link href="./assets-v2/css/common.css" rel="stylesheet" type="text/css">
+	<!--
+	<script src="./assets-v2/css/jquery.form.js" type="text/javascript"></script>
+	<link href="favicon.ico?v=20180831" rel="shortcut icon" type="image/x-icon">
+	<script type="text/javascript" src="/assets-v2/css/compatibility.js"></script>
 <link href="./assets-v2/css/link.css" rel="stylesheet" type="text/css">
-<link href="./assets-v2/css/style.css" rel="stylesheet" type="text/css">
-<link href="./assets-v2/css/shoutu.css" rel="stylesheet" type="text/css">
-<script src="./assets-v2/css/jquery.2.js" type="text/javascript"></script>
-<script src="./assets-v2/css/jquery.form.js" type="text/javascript"></script>
-<script src="./assets-v2/css/plug-in_module.js" type="text/javascript"></script>
+
+	<script type="text/javascript" src="/assets-v2/css/headroom.min.js"></script>
+	<script type="text/javascript" src="/assets-v2/css/stickUp.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/assets-v2/css/icon.css">
+
+
 <script src="./assets-v2/css/aws.js" type="text/javascript"></script>
 <script src="./assets-v2/css/aw_template.js" type="text/javascript"></script>
-<script src="./assets-v2/css/app.js" type="text/javascript"></script>
-<script type="text/javascript" src="/assets-v2/css/compatibility.js"></script>
-<script type="text/javascript" src="/assets-v2/css/stickUp.min.js"></script>
-<script type="text/javascript" src="/assets-v2/css/headroom.min.js"></script>
-	<script type="text/javascript">
-	#if(loginAccount)
-
-	#else
-		function updateCaptcha() {
-		$(".captcha").attr("src", "/login/captcha?v=" + Math.random());
-		$("#captchaInput").val("");
-	}
-	#end
-		
-</script>
-<script>
-        var _hmt = _hmt || [];
-        (function() {
-            var hm = document.createElement("script");
-            hm.src = "https://hm.baidu.com/hm.js?e8dab0acdbab66654b400801972d96c6";
-            var s = document.getElementsByTagName("script")[0];
-            s.parentNode.insertBefore(hm, s);
-        })();
-</script>
+    -->
 
 </head>
 <body #@bodyAttr?() ><noscript unselectable="on" id="noscript">
@@ -160,6 +122,51 @@ class="icon icon-up"></i></a>
 ### 适合于部分页面在 layout.html 提供的 js 文件之外，还需额外添加 js 资源的应用场景
 #@js?()
 </body>
+<script type="text/javascript">
+    var _74409ADBCF76C2D32BF7E1E2F64D113D="";
+    var G_POST_HASH=_74409ADBCF76C2D32BF7E1E2F64D113D;
+    var G_INDEX_SCRIPT = "?/";
+    var G_SITE_NAME = "JuziCool";
+    var G_BASE_URL = "/";
+    var G_STATIC_URL = "/static";
+    var G_UPLOAD_URL = "/uploads";
+    var G_USER_ID = "";
+    var G_USER_NAME = "";
+    var G_UPLOAD_ENABLE = "N";
+    var G_UNREAD_NOTIFICATION = 0;
+    var G_NOTIFICATION_INTERVAL = 100000;
+    var G_CAN_CREATE_TOPIC = "";
+    var G_ADVANCED_EDITOR_ENABLE = "Y";
+    var FILE_TYPES = "jpg,jpeg,png,gif,zip,doc,docx,rar,pdf,psd";
+    var G_DRAFT_ENABLED = "";
+
+</script>
+
+<script src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/jquery.form/3.51/jquery.form.min.js" type="text/javascript"></script>
+<script src="./assets-v2/css/app.js" type="text/javascript"></script>
+<script src="./assets-v2/css/plug-in_module.js" type="text/javascript"></script>
+<script type="text/javascript">
+    #if(loginAccount)
+
+        #else
+        function updateCaptcha() {
+            $(".captcha").attr("src", "/login/captcha?v=" + Math.random());
+            $("#captchaInput").val("");
+        }
+    #end
+
+</script>
+<script>
+    var _hmt = _hmt || [];
+    (function() {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?e8dab0acdbab66654b400801972d96c6";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
 </html>
 #end
 
