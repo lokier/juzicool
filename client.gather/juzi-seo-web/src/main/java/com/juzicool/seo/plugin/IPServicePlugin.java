@@ -63,7 +63,7 @@ public class IPServicePlugin implements IPlugin {
         StartPoint startPoint = StartPoint.Bulider.bySeconds(System.currentTimeMillis() + 10*1000,1 * 60*60 * 1000);
         IPServiceUpdateTask updateTask = new IPServiceUpdateTask();
 
-       // Services.walkService.submit(new WalkFlowSchedule(9999999,startPoint,updateTask));
+        Services.walkService.submit(new WalkFlowSchedule(9999999,startPoint,updateTask));
     }
 
 

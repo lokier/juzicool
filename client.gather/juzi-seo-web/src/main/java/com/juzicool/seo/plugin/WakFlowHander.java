@@ -43,8 +43,9 @@ public class WakFlowHander implements WalkFlowListener {
     public void onDoCase(WalkFlowTask task, WalkFlow flow, WalkClient client, WalkCase _case) {
         System.out.println("onDoCase:" + task.getTaskName()+","+task.getTaskId());
         StringBuffer sb = walkFlowLogMap.get(flow);
-
-        sb.append(String.format("[%s]onDoCase \n", currentTimeDesc()));
+        if(sb!= null){
+            sb.append(String.format("[%s]onDoCase \n", currentTimeDesc()));
+        }
 
     }
 
@@ -66,20 +67,23 @@ public class WakFlowHander implements WalkFlowListener {
         }
 
         final StringBuffer sb = walkFlowLogMap.remove(flow);
-        sb.append(String.format("[%s]结束flow......\n", currentTimeDesc()));
-        final Integer taskId = task.getTaskId();
-        final WorkFlowLog log = new WorkFlowLog();
-        log.detailLog = sb.toString();
 
-        Services.walkService.getPromiseExecutor().submit(new Runnable() {
-            @Override
-            public void run() {
+        if(sb!= null) {
+            sb.append(String.format("[%s]结束flow......\n", currentTimeDesc()));
+            final Integer taskId = task.getTaskId();
+            final WorkFlowLog log = new WorkFlowLog();
+            log.detailLog = sb.toString();
 
-                WorkFlowTaskDB db = WorkFlowTaskDB.get(taskId);
-                db.insert(log);
+            Services.walkService.getPromiseExecutor().submit(new Runnable() {
+                @Override
+                public void run() {
 
-            }
-        });
+                    WorkFlowTaskDB db = WorkFlowTaskDB.get(taskId);
+                    db.insert(log);
+
+                }
+            });
+        }
 
 
         task.setProcessText(String.format("已處理%d個flow，成功%d個",totalFlowCount,totalFlowSuccess));

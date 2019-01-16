@@ -55,14 +55,16 @@ public class IPServiceUpdateTask extends WalkFlowTask {
             addCase(new WalkCase() {
                 @Override
                 public long getTimeout() {
-                    return 1 * 60 *60 *1000;
+                    return 1 * 10 *60 *1000;
                 }
 
                 @Override
                 protected void doCase(WalkClient wclient, Promise pormise) {
                     IPservcie ipService = Services.iPservcie;
 
+                    pormise.sendProcessText(10,"是否正在抓取IP:" + ipService.isCollectFinish());
                     if(ipService.isCollectFinish()){
+                        pormise.sendProcessText(10,"发送采集IP请求");
                         ipService.requestCollect();
                     }
 

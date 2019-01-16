@@ -6,6 +6,7 @@ import com.juzicool.webwalker.WalkClient;
 import com.juzicool.webwalker.WalkFlow;
 import com.juzicool.webwalker.WalkFlowTask;
 
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -25,7 +26,7 @@ public class RandomFlowTask extends WalkFlowTask {
 
     @Override
     public String getTaskName() {
-        return "随机Flow任务，外链和直接链";
+        return "随机Flow任务，外链和直接链:size=" + getCurrentIpSize();
     }
 
     @Override
@@ -105,13 +106,52 @@ public class RandomFlowTask extends WalkFlowTask {
         }
     }
 
+    private int getCurrentIpSize(){
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(System.currentTimeMillis());
+
+        int hour = c.get(Calendar.HOUR_OF_DAY);
+        int minute = c.get(Calendar.MINUTE);
+
+        int ipSize = 5;
+        if(hour >=0 && hour<=2){
+            ipSize = 40;
+        }else if(hour>2 && hour <= 6){
+            ipSize = 30;
+        }else if(hour > 6 && hour<=8){
+            ipSize = 80;
+        }else if( hour > 8 && hour <=11){
+            ipSize = 160;
+        }else if( hour > 11 && hour <=13){
+            ipSize = 320;
+        }else if(hour > 13 && hour <= 16){
+            ipSize = 250;
+        }else if(hour > 16 && hour <=18){
+            ipSize = 220;
+        }else if(hour >18 && hour <= 20){
+            ipSize = 320;
+        }else if(hour>20 && hour <=22){
+            ipSize = 200;
+        }else if(hour>22 && hour <=23){
+            ipSize = 80;
+        }else {
+            ipSize = 30;
+        }
+
+        return ipSize;
+    }
+
     @Override
     protected void onStartInBackgound() {
         //准备代理IP跑一边
        // IPPool pool =  iPservcie.createPool(200,20,0.1f);
         //pool.ready();
 
-        List<ProxyIp> iplist =  iPservcie.getDB().next( 50,01.f);
+
+
+        int ipSize = getCurrentIpSize();
+
+        List<ProxyIp> iplist =  iPservcie.getDB().next( ipSize,01.f);
 
         ipQueues = null;
         if(iplist!=null){

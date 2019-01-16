@@ -32,7 +32,7 @@ public class WebwalkPlugin implements IPlugin {
     }
 
     private void prepareTask(WalkService service){
-        StartPoint startPoint = StartPoint.Bulider.bySeconds(System.currentTimeMillis() + 10*1000,20*60 * 1000);
+        StartPoint startPoint = StartPoint.Bulider.bySeconds(System.currentTimeMillis() + 15*60*1000,30*60 * 1000);
 
         ZhifuFlowTask task = new ZhifuFlowTask();
 
