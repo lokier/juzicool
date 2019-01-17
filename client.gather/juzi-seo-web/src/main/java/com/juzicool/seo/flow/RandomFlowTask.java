@@ -2,6 +2,7 @@ package com.juzicool.seo.flow;
 
 import com.gargoylesoftware.htmlunit.*;
 import com.juzicoo.ipservcie.ProxyIp;
+import com.juzicool.seo.db.WorkFlowTaskDB;
 import com.juzicool.webwalker.WalkClient;
 import com.juzicool.webwalker.WalkFlow;
 import com.juzicool.webwalker.WalkFlowTask;
@@ -56,8 +57,9 @@ public class RandomFlowTask extends WalkFlowTask {
 
 
     private static Class[] FLOW_CLASSES = new Class[]{
-            ZhifuFlow1.class,
-            DirectFlow.class
+           /* ZhifuFlow1.class,
+            DirectFlow.class,*/
+            JianshuFlow.class,
     };
 
 
@@ -147,7 +149,15 @@ public class RandomFlowTask extends WalkFlowTask {
        // IPPool pool =  iPservcie.createPool(200,20,0.1f);
         //pool.ready();
 
+      // Calendar calendar =  Calendar.getInstance();
+       //calendar.setTimeInMillis(System.currentTimeMillis());
 
+        WorkFlowTaskDB db = WorkFlowTaskDB.get(getTaskId());
+
+        long one_day = 24 * 60 * 60 * 1000;
+
+        //删除一天前的日志。
+        db.deleyBefore(System.currentTimeMillis() - one_day);
 
         int ipSize = getCurrentIpSize();
 

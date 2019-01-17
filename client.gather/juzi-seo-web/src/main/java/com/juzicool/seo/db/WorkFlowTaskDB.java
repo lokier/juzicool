@@ -6,6 +6,7 @@ import com.juzicool.seo.model.WorkFlowLog;
 
 import java.io.File;
 import java.io.Serializable;
+import java.sql.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -48,6 +49,14 @@ public class WorkFlowTaskDB {
 
     public List<SimpleDB.ListData<WorkFlowLog>> getLatests(){
         return db.List().getPage(0,20,true);
+    }
+
+    /***
+     * 删除之间的日志。
+     * @param time
+     */
+    public void deleyBefore(long time){
+        db.List().delete(null,new Date(time));
     }
 
 }

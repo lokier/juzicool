@@ -48,6 +48,14 @@ public class DirectFlow extends BaseFlow {
         @Override
         public void doCase(WalkClient wclient, Promise pormise) {
 
+            Object object = pormise.getResolveData();
+            if(object instanceof HtmlPage){
+                pormise.accept(object);
+                return;
+            }
+
+
+
             WebClient client = wclient.getWebClient();
             try {
                 Random r = new Random(System.currentTimeMillis());

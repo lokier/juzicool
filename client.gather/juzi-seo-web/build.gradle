@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.juzicool'
-version '1.0-SNAPSHOT'
+version '1.0.0-beta'
 
 sourceCompatibility = 1.8
 
@@ -14,6 +14,14 @@ repositories {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+}
+
+
+war{
+    baseName ="juzicool-web"    //war名称
+    exclude('data')
+    exclude('.idea')
+    exclude('upload')
 }
 
 

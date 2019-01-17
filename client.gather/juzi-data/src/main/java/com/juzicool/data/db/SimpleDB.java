@@ -156,11 +156,13 @@ public class SimpleDB {
         mFile = file;
         jdbcUrl = "jdbc:sqlite:" +file.getAbsolutePath();
         try {
+            Class.forName("org.sqlite.JDBC");
+
             mQueue =new Queue("simple_db_queue",createConnection());
             list = new List("simple_db_list",createConnection());
             mKv = new KV(createConnection());
            // mKv.prepare();
-        } catch (SQLException e) {
+        } catch (Exception e) {
            throw new RuntimeException(e);
         }
     }
