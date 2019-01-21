@@ -28,6 +28,8 @@ public abstract class BaseFlow extends WalkFlow {
         flow = new DirectFlow();
 
         task.addWalkFlow(flow);
+
+
         service.setMaxTaskThread(5);
         System.out.println("开始flow....");
         StartPoint startPoint = StartPoint.Bulider.bySeconds(System.currentTimeMillis() + 3*1000,30*60 * 1000);

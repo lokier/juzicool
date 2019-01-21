@@ -24,8 +24,10 @@ public abstract class WalkFlowTask {
      */
     abstract protected WalkFlow next();
 
+    /**在后台执行*/
     abstract protected WalkClient createWalkClient(WalkFlow flow);
 
+    /**在后台执行*/
     abstract protected void releaseWalkClient(WalkClient client);
 
 
@@ -141,7 +143,6 @@ public abstract class WalkFlowTask {
         LOG.info("dispatch  walkFlow: " + walkFlow.getName());
         Promise builder = new Promise();
 
-
         // flow star:
         builder.then(new Runnable() {
             @Override
@@ -176,10 +177,13 @@ public abstract class WalkFlowTask {
 
 
                 final boolean hasError = promise.getStatus() == Promise.Status.REJECT;
+
+
+                releaseWalkClient(walkClient);
+
                 mService.getHandler().post(new Runnable() {
                     @Override
                     public void run() {
-                        releaseWalkClient(walkClient);
 
                         if(LOG.isDebugEnabled()){
                             LOG.debug("flow[" +getTaskName()+"]: finalFunc: running promise size : " + mRunningPromise.size());

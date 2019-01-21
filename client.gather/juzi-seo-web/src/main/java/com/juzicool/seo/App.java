@@ -39,5 +39,18 @@ public class App {
         return configDb;
     }
 
-    //public File
+    private WalkClientFactory factory = null;
+    public WalkClientFactory getWalkClientFactory(){
+        if(factory == null){
+            synchronized (this){
+                if(factory == null){
+                    File file = new File(getAppDir(),"webclient_session.db");
+                   // System.out.println("ooooooooo: " + file.getAbsolutePath());
+
+                    factory = new WalkClientFactory(file);
+                }
+            }
+        }
+        return factory;
+    }
 }

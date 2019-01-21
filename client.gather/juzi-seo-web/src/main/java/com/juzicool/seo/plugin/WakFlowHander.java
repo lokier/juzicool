@@ -26,13 +26,13 @@ public class WakFlowHander implements WalkFlowListener {
     public void onStartTask(WalkFlowTask task) {
         totalFlowCount = 0;
         totalFlowSuccess =0;
-        System.out.println("onStartTask:" + task.getTaskName()+","+task.getTaskId());
+        //System.out.println("onStartTask:" + task.getTaskName()+","+task.getTaskId());
 
     }
 
     @Override
     public void onStartFlow(WalkFlowTask task, WalkFlow flow, WalkClient client) {
-        System.out.println("onStartFlow:" + task.getTaskName()+","+task.getTaskId());
+      //  System.out.println("onStartFlow:" + task.getTaskName()+","+task.getTaskId());
         totalFlowCount++;
         ProxyConfig config = client.getWebClient().getOptions().getProxyConfig();
         StringBuffer sb = new StringBuffer( String.format("[%s]开始flow【%s】(%s:%d)......\n", currentTimeDesc(),flow.getName(),config.getProxyHost(),config.getProxyPort()));
@@ -41,7 +41,7 @@ public class WakFlowHander implements WalkFlowListener {
 
     @Override
     public void onDoCase(WalkFlowTask task, WalkFlow flow, WalkClient client, WalkCase _case) {
-        System.out.println("onDoCase:" + task.getTaskName()+","+task.getTaskId());
+        //System.out.println("onDoCase:" + task.getTaskName()+","+task.getTaskId());
         StringBuffer sb = walkFlowLogMap.get(flow);
         if(sb!= null){
             sb.append(String.format("[%s]onDoCase \n", currentTimeDesc()));
@@ -60,7 +60,7 @@ public class WakFlowHander implements WalkFlowListener {
 
     @Override
     public void onFinishFlow(WalkFlowTask task, WalkFlow flow, WalkClient client, boolean hasError) {
-        System.out.println("onFinishFlow:" + task.getTaskName()+","+task.getTaskId());
+        //System.out.println("onFinishFlow:" + task.getTaskName()+","+task.getTaskId());
 
         if(!hasError){
             totalFlowSuccess++;
@@ -92,7 +92,7 @@ public class WakFlowHander implements WalkFlowListener {
 
     @Override
     public void onFinishTask(WalkFlowTask task) {
-        System.out.println("onFinishTask:" + task.getTaskName()+","+task.getTaskId());
+        //System.out.println("onFinishTask:" + task.getTaskName()+","+task.getTaskId());
 
     }
 }

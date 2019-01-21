@@ -17,7 +17,7 @@ public class WebwalkPlugin implements IPlugin {
     public boolean start() {
         me = new WalkService();
 
-        Integer maxThreadSize = AppPlugin.me.getConfigDB().KV().get(AppConstant.Config.MAX_THREAD_NUMB,20);
+        Integer maxThreadSize = AppPlugin.me.getConfigDB().KV().get(AppConstant.Config.MAX_THREAD_NUMB,25);
 
         me.setMaxTaskThread(maxThreadSize);
         me.prepare(); // 准备工作
@@ -33,6 +33,7 @@ public class WebwalkPlugin implements IPlugin {
 
     private void prepareTask(WalkService service){
         StartPoint startPoint = StartPoint.Bulider.bySeconds(System.currentTimeMillis() + 15*60*1000,30*60 * 1000);
+        startPoint = StartPoint.Bulider.bySeconds(System.currentTimeMillis() + 1*1000,30*60 * 1000);
 
         ZhifuFlowTask task = new ZhifuFlowTask();
 

@@ -2,6 +2,7 @@ package com.juzicool.seo.flow;
 
 import com.gargoylesoftware.htmlunit.*;
 import com.juzicoo.ipservcie.ProxyIp;
+import com.juzicool.seo.Services;
 import com.juzicool.seo.db.WorkFlowTaskDB;
 import com.juzicool.webwalker.WalkClient;
 import com.juzicool.webwalker.WalkFlow;
@@ -69,33 +70,7 @@ public class RandomFlowTask extends WalkFlowTask {
     protected WalkClient createWalkClient(WalkFlow flow) {
         ProxyIp proxyIp = (ProxyIp) flow.args.get("IpProxy");
 
-        WalkClient wclient = WalkClient.build();
-
-        WebClient client = new WebClient(BrowserVersion.FIREFOX_60);
-        client.setJavaScriptTimeout(5000);
-        client.getOptions().setUseInsecureSSL(true);// 接受任何主机连接 无论是否有有效证书
-        client.getOptions().setJavaScriptEnabled(true);// 设置支持javascript脚本
-        client.getOptions().setCssEnabled(false);// 禁用css支持
-        client.getOptions().setThrowExceptionOnScriptError(false);// js运行错误时不抛出异常
-        client.getOptions().setTimeout(30000);// 设置连接超时时间
-        client.getOptions().setDoNotTrackEnabled(false);
-        client.setAjaxController(new NicelyResynchronizingAjaxController());// 设置Ajax异步
-        client.waitForBackgroundJavaScript(20000);
-
-
-        client.setCache(htmlCache);
-
-        ProxyConfig proxyConfig = client.getOptions().getProxyConfig();
-        proxyConfig.setProxyHost(proxyIp.getHost());
-        proxyConfig.setProxyPort(proxyIp.getPort());
-
-        //client.getOptions().set
-
-        wclient.setWebClient(client);
-
-
-
-        return wclient;
+        return Services.app.getWalkClientFactory().create(proxyIp);
     }
 
     @Override
